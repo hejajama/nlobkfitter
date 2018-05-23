@@ -18,7 +18,7 @@
 #include "cuba-4.2.h"
 #include "data.hpp"
 
-#define PARALLEL_CHISQR
+//#define PARALLEL_CHISQR
 
 using namespace ROOT::Minuit2;
 using namespace std;
@@ -32,7 +32,7 @@ class NLODISFitter : public FCNBase
 public:
     // MINUIT functions
     double operator() (const vector<double>& par) const; // Calculate Chi^2
-    double Up() const {return 2.;} // MINUIT default possibly 1.0?
+    double Up() const {return 1.;} // MINUIT default possibly 1.0?
 
     // Initialize based on MINUIT parameters
     NLODISFitter(MnUserParameters parameters_);

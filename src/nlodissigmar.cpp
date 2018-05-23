@@ -18,7 +18,7 @@
 
 // HOW TO INTRODUCE THESE?  // TODO
 namespace sigmar_config{
-  double rmax=20.0; //300.0;
+  double rmax=25.0; //300.0;
   double rmin=1e-5;
   double Nc=3.0;
   double CF=4.0/3.0;
@@ -39,7 +39,7 @@ using namespace sigmar_config;
 // at low Q² Z exchange negligible ( we are only modeling gamma exchange) and the reduced cross section simplifies into
 // sigma_r = F_2 - f(y) F_L = F_2 - y^2 / Y_+ * F_L = F_2 - y^2/(1+(1-y)^2) * F_L
 double ComputeSigmaR::SigmarLO (double Q , double xbj, double y) {
-    ClassScopeDipolePointer->InitializeInterpolation(xbj);
+    //ClassScopeDipolePointer->InitializeInterpolation(xbj);
     double fac = structurefunfac*Sq(Q);
     double FL = fac*LLOp(Q,xbj);
     double FT = fac*TLOp(Q,xbj);
@@ -49,7 +49,7 @@ double ComputeSigmaR::SigmarLO (double Q , double xbj, double y) {
     return sigma;
 }
 double ComputeSigmaR::SigmarLOmass (double Q , double xbj, double y, bool charm) {
-  //ClassScopeDipolePointer->InitializeInterpolation(xbj);
+//  ClassScopeDipolePointer->InitializeInterpolation(xbj);
     double fac = structurefunfac*Sq(Q);
     double FL = fac*LLOpMass(Q,xbj,charm);
     double FT = fac*TLOpMass(Q,xbj,charm);
@@ -95,10 +95,11 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
 	double qMass_charm = 1.35;
     bool   useMasses    = true;
+	bool useCharm = false;
 
 
-	if (qs0sqr < 0.0001 or qs0sqr > 100 or alphas_scaling < 0.01 or alphas_scaling > 99999 or fitsigma0 < 0.1 or fitsigma0 > 999)
-		return 999;
+	if (qs0sqr < 0.0001 or qs0sqr > 100 or alphas_scaling < 0.01 or alphas_scaling > 99999 or fitsigma0 < 0.1 or fitsigma0 > 999 or e_c < 1 or e_c > 9999)
+		return 9999999;
 
     cout << "=== Initializing Chi^2 regression === "<< " parameters (" << PrintVector(par) << ")" << endl;
 
@@ -121,9 +122,12 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     solver.SetAlphasScaling(alphas_scaling);
     solver.Solve(maxy);                                // Solve up to maxy
 
+	dipole.Save("tmp_datafile.dat");
+
     // Give solution to the AmplitudeLib object
     AmplitudeLib DipoleAmplitude(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
     DipoleAmplitude.SetX0(initialconditionX0);         // TODO needs to match QG limit X0
+	DipoleAmplitude.SetOutOfRangeErrors(false);
     AmplitudeLib *DipolePointer = &DipoleAmplitude;
 
     ComputeSigmaR SigmaComputer(DipolePointer);
@@ -150,7 +154,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     for (unsigned int dataset=0; dataset<datasets.size(); dataset++)
     {
 #ifdef PARALLEL_CHISQR
-    #pragma omp parallel for schedule(dynamic) reduction(+:chisqr) reduction(+:points)
+//    #pragma omp parallel for schedule(dynamic) reduction(+:chisqr) reduction(+:points)
 #endif
         for (int i=0; i<datasets[dataset]->NumOfPoints(); i++)
         {
@@ -161,7 +165,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
             double sigmar   = datasets[dataset]->ReducedCrossSection(i);
             double sigmar_err = datasets[dataset]->ReducedCrossSectionError(i);
 
-            double theory;
+            double theory=0, theory_charm=0;
             if (!computeNLO && !useMasses) // Compute reduced cross section using leading order impact factors
             {
                 theory = (fitsigma0)*SigmaComputer.SigmarLO(Q , xbj , y );
@@ -171,8 +175,8 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
 				theory=0;
 				if (datasets[dataset]->OnlyCharm(i)==false)
 	                theory = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj , y, false );
-				if (xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) < 0.01)
-					theory += (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) , y, true ); // charm
+				if (xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) < 0.01 and useCharm)
+					theory_charm = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) , y, true ); // charm
             }
 
             if (computeNLO) // Full NLO impact factors for reduced cross section
@@ -186,23 +190,24 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
                 theory = 99999999;
             }
 
-            chisqr += datasets[dataset]->Weight()*SQR( (theory - sigmar) / sigmar_err );
+            chisqr += datasets[dataset]->Weight()*SQR( (theory+theory_charm - sigmar) / sigmar_err );
             points = points + datasets[dataset]->Weight();
 
             // Output for plotting
-            if(false){
+            if(true){
             cout    << setw(10) << xbj          << " "
                     << setw(10) << Q2           << " "
                     << setw(10) << y            << " "
                     << setw(10) << sigmar       << " "
                     << setw(10) << sigmar_err   << " "
-                    << setw(10) << theory       << endl;
+                    << setw(10) << theory       << " "
+					<< setw(10) << theory_charm << endl;
                   }
 
         }
     }
     cout << endl << "# Calculated chi^2/N = " << chisqr/points << " (N=" << points << "), parameters (" << PrintVector(par) << ")" << endl<<endl;
-    return chisqr/points;
+    return chisqr;
 }
 
 void NLODISFitter::AddDataset(Data& d)

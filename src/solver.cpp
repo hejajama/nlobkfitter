@@ -255,6 +255,7 @@ double Inthelperf_lo_theta(double theta, void* p);
 // Last argument is optional, and used only with kinematical constraint
 double BKSolver::RapidityDerivative_lo(double r, Interpolator* dipole_interp, double rapidity)
 {
+	if (r>10) return 0;
     gsl_function fun;
     Inthelper_nlobk helper;
     helper.solver=this;
@@ -404,7 +405,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
         double lo=1.0;
         if (config::ONLY_NLO)
             lo=0;
-        result = FIXED_AS / (2.0*M_PI*M_PI) * r*r / (X*X * Y*Y);
+        result = FIXED_AS / (2.0*M_PI*M_PI) * r*r / (X*X * Y*Y + 1e-40);
         if (LO_BK)
             return result;
         else
@@ -430,7 +431,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
         result =
          NC/(2.0*SQR(M_PI))*Alphas(r)
             * (
-            SQR(r) / ( SQR(X) * SQR(Y)  )
+            SQR(r) / ( SQR(X) * SQR(Y) + 1e-40 )
             + 1.0/SQR(Y)*(alphas_y/alphas_x - 1.0)
             + 1.0/SQR(X)*(alphas_x/alphas_y - 1.0)
             );
@@ -438,12 +439,12 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
     }
     else if (RC_LO == SMALLEST_LO)
     {
-        result = NC*Alphas(min) / (2.0*SQR(M_PI))*SQR(r/(X*Y));
+        result = NC*Alphas(min) / (2.0*SQR(M_PI))*SQR(r/(X*Y + 1e-40));
         alphas_scale = min;
     }
     else if (RC_LO == PARENT_LO)
     {
-        result = NC*Alphas(r) / (2.0*SQR(M_PI)) * SQR(r/(X*Y));
+        result = NC*Alphas(r) / (2.0*SQR(M_PI)) * SQR(r/(X*Y + 1e-40));
         alphas_scale = r;
     }
 	else if (RC_LO == FRAC_LO)
@@ -455,8 +456,16 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
 		result = 1.0/(2.0*M_PI) * std::pow(
 			1.0/asbar_r + (SQR(X)-SQR(Y))/SQR(r) * (asbar_x - asbar_y)/(asbar_x * asbar_y)
 		, -1.0);
-		result = result * SQR(r / (X*Y));
+		result = result * SQR(r / (X*Y+1e-40));
 		alphas_scale=r;	// this only affects K1_fin
+	}
+	else if (RC_LO == GUILLAUME_LO)
+	{
+		// 1708.06557 Eq. 169
+		double r_eff_sqr = r*r * std::pow( Y*Y / (X*X), (X*X-Y*Y)/(r*r) );
+		result = NC*Alphas(std::sqrt(r_eff_sqr)) / (2.0*SQR(M_PI)) * SQR(r/(X*Y + 1e-40));
+		alphas_scale = std::sqrt(r_eff_sqr);
+
 	}
     else
     {
@@ -580,7 +589,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
     if (EQUATION==QCD)
     {
 
-        if (NO_K2 and (RESUM_DLOG or RESUM_SINGLE_LOG))
+        if (NO_K2 )
         {
             // Resummed K_1, no subtraction or other as^2 terms in K_1
             return resum*singlelog_resum*result;
