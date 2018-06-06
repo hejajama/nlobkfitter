@@ -194,7 +194,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
             points = points + datasets[dataset]->Weight();
 
             // Output for plotting
-            if(true){
+            if(false){
             cout    << setw(10) << xbj          << " "
                     << setw(10) << Q2           << " "
                     << setw(10) << y            << " "

@@ -515,7 +515,8 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
     double resum=1.0;
     if (config::RESUM_DLOG and r > 1.01*config::MINR)
     {
-        double x =  4.0*std::log(X/r) * std::log(Y/r) ; // rho^2 in Ref.
+        //double x =  4.0*std::log(X/r) * std::log(Y/r) ; // rho^2 in Ref.
+		double x = 2.0*std::log(X/Y); //https://indico.ectstar.eu/event/12/contributions/350/attachments/189/233/2018_ECT_Triantafyllopoulos.pdf
         if (x >=0)
         {
             // argument to the Bessel function is 2sqrt(bar as * x)

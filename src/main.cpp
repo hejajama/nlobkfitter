@@ -51,7 +51,7 @@ int main()
     gsl_set_error_handler(&ErrHandlerCustom);
     //gsl_set_error_handler_off();
 
-        config::RC_LO = config::GUILLAUME_LO; //config::GUILLAUME_LO; // Balitsky running coupling for LO kernel
+        config::RC_LO = config::BALITSKY_LO; //config::GUILLAUME_LO; // Balitsky running coupling for LO kernel
         config::RESUM_RC = config::RESUM_RC_PARENT; // Parent dipole in the resummation
         config::RESUM_DLOG = true; // Resum doulbe logs
         config::RESUM_SINGLE_LOG = true; // Resum single logs
@@ -112,10 +112,10 @@ int main()
 		  parameters.Add("initialconditionX0", 0.01 );
          */
 		  // MV for resummed
-		  parameters.Add("qs0sqr", 0.1833036828274);
-		parameters.Add("fitsigma0", 26.24896319135 ); // 1mb = 2.568 GeV² // (2.568)*16.36
-          parameters.Add("alphascalingC2", 0.05862105564887);
-          parameters.Add("e_c", 1.5884630748);
+		  parameters.Add("qs0sqr", 0.1833036828274, 0.1);
+		parameters.Add("fitsigma0", 26.24896319135, 2 ); // 1mb = 2.568 GeV² // (2.568)*16.36
+          parameters.Add("alphascalingC2", 0.05862105564887, 0.03);
+          parameters.Add("e_c", 1.5884630748, 0.5);
           parameters.Add("anomalous_dimension", 1.0 );
 		  parameters.Add("initialconditionX0", 0.01 );
 
