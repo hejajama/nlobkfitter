@@ -18,7 +18,7 @@
 
 // HOW TO INTRODUCE THESE?  // TODO
 namespace sigmar_config{
-  double rmax=25.0; //300.0;
+  double rmax=45.0; //300.0;
   double rmin=1e-5;
   double Nc=3.0;
   double CF=4.0/3.0;

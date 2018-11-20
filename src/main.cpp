@@ -51,23 +51,23 @@ int main()
     gsl_set_error_handler(&ErrHandlerCustom);
     //gsl_set_error_handler_off();
 
-        config::RC_LO = config::BALITSKY_LO; //config::GUILLAUME_LO; // Balitsky running coupling for LO kernel
-        config::RESUM_RC = config::RESUM_RC_PARENT; // Parent dipole in the resummation
+        config::RC_LO = config::GUILLAUME_LO;// Balitsky running coupling for LO kernel
+        config::RESUM_RC = config::RESUM_RC_GUILLAUME; // Parent dipole in the resummation
         config::RESUM_DLOG = true; // Resum doulbe logs
         config::RESUM_SINGLE_LOG = true; // Resum single logs
-        config::LO_BK = false;  // Solve LO BK with running coupling, overrides RESUM settings
+        config::LO_BK = false; // Solve LO BK with running coupling, overrides RESUM settings
         config::KSUB = 0.65;  // Optimal value for K_sub
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
-        config::INTACCURACY = 0.02;//0.02;
+        config::INTACCURACY = 0.0005;//0.02;
         config::MINR = 1e-5;
-        config::MAXR = 25;
-        config::RPOINTS = 100;
+        config::MAXR = 30;
+        config::RPOINTS = 80;
         config::DE_SOLVER_STEP = 0.2; // Euler method probably requires smaller step!
 		config::DNDY=false;
         //sigmar_config::maxy = 5.2;
 
         // If want to use kinematical constraint in the LO equation
-        config::EULER_METHOD = false;        // Kinematical constraint requires this
+        config::EULER_METHOD = false;       // Kinematical constraint requires this
         config::KINEMATICAL_CONSTRAINT = false;
 
         // Constants
@@ -76,12 +76,13 @@ int main()
 
 
     Data data;
-    data.SetMinQsqr(1.0);
+    data.SetMinQsqr(0.75);
     data.SetMaxQsqr(50);
     data.SetMaxX(0.01); // NLO, ic at xbj=1e-1;  TODO Is this necessary?
 
     // Add datafiles, if 2nd parameter=CHARM, then this is only charmdata
-    data.LoadData("./data/hera_combined_sigmar.txt", TOTAL);
+	//data.LoadData("./data/hera_combined_sigmar.txt", TOTAL);
+    data.LoadData("./data/light_quark_f2/hera_I_combined_eplus_lightq", TOTAL);
     //data.LoadData("data/hera_combined_sigmar_cc.txt", CHARM); // charm data
 
 
@@ -103,19 +104,20 @@ int main()
         // MASSLESS -- NLO NLO NLO
 
           // MV
-    	  
-          /*parameters.Add("qs0sqr", 0.104, 0.1 );
-          parameters.Add("fitsigma0", 48.304, 0.1 ); // 1mb = 2.568 GeV² // (2.568)*16.36
-          parameters.Add("alphascalingC2", 14.5 ,1);
+    	 /* 
+          parameters.Add("qs0sqr", 0.104, 0.1 );
+          parameters.Add("fitsigma0", 48.304, 2.0 ); // 1mb = 2.568 GeV² // (2.568)*16.36
+          parameters.Add("alphascalingC2", 4.5 ,1);
           parameters.Add("e_c", 1.0 );
           parameters.Add("anomalous_dimension", 1.0 );
 		  parameters.Add("initialconditionX0", 0.01 );
          */
 		  // MV for resummed
-		  parameters.Add("qs0sqr", 0.1833036828274, 0.1);
-		parameters.Add("fitsigma0", 26.24896319135, 2 ); // 1mb = 2.568 GeV² // (2.568)*16.36
-          parameters.Add("alphascalingC2", 0.05862105564887, 0.03);
-          parameters.Add("e_c", 1.5884630748, 0.5);
+		  
+		  parameters.Add("qs0sqr", 0.1533036828274, 0.1);
+		parameters.Add("fitsigma0", 30.00000000000, 2 ); // 1mb = 2.568 GeV² // (2.568)*16.36
+          parameters.Add("alphascalingC2", 0.315       , 0.10);
+          parameters.Add("e_c", 1.6884630748, 0.5);
           parameters.Add("anomalous_dimension", 1.0 );
 		  parameters.Add("initialconditionX0", 0.01 );
 
@@ -130,13 +132,23 @@ int main()
 
           
           // MVe
-		  /*
-          parameters.Add("qs0sqr", 0.0564335 , 0.04 );
-          parameters.Add("e_c", 18.9692 , 0.5 );
-          parameters.Add("fitsigma0", 42.0015 , 5.0); // 1mb = 2.568 GeV² // (2.568)*16.36
-          parameters.Add("alphascalingC2", 7.2 , 1.0 );
+/*			  parameters.Add("qs0sqr", 0.1635799830774, 0.1 );
+          parameters.Add("e_c", 1  );
+          parameters.Add("fitsigma0", 45.28377419688, 2);  //1mb = 2.568 GeV² // (2.568)*16.36
+         parameters.Add("alphascalingC2",02.15850740349, 2 );
          
-  parameters.Add("anomalous_dimension", 1.0 );
+ 	parameters.Add("anomalous_dimension", 1.000005541673 , 0.1);
+          parameters.Add("initialconditionX0", 0.01 );
+          
+*/		  
+		  // AAMQS light
+		  /*
+		  parameters.Add("qs0sqr", 0.1604, 0.1 );
+          parameters.Add("e_c", 1.0  );
+          parameters.Add("fitsigma0", 20*2.568/2., 2); // 1mb = 2.568 GeV² // (2.568)*16.36
+         parameters.Add("alphascalingC2",4*4, 2 );
+         
+ 	parameters.Add("anomalous_dimension", 1.2 , 0.1);
           parameters.Add("initialconditionX0", 0.01 );
 */
         //*/

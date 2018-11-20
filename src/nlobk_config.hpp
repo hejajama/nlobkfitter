@@ -100,7 +100,8 @@ namespace config
     {
 		RESUM_RC_BALITSKY,
 		RESUM_RC_PARENT,
-        RESUM_RC_SMALLEST
+        RESUM_RC_SMALLEST,
+		RESUM_RC_GUILLAUME,
 	};
 	
 	extern SINGLELOG_RESUM_RC RESUM_RC;
