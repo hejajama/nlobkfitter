@@ -24,8 +24,8 @@
 // Integration constants
 const double eps = 1e-40;
 using namespace config;
-//using std::isinf;
-//using std::isnan;
+using std::isinf;
+using std::isnan;
 using std::abs;
 
 BKSolver::BKSolver(Dipole* d)
@@ -55,7 +55,7 @@ int BKSolver::Solve(double maxy)
 
     cout <<"#### Solving BK equation up to y=" << maxy <<", mcintpoints " << MCINTPOINTS << endl;
     cout << "# Nc=" << NC << ", Nf=" << NF << " alphas(r=1) = " << Alphas(1) << endl;
-
+    
 
     int vecsize = dipole->RPoints();
     double *ampvec = new double [vecsize];
@@ -71,13 +71,13 @@ int BKSolver::Solve(double maxy)
     // Intialize GSL
     DEHelper help; help.solver=this;
     gsl_odeiv_system sys = {Evolve, NULL, vecsize, &help};
-
-    const gsl_odeiv_step_type * T = gsl_odeiv_step_rk2; // rkf45 is more accurate
+        
+    const gsl_odeiv_step_type * T = gsl_odeiv_step_rk2; // rkf45 is more accurate 
     gsl_odeiv_step * s    = gsl_odeiv_step_alloc (T, vecsize);
     gsl_odeiv_control * c = gsl_odeiv_control_y_new (0.00001, INTACCURACY);    //abserr relerr   // paper: 0.0001
     gsl_odeiv_evolve * e  = gsl_odeiv_evolve_alloc (vecsize);
     double h = step;  // Initial ODE solver step size
-
+    
     do
     {
         if (!EULER_METHOD)
@@ -93,7 +93,7 @@ int BKSolver::Solve(double maxy)
                     << " y=" << y << ", h=" << h << endl;
                 }
                 //if (std::abs(y - (int)(y+0.5))<0.01)
-                    //cout << "# Evolved up to " << y << "/" << nexty << ", h=" << h << endl;
+                   // cout << "# Evolved up to " << y << "/" << nexty << ", h=" << h << endl;
             }
 
             // Check ampvec
@@ -110,7 +110,7 @@ int BKSolver::Solve(double maxy)
         {
             // Own implementation of the euler method
             double *dydt = new double[vecsize];
-
+            
             Evolve(y, ampvec, dydt, &help);
             for (int i=0; i<vecsize; i++)
             {
@@ -118,17 +118,18 @@ int BKSolver::Solve(double maxy)
             }
             y = y + step;
             delete[] dydt;
+			//cout << "# Evolved at y=" << y << endl;
         }
 
         yind = dipole->AddRapidity(y, ampvec);
 
         if (tmp_output != "")
             dipole->Save(tmp_output);
-
+        
         // Change Dipole interpolator to the new rapidity
         dipole->InitializeInterpolation(yind);
-
-
+     
+        
     } while (y < maxy);
 
     gsl_odeiv_evolve_free (e);
@@ -156,15 +157,13 @@ int Evolve(double y, const double amplitude[], double dydt[], void *params)
         if (n>1.0) n=1.0;
         if (n<0 and config::FORCE_POSITIVE_N) n=0;
         nvals.push_back(n);
-
+        
         double s = 1.0-amplitude[i];
         if (s<0) s=0;
         if (s>1 and config::FORCE_POSITIVE_N) s=1.0;
         yvals_s.push_back(s);
     }
-
-
-    // mitä jos setmax ja freezaa evoluutio isoilla dipoleilla?
+   // mitä jos setmax ja freezaa evoluutio isoilla dipoleilla?
 
 	#pragma omp parallel for schedule(dynamic)
     for (unsigned int i=0; i< dipole->RPoints(); i+=1)
@@ -177,9 +176,9 @@ int Evolve(double y, const double amplitude[], double dydt[], void *params)
         interp.SetUnderflow(0);
         interp.SetOverflow(1.0);
         //interp.SetMaxX(maxr_interp);
-
-
-
+        
+        
+        
         //if (dipole->RVal(i) < 0.001)
         //    continue;
         if (amplitude[i] > 0.99999)
@@ -212,7 +211,7 @@ int Evolve(double y, const double amplitude[], double dydt[], void *params)
 			cerr << "Result " << dydt[i] << " at r " << dipole->RVal(i) << endl;
 			dydt[i]=0;
 		}
-
+        
     }
     if (config::DNDY)
         exit(1);
@@ -226,7 +225,7 @@ int Evolve(double y, const double amplitude[], double dydt[], void *params)
  * LO PART
  * *****************
  */
-
+ 
 /*
  * Rapidity derivatives
  * compute \partial_y N(r)
@@ -255,18 +254,17 @@ double Inthelperf_lo_theta(double theta, void* p);
 // Last argument is optional, and used only with kinematical constraint
 double BKSolver::RapidityDerivative_lo(double r, Interpolator* dipole_interp, double rapidity)
 {
-	if (r>10) return 0;
     gsl_function fun;
     Inthelper_nlobk helper;
     helper.solver=this;
     helper.r=r;
     helper.dipole_interp = dipole_interp;
     helper.rapidity = rapidity;
-
+    
     fun.params = &helper;
     fun.function = Inthelperf_lo_z;
 
-    gsl_integration_workspace *workspace
+    gsl_integration_workspace *workspace 
      = gsl_integration_workspace_alloc(RINTPOINTS);
 
     double minlnr = std::log( 0.5*dipole->MinR() );
@@ -285,7 +283,7 @@ double BKSolver::RapidityDerivative_lo(double r, Interpolator* dipole_interp, do
             << std::abs(abserr/result) << endl;
     }
 
-
+    
     return result;
 }
 
@@ -297,8 +295,8 @@ double Inthelperf_lo_z(double z, void* p)
     gsl_function fun;
     fun.function=Inthelperf_lo_theta;
     fun.params = helper;
-
-    gsl_integration_workspace *workspace
+    
+    gsl_integration_workspace *workspace 
      = gsl_integration_workspace_alloc(THETAINTPOINTS);
 
     int status; double result, abserr;
@@ -349,7 +347,7 @@ double Inthelperf_lo_theta(double theta, void* p)
 
     if (!KINEMATICAL_CONSTRAINT)
         return helper->solver->Kernel_lo(r, z, theta) * ( N_X + N_Y - N_r - N_X*N_Y );
-
+    
     else
     {
         if (!config::EULER_METHOD)
@@ -358,18 +356,18 @@ double Inthelperf_lo_theta(double theta, void* p)
             exit(1);
         }
         // Implement kinematical constraint from 1708.06557 Eq. 165
-        double delta012 = std::max(0.0, std::log( std::min(X*X, Y*Y) / r*r ) ); // (166)
+        double delta012 = std::max(0.0, std::log( std::min(X*X, Y*Y) / (r*r) ) ); // (166)
         double shifted_rapidity = helper->rapidity - delta012;
         if (shifted_rapidity < 0)
             return 0;   // Step function in (165)
-
+        
         // Dipoles at shifter rapidity
         double s02 = 1.0 - helper->solver->GetDipole()->InterpolateN(X, shifted_rapidity);
         double s12 = 1.0 - helper->solver->GetDipole()->InterpolateN(Y, shifted_rapidity);
         double s01 = 1.0 - N_r;
-
+        
         return helper->solver->Kernel_lo(r, z, theta) * ( -s02*s12 + s01);
-
+        
     }
 }
 
@@ -386,13 +384,13 @@ double Inthelperf_lo_theta(double theta, void* p)
 
 double BKSolver::Kernel_lo(double r, double z, double theta)
 {
-
+    
     // Y = y-z = z
     double Y=z;
     // X = x-z = r - z
     double X = std::sqrt( r*r + z*z - 2.0*r*z*std::cos(theta) );
-
-
+    
+    
     double result=0;
 
     // Handle divergences
@@ -405,7 +403,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
         double lo=1.0;
         if (config::ONLY_NLO)
             lo=0;
-        result = FIXED_AS / (2.0*M_PI*M_PI) * r*r / (X*X * Y*Y + 1e-40);
+        result = FIXED_AS / (2.0*M_PI*M_PI) * r*r / (X*X * Y*Y);
         if (LO_BK)
             return result;
         else
@@ -428,10 +426,10 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
     {
         double alphas_y = Alphas(Y);
         double alphas_x = Alphas(X);
-        result =
+        result = 
          NC/(2.0*SQR(M_PI))*Alphas(r)
             * (
-            SQR(r) / ( SQR(X) * SQR(Y) + 1e-40 )
+            SQR(r) / ( SQR(X) * SQR(Y)  )
             + 1.0/SQR(Y)*(alphas_y/alphas_x - 1.0)
             + 1.0/SQR(X)*(alphas_x/alphas_y - 1.0)
             );
@@ -439,12 +437,12 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
     }
     else if (RC_LO == SMALLEST_LO)
     {
-        result = NC*Alphas(min) / (2.0*SQR(M_PI))*SQR(r/(X*Y + 1e-40));
+        result = NC*Alphas(min) / (2.0*SQR(M_PI))*SQR(r/(X*Y));
         alphas_scale = min;
     }
     else if (RC_LO == PARENT_LO)
     {
-        result = NC*Alphas(r) / (2.0*SQR(M_PI)) * SQR(r/(X*Y + 1e-40));
+        result = NC*Alphas(r) / (2.0*SQR(M_PI)) * SQR(r/(X*Y));
         alphas_scale = r;
     }
 	else if (RC_LO == FRAC_LO)
@@ -454,16 +452,16 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
 		double asbar_x = Alphas(X)*NC/M_PI;
 		double asbar_y = Alphas(Y)*NC/M_PI;
 		result = 1.0/(2.0*M_PI) * std::pow(
-			1.0/asbar_r + (SQR(X)-SQR(Y))/SQR(r) * (asbar_x - asbar_y)/(asbar_x * asbar_y)
+			1.0/asbar_r + (SQR(X)-SQR(Y))/SQR(r) * (asbar_x - asbar_y)/(asbar_x * asbar_y) 		
 		, -1.0);
-		result = result * SQR(r / (X*Y+1e-40));
+		result = result * SQR(r / (X*Y));
 		alphas_scale=r;	// this only affects K1_fin
 	}
 	else if (RC_LO == GUILLAUME_LO)
 	{
 		// 1708.06557 Eq. 169
 		double r_eff_sqr = r*r * std::pow( Y*Y / (X*X), (X*X-Y*Y)/(r*r) );
-		result = NC*Alphas(std::sqrt(r_eff_sqr)) / (2.0*SQR(M_PI)) * SQR(r/(X*Y + 1e-40));
+		result = NC*Alphas(std::sqrt(r_eff_sqr)) / (2.0*SQR(M_PI)) * SQR(r/(X*Y + 1e-50));
 		alphas_scale = std::sqrt(r_eff_sqr);
 
 	}
@@ -472,7 +470,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
         cerr << "Unknown LO kernel RC! " << LINEINFO << endl;
         return -1;
     }
-
+   
     if (isnan(result) or isinf(result))
 		{
 				//cerr << "Result " << result << " at r=" << r << ", z=" << z << endl;
@@ -489,6 +487,8 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
         resummation_alphas = Alphas(r);
     else if (config::RESUM_RC == config::RESUM_RC_SMALLEST)
         resummation_alphas = Alphas(min);
+	else if (config::RESUM_RC == config::RESUM_RC_GUILLAUME)
+			resummation_alphas = Alphas(alphas_scale);
     else if (config::RESUM_RC == config::RESUM_RC_BALITSKY)
         cerr << "Check balitsky prescription resummation code! " << LINEINFO << endl;
     else
@@ -498,7 +498,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
     }
 
     if (config::ONLY_DOUBLELOG)
-    {
+    {  
         return resummation_alphas*NC/(2.0*M_PI*M_PI) * r*r / (X*X * Y*Y )
                     * resummation_alphas * NC / (4.0*M_PI)
                     * (- 2.0 * 2.0*std::log( X/r ) * 2.0*std::log( Y/r ) ) ;
@@ -515,10 +515,10 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
     double resum=1.0;
     if (config::RESUM_DLOG and r > 1.01*config::MINR)
     {
-        //double x =  4.0*std::log(X/r) * std::log(Y/r) ; // rho^2 in Ref.
-		double x = 2.0*std::log(X/Y); //https://indico.ectstar.eu/event/12/contributions/350/attachments/189/233/2018_ECT_Triantafyllopoulos.pdf
+        double x =  4.0*std::log(X/r) * std::log(Y/r) ; // rho^2 in Ref.
+		// double x = 2.0*std::log(X/Y); //https://indico.ectstar.eu/event/12/contributions/350/attachments/189/233/2018_ECT_Triantafyllopoulos.pdf
         if (x >=0)
-        {
+        {            
             // argument to the Bessel function is 2sqrt(bar as * x)
             double as_x = std::sqrt( resummation_alphas*NC/M_PI * x );
             resum = gsl_sf_bessel_J1(2.0*as_x) / as_x;
@@ -529,7 +529,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
             double as_x = std::sqrt( resummation_alphas*NC/M_PI * x);
             gsl_sf_result res;
             int status = gsl_sf_bessel_I1_e(2.0*as_x, &res);
-
+            
             if (status != GSL_SUCCESS)
             {
 				if (isnan(X) or isnan(Y))
@@ -537,7 +537,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
                 cerr << "GSL error " << status <<", result " << res.val << ", as_x=" << as_x << ", x=" << x << ", r=" << r<<", X=" << X << ", Y=" << Y << ": " << " z: " << z  << LINEINFO << endl;
                 return 0;
             }
-            resum = res.val / as_x;
+            resum = res.val / as_x; 
         }
 
         if (isnan(resum))
@@ -546,19 +546,19 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
         }
     }
 
-
+    
 
     // Resum single logs
     double singlelog_resum = 1.0;
     double singlelog_resum_expansion = 0;
     double minxy = std::min(X,Y);
     if (std::abs(minxy) < eps) minxy = eps;
-
+    
     if (config::RESUM_SINGLE_LOG)
     {
-
-
-
+        
+        
+        
         double alphabar = resummation_alphas*NC/M_PI;
         const double A1 = 11.0/12.0;
         //singlelog_resum = std::pow( config::KSUB * SQR(r/minxy), sign*A1*alphabar );
@@ -584,18 +584,20 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
         return result * (resum*singlelog_resum - 1.0);
         //return (resum-1.0)*result;
 
-
+    
 
 
     if (EQUATION==QCD)
     {
-
-        if (NO_K2 )
+		if (RESUM_DLOG == false and RESUM_SINGLE_LOG==false)
+				return result;
+        
+        if (NO_K2 and (RESUM_DLOG or RESUM_SINGLE_LOG))
         {
             // Resummed K_1, no subtraction or other as^2 terms in K_1
             return resum*singlelog_resum*result;
         }
-
+        
         double lo_kernel = Alphas(alphas_scale)*NC/(2.0*M_PI*M_PI) * SQR( r / (X*Y)); // lo kernel with parent/smallest dipole
         double subtract = 0;
         if (config::RESUM_RC != RESUM_RC_BALITSKY)
@@ -603,7 +605,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
         else    // Balitsky
             subtract = result * singlelog_resum_expansion;
 
-        double k1fin = lo_kernel * Alphas(alphas_scale) * NC / (4.0*M_PI)
+        double k1fin = lo_kernel * Alphas(alphas_scale) * NC / (4.0*M_PI) 
                         * (
                         67.0/9.0 - SQR(M_PI)/3.0 - 10.0/9.0 * NF/NC
                         - dlog*2.0 * 2.0*std::log( X/r ) * 2.0*std::log( Y/r )
@@ -616,7 +618,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
                 - subtract   // remove as^2 part of single log resummation
                 + k1fin;
 
-
+        
         return result;
     }
     if (EQUATION==CONFORMAL_QCD)
@@ -626,15 +628,15 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
         return result;
     }
 
-
-
+    
+    
 
     if (isnan(result) or isinf(result))
     {
         cerr << "infnan " << LINEINFO << ", r=" << r << ", X=" << X << ", Y=" << Y << endl;
         exit(1);
     }
-
+    
 
     return result;
 }
@@ -657,15 +659,15 @@ double Inthelperf_nlo_mc(double* vec, size_t dim, void* p);
 
 double BKSolver::RapidityDerivative_nlo(double r, Interpolator* dipole_interp, Interpolator* dipole_interp_s)
 {
-
+    
     Inthelper_nlobk helper;
     helper.solver=this;
     helper.r=r;
     helper.dipole_interp;
     helper.dipole_interp = dipole_interp;
     helper.dipole_interp_s = dipole_interp_s;
-
-
+    
+    
     double minlnr = std::log( 0.5*dipole->MinR() );
     double maxlnr = std::log( 2.0*dipole->MaxR() );
 
@@ -676,8 +678,8 @@ double BKSolver::RapidityDerivative_nlo(double r, Interpolator* dipole_interp, I
         gsl_function fun;
         fun.params = &helper;
         fun.function = Inthelperf_nlo_z;
-
-        gsl_integration_workspace *workspace
+        
+        gsl_integration_workspace *workspace 
         = gsl_integration_workspace_alloc(RINTPOINTS);
         status=gsl_integration_qag(&fun, minlnr,
                 maxlnr, 0, INTACCURACY, RINTPOINTS,
@@ -704,7 +706,7 @@ double BKSolver::RapidityDerivative_nlo(double r, Interpolator* dipole_interp, I
         gsl_rng *rnd;
 
         size_t calls = MCINTPOINTS;
-
+        
 
         gsl_rng_env_setup ();
 
@@ -716,8 +718,8 @@ double BKSolver::RapidityDerivative_nlo(double r, Interpolator* dipole_interp, I
         int seconds=difftime(timer, 0);
         gsl_rng_set(rnd, seconds);
 
-
-
+        
+        
         const int maxiter_vegas=3;
 
         if (INTMETHOD_NLO == VEGAS)
@@ -725,7 +727,7 @@ double BKSolver::RapidityDerivative_nlo(double r, Interpolator* dipole_interp, I
             gsl_monte_vegas_state *s = gsl_monte_vegas_alloc (dim);
             gsl_monte_vegas_integrate (&fun, min, max, dim, calls/5, rnd, s,
                                        &result, &abserr);
-            //cout <<"#Warmup result " << result << " error " << abserr << endl;
+            //cout <<"#Warmup result " << result << " error " << abserr << endl; 
             double prevres = result;
             int iters=0;
             do
@@ -748,16 +750,16 @@ double BKSolver::RapidityDerivative_nlo(double r, Interpolator* dipole_interp, I
             //else
             //    cout << "Integration finished, r=" << r<< ", result " << result << " relerr " << abserr/result << " chi^2 "  << gsl_monte_vegas_chisq (s) << " (intpoints " << calls << ")" << endl;
             gsl_monte_vegas_free(s);
-
+        
         }
         else if (INTMETHOD_NLO == MISER)
-        {
-
+        {    
+        
             // plain or miser
             //gsl_monte_plain_state *s = gsl_monte_plain_alloc (4);
             gsl_monte_miser_state *s = gsl_monte_miser_alloc (4);
             int iter=0;
-
+            
             do
             {
                 iter++;
@@ -776,18 +778,18 @@ double BKSolver::RapidityDerivative_nlo(double r, Interpolator* dipole_interp, I
             //gsl_monte_plain_free (s);
             gsl_monte_miser_free(s);
             //cout <<"#Integration finished at r=" << r <<", result " << result << " relerr " << abserr/result << " intpoints " << calls << endl;
-
+            
             gsl_rng_free(rnd);
-        }
-
+        }        
+           
     }
-
-
+    
+    
 
     // used for arxiv version evolution for s
 	//result *= -SQR(FIXED_AS*NC) / ( 16.0*M_PI*M_PI*M_PI*M_PI);   // alpha_s^2 Nc^2/(16pi^4), alphas*nc/pi=ALPHABAR_s
         // minus sign as we compute here evolution for S=1-N following ref 0710.4330
-
+    
     return result;
 }
 
@@ -798,8 +800,8 @@ double Inthelperf_nlo_z(double z, void* p)
     gsl_function fun;
     fun.function=Inthelperf_nlo_theta_z;
     fun.params = helper;
-
-    gsl_integration_workspace *workspace
+    
+    gsl_integration_workspace *workspace 
      = gsl_integration_workspace_alloc(THETAINTPOINTS);
 
     int status; double result, abserr;
@@ -824,7 +826,7 @@ double Inthelperf_nlo_theta_z(double theta, void* p)
     Inthelper_nlobk* helper = reinterpret_cast<Inthelper_nlobk*>(p);
     helper->theta_z=theta;
 
-    gsl_integration_workspace *workspace
+    gsl_integration_workspace *workspace 
      = gsl_integration_workspace_alloc(RINTPOINTS);
 
     gsl_function fun;
@@ -849,7 +851,7 @@ double Inthelperf_nlo_theta_z(double theta, void* p)
 
     return result;
 
-
+     
 }
 
 double Inthelperf_nlo_z2(double z2, void* p)
@@ -859,8 +861,8 @@ double Inthelperf_nlo_z2(double z2, void* p)
     gsl_function fun;
     fun.function=Inthelperf_nlo_theta_z2;
     fun.params = helper;
-
-    gsl_integration_workspace *workspace
+    
+    gsl_integration_workspace *workspace 
      = gsl_integration_workspace_alloc(THETAINTPOINTS);
 
     int status; double result, abserr;
@@ -888,10 +890,10 @@ double Inthelperf_nlo_theta_z2(double theta_z2, void* p)
 }
 
 double Inthelperf_nlo(double r, double z, double theta_z, double z2, double theta_z2, BKSolver* solver, Interpolator* dipole_interp, Interpolator* dipole_interp_s)
-{
+{   
     // we choose coordinates s.t. y=0 and x lies on positive x axis
     // X = x-z = -z + r
-    double X = std::sqrt(r*r + z*z - 2.0*r*z*std::cos(theta_z));
+    double X = std::sqrt(r*r + z*z - 2.0*r*z*std::cos(theta_z));  
     // Y = y-z = z
     double Y = z;
     // X' = x-z' = r - z'
@@ -901,7 +903,7 @@ double Inthelperf_nlo(double r, double z, double theta_z, double z2, double thet
     // z - z'
     double z_m_z2 = std::sqrt( z*z + z2*z2 - 2.0*z*z2*std::cos(theta_z - theta_z2) );
 
-
+    
     double result=0;
 
     if (EQUATION == QCD)
@@ -909,7 +911,7 @@ double Inthelperf_nlo(double r, double z, double theta_z, double z2, double thet
         double k = solver->Kernel_nlo(r,X,Y,X2,Y2,z_m_z2);
         double kswap = solver->Kernel_nlo(r,X2,Y2,X,Y,z_m_z2);
 
-
+        
 
 
         /*
@@ -921,7 +923,7 @@ double Inthelperf_nlo(double r, double z, double theta_z, double z2, double thet
                             + dipole_interp->Evaluate(X)*dipole_interp->Evaluate(Y)
                             + dipole_interp->Evaluate(X)*dipole_interp->Evaluate(z_m_z2)*dipole_interp->Evaluate(Y2)
                             + dipole_interp->Evaluate(Y2) - dipole_interp->Evaluate(Y); // This is not part of eq. (136) in PRD
-
+                            
         double dipole_swap = dipole_interp->Evaluate(z_m_z2)
                             - dipole_interp->Evaluate(X2)*dipole_interp->Evaluate(z_m_z2)
                             - dipole_interp->Evaluate(z_m_z2)*dipole_interp->Evaluate(Y)
@@ -936,7 +938,7 @@ double Inthelperf_nlo(double r, double z, double theta_z, double z2, double thet
                                 - dipole_interp_s->Evaluate(X)*dipole_interp_s->Evaluate(Y)  );
         double dipole_swap = -( dipole_interp_s->Evaluate(X2)*dipole_interp_s->Evaluate(z_m_z2)*dipole_interp_s->Evaluate(Y)
                                 - dipole_interp_s->Evaluate(X2)*dipole_interp_s->Evaluate(Y2)  );
-
+        
         //result = k*dipole;
         result = (k*dipole + kswap*dipole_swap)/2.0;
 
@@ -963,14 +965,14 @@ double Inthelperf_nlo(double r, double z, double theta_z, double z2, double thet
     // Evolution for conformal dipole
     else if (EQUATION==CONFORMAL_QCD)
     {
-        double k1 = solver->Kernel_nlo_conformal_1(r,X,Y,X2,Y2,z_m_z2);
-
+        double k1 = solver->Kernel_nlo_conformal_1(r,X,Y,X2,Y2,z_m_z2);        
+    
         double dipole1 = dipole_interp_s->Evaluate(X) * dipole_interp_s->Evaluate(z_m_z2) * dipole_interp_s->Evaluate(Y2)
             - dipole_interp_s->Evaluate(X) * dipole_interp_s->Evaluate(Y);
-
-
-        double k1_swap = solver->Kernel_nlo_conformal_1(r,X2,Y2,X,Y,z_m_z2);
-
+        
+        
+        double k1_swap = solver->Kernel_nlo_conformal_1(r,X2,Y2,X,Y,z_m_z2);        
+    
         double dipole1_swap = dipole_interp_s->Evaluate(X2) * dipole_interp_s->Evaluate(z_m_z2) * dipole_interp_s->Evaluate(Y)
             - dipole_interp_s->Evaluate(X2) * dipole_interp_s->Evaluate(Y2);
 
@@ -984,7 +986,7 @@ double Inthelperf_nlo(double r, double z, double theta_z, double z2, double thet
         //    - dipole_interp_s->Evaluate(X) * dipole_interp_s->Evaluate(z_m_z2) * dipole_interp_s->Evaluate(Y2);
 
         //result = (k1*dipole1 + k2*dipole2 + k1_swap*dipole1_swap + k2_swap*dipole2_swap)/2.0;
-
+        
 
         /// Fermion part
         if (NF > 0 and !ONLY_LNR)       // Do not include fermions if we want only ln r contribution!
@@ -1018,7 +1020,7 @@ double Inthelperf_nlo(double r, double z, double theta_z, double z2, double thet
     {
         cerr << "Unknown equation to solve: " << EQUATION << endl;
     }
-
+    
 
 
     /////// Coefficients
@@ -1027,7 +1029,7 @@ double Inthelperf_nlo(double r, double z, double theta_z, double z2, double thet
     // other relevant factors
     if (EQUATION == CONFORMAL_N4)
         result *= SQR(FIXED_AS*NC)/(8.0*std::pow(M_PI, 4));
-
+        
     else if (EQUATION == QCD or EQUATION == CONFORMAL_QCD)
     {
         if (RC_NLO == FIXED_NLO)
@@ -1043,9 +1045,9 @@ double Inthelperf_nlo(double r, double z, double theta_z, double z2, double thet
             if (Y2 < min_size) min_size = Y2;
             if (z_m_z2 < min_size) min_size = z_m_z2;
 
-            result *= SQR( solver->Alphas(min_size) * NC) / (8.0 * std::pow(M_PI, 4) );
+            result *= SQR( solver->Alphas(min_size) * NC) / (8.0 * std::pow(M_PI, 4) );   
         }
-        else
+        else 
         {
             cerr << "Unknown NLO kernel alphas! " << LINEINFO << endl;
             return -1;
@@ -1055,18 +1057,18 @@ double Inthelperf_nlo(double r, double z, double theta_z, double z2, double thet
     }
     else
         cerr << "WTF! " << LINEINFO << endl;
+    
+    
+    
+    
 
 
-
-
-
-
-
+  
 
 
 	if (isnan(result) or isinf(result))
 	{
-        return 0;
+        return 0;    
     }
 
     return result;
@@ -1092,8 +1094,8 @@ double Inthelperf_nlo_mc(double* vec, size_t dim, void* p)
 
     //cout << std::exp(vec[0]) << " " << std::exp(vec[1]) << " " << integrand << endl;
 
-    return integrand;
-
+    return integrand; 
+    
 }
 
 /***************************************************
@@ -1121,7 +1123,7 @@ double BKSolver::Kernel_nlo(double r, double X, double Y, double X2, double Y2, 
         //cerr << "Kernel " << kernel <<", r=" << r <<", X=" << X << ", Y=" << Y <<", X2=" << X2 <<", Y2=" << Y2 <<", z-z2=" << z_m_z2 << endl;
         return 0;
     }
-
+    
     return kernel;
 }
 
@@ -1139,7 +1141,7 @@ double BKSolver::Kernel_nlo_fermion(double r, double X, double Y, double X2, dou
 
     if (isinf(kernel) or isnan(kernel))
         return 0;
-
+        
 
     return kernel;
 }
@@ -1152,7 +1154,7 @@ double BKSolver::Kernel_nlo_conformal_1(double r, double X, double Y, double X2,
 {
     double result = 0;
 
-
+    
     // TEST
     // ok, but numerically more unstable
     /*result = Kernel_nlo(r,X,Y,X2,Y2,z_m_z2);
@@ -1160,7 +1162,7 @@ double BKSolver::Kernel_nlo_conformal_1(double r, double X, double Y, double X2,
     return result;
     */
 
-
+    
 
     // Own result
 
@@ -1170,29 +1172,29 @@ double BKSolver::Kernel_nlo_conformal_1(double r, double X, double Y, double X2,
     double lnr_multiplier = 1.0;
     if (config::NO_LNR)
         lnr_multiplier = 0;
-
+    
     result = lnr_multiplier*2.0 * 2.0*std::log(r*z_m_z2/(X2*Y)) + ( SQR(X*Y2) - SQR(X2*Y) + SQR(r*z_m_z2) ) / (SQR(X*Y2) - SQR(X2*Y) ) * 2.0*std::log(X*Y2/(X2*Y) );
     result *= SQR(r/(X*Y2*z_m_z2));
 
     result += -2.0/std::pow(z_m_z2, 4.0) + ( SQR(X*Y2) + SQR(X2*Y) - 4.0*SQR(r*z_m_z2) )/( std::pow(z_m_z2,4.0)*(SQR(X*Y2) - SQR(X2*Y) ) ) * 2.0*std::log(X*Y2/(X2*Y));
 
     return result;
-
-
+    
+    
 
     // Original conformal bk paper:
     /*
-
+	
     result = ( SQR(r/z_m_z2) * (1.0/SQR(X*Y2) - 1.0/SQR(X2*Y) )
                 + std::pow(r,4) / ( SQR(X*Y2) - SQR(X2*Y) ) * ( 1.0/SQR(X*Y2) + 1.0/SQR(X2*Y) )
                     + 2.0*(SQR(X*Y2) + SQR(X2*Y) - 4.0*SQR(r*z_m_z2) )/( std::pow(z_m_z2,4) * (SQR(X*Y2) - SQR(X2*Y) ) )    )
                 * 2.0*std::log(X*Y2/(X2*Y)) ;
-
-
+                
+    
     result += -4.0/std::pow(z_m_z2,4) + 2.0*SQR(r/(z_m_z2*X*Y2)) * 2.0*std::log(r*z_m_z2/(X2*Y))
                                       + 2.0*SQR(r/(z_m_z2*X2*Y)) * 2.0*std::log(r*z_m_z2/(X*Y2));
-
-
+    
+    
     if (isinf(result) or isnan(result))
         return 0;
 
@@ -1211,7 +1213,7 @@ double BKSolver::Kernel_nlo_conformal_2(double r, double X, double Y, double X2,
     return 0;
 
     /*
-
+    
     double result = 0;
     result = (SQR(r/(z_m_z2*X*Y2)) + std::pow(r,4)/(SQR(X*Y2)*(SQR(X*Y2) - SQR(X2*Y) ) )  ) * 2.0*std::log(X*Y2/(X2*Y));
     result += 2.0*SQR(r/(z_m_z2*X*Y2)) * 2.0*std::log( r*z_m_z2 / (X2*Y) );
@@ -1221,7 +1223,7 @@ double BKSolver::Kernel_nlo_conformal_2(double r, double X, double Y, double X2,
                         // divided by 2 here
     return result;
     */
-
+    
 }
 
 double BKSolver::Kernel_nlo_conformal_fermion(double r, double X, double Y, double X2, double Y2, double z_m_z2)
@@ -1269,15 +1271,15 @@ double BKSolver::Alphas(double r)
 {
     if (RC_LO == FIXED_LO or RC_NLO == FIXED_NLO)
         return config::FIXED_AS;
-
-
+    
+	
 	double maxalphas=1.0;
 	if (config::NF > 3)
 	{
 	/* Varying n_f scheme (heavy quarks are included), compute effective Lambda_QCD
      * (such that alphas(r) is continuous), see 1012.4408 sec. 2.2.
      */
-
+     
         double dipolescale = 4.0*alphas_scaling/ (r*r);
 		double heavyqmasses[2] = {1.3,4.5};
 		double nf;
@@ -1314,14 +1316,14 @@ double BKSolver::Alphas(double r)
 		if (scalefactor/(r*r*lqcd*lqcd) < 1.0) return maxalphas;
 		 double alpha = 4.0*M_PI/(  b0 * std::log(scalefactor/ (r*r*lqcd*lqcd) ) );
 		 if (alpha > maxalphas) return maxalphas; //NOTE HERE b0 definition have factor 3
-    	return alpha;
+    	return alpha; 
 		/*
 		double mu0=2.5;
 		double c=0.2;
 		return 4.0*M_PI / ( b0 * std::log( std::pow( std::pow(mu0, 2.0/c) + std::pow( dipolescale/(lqcd*lqcd), 1.0/c), c) ) );
 		*/
 	}
-
+    
 	double Csqr=alphas_scaling;
 	double scalefactor = 4.0*Csqr;
 	double rsqr = r*r;
@@ -1332,9 +1334,9 @@ double BKSolver::Alphas(double r)
     double b0 = (11.0*config::NC - 2.0*config::NF)/3.0;
 
     return 4.0*M_PI / ( b0 * std::log(
-		std::pow( std::pow(alphas_mu0, 2.0/alphas_freeze_c) + std::pow(4.0*Csqr/(rsqr*lambdaqcd*lambdaqcd), 1.0/alphas_freeze_c), alphas_freeze_c)
+		std::pow( std::pow(alphas_mu0, 2.0/alphas_freeze_c) + std::pow(4.0*Csqr/(rsqr*lambdaqcd*lambdaqcd), 1.0/alphas_freeze_c), alphas_freeze_c)	
 		) );
-
+    
     /*
     double scalefactor = 4.0 * alphas_scaling;
     double rsqr = r*r;
