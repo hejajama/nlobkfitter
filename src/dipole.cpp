@@ -130,6 +130,24 @@ double Dipole::InterpolateN(double r, double y)
             exit(1);
         }
     }
+   
+   // Bilinear interpolation
+	 int rind = FindIndex(r, rvals);
+	    // DEBUG no interpolation
+	   int rind2 = rind+1;
+	   int yind2 = yind+1;
+	   if (rind2 >= rvals.size()) return 1.0;
+	   double r1_ = rvals[rind];
+	   double r2_ = rvals[rind2];
+
+	   if (yind2 >= yvals.size()) return amplitude[yind][rind] + (r - r1_) / (r2_ - r1_) * (amplitude[yind][rind2] - amplitude[yind][rind]);
+
+	   double y1_ = yvals[yind];
+	 double y2_ = yvals[yind2];
+	  double bilin =  (1.0/( (r2_ - r1_)*(y2_ - y1_) ))*( (amplitude[yind][rind])*(r2_ - r)*(y2_ - y) + (amplitude[yind][rind2])*(r - r1_)*(y2_ - y) + (amplitude[yind2][rind])*(r2_ - r)*(y - y1_) + (amplitude[yind2][rind2])*(r - r1_)*(y - y1_) );
+
+             return bilin; 
+   
     
     // Now we know that yind and yind+1 are acceptable indeces, so we can interpolate in rapidity linearly
     // Construct interpolators in r at both rapidities
@@ -138,7 +156,7 @@ double Dipole::InterpolateN(double r, double y)
     std::vector<double> nvals_lower;
     std::vector<double> nvals_upper;
     
-    int rind = FindIndex(r, rvals);
+    rind = FindIndex(r, rvals);
     int min_index = std::max(rind-3, 0);
     if (min_index + 6 > rvals.size())
     {
