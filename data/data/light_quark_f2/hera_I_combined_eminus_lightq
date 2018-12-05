@@ -1,0 +1,53 @@
+# Light quark reduced cross section
+# Generated from HERA-I data, subtracting charm and bottom contributions
+# Computed using IPsatfitter code, git commit 7a5ee0590480e5dfc5acc52a84446f6d0e4a25fd
+# Used parametrization in IPsat: first line in Table 1 at https://arxiv.org/pdf/1804.05311.pdf
+# HERA data JHEP 1001 (2010) 109 [arXiv:0911.0884 [hep-ex]]
+# Uncertainty in sigma_r(light) is assumed to be the same as in sigma_r(total)
+#
+# This file is e^- p part of the reduced cross section data
+#
+# IPsat parameters
+#
+# ext. ||   Name    ||   type  ||     Value     ||  Error +/- 
+#
+#   0   ||       B_G ||  const  ||                   4 ||
+#   1   ||light_mass ||  const  ||                0.03 ||
+#   2   ||charm_mass ||  const  ||       1.35277437092 ||
+#   3   ||bottom_mass ||  const  ||                4.75 ||
+#   4   ||         C ||  const  ||      2.289363553168 ||
+#   5   ||      mu_0 ||  const  ||       1.04880884817 ||
+#   6   ||  lambda_g ||  const  ||    0.08289088639946 ||
+#   7   ||       A_g ||  const  ||      2.195310911936 ||
+#   8   ||  lambda_s ||  const  ||                   0 ||
+#   9   ||       A_s ||  const  ||                   0 ||
+#  10   ||         A ||  const  ||                   1 ||
+#
+#
+#
+# Loaded 24 datapoints from ./data/hera_combined_sigmar_eminusp.txt with weight 1 in Q2 range 0.74 - 1000.1 GeV^2, now we have in total 24 points 
+# Q2 [GeV^2]         x         y   sigma_r    abs.err
+        90     0.0013      0.684   0.948814  0.0963144
+        90      0.002      0.445   0.881512  0.0647355
+       120     0.0016      0.741     0.9191   0.088638
+       120      0.002      0.593   0.914514  0.0659817
+       120     0.0032      0.371   0.847191  0.0559048
+       150      0.002      0.741   0.915434  0.0893101
+       150     0.0032      0.463   0.840298  0.0538188
+       150      0.005      0.296   0.830318  0.0503691
+       150      0.008      0.185    0.69843  0.0736424
+       200     0.0026       0.76   0.783554    0.08302
+       200     0.0032      0.618   0.890687  0.0734521
+       200      0.005      0.395   0.802043  0.0324023
+       200      0.008      0.247   0.672315   0.025944
+       250     0.0033      0.749   0.738653   0.087075
+       250      0.005      0.494   0.776799  0.0409939
+       250      0.008      0.309   0.713949  0.0315098
+       300     0.0039       0.76   0.697108  0.0855729
+       300      0.005      0.593     0.8047  0.0814018
+       300      0.008      0.371   0.711712  0.0364364
+       400     0.0053      0.746   0.758241  0.0922404
+       400      0.008      0.494   0.741601  0.0413028
+       500     0.0066      0.749   0.769636  0.0960972
+       500      0.008      0.618   0.734679  0.0961766
+       650     0.0085      0.756   0.669555  0.0548208
