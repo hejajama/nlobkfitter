@@ -115,7 +115,7 @@ int main()
 		  // MV for resummed
 		  
 		  parameters.Add("qs0sqr", 0.1533036828274, 0.1);
-		parameters.Add("fitsigma0", 30.00000000000, 2 ); // 1mb = 2.568 GeV² // (2.568)*16.36
+          //parameters.Add("fitsigma0", 30.00000000000, 2 ); // 1mb = 2.568 GeV² // (2.568)*16.36
           parameters.Add("alphascalingC2", 0.315       , 0.10);
           parameters.Add("e_c", 1.6884630748, 0.5);
           parameters.Add("anomalous_dimension", 1.0 );

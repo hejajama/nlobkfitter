@@ -14,7 +14,7 @@
 #include <amplitudelib/amplitudelib.hpp>
 //#include "cuba-4.2.h"
 #include "nlodissigmar.hpp"
-#include "cache.hpp"
+#include "helper.hpp"
 
 
 // HOW TO INTRODUCE THESE?  // TODO
@@ -89,7 +89,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     // params to IC
     double qs0sqr       = par[ parameters.Index("qs0sqr")];
     double e_c          = par[ parameters.Index("e_c")];
-    double fitsigma0    = par[ parameters.Index("fitsigma0")];
+    //double fitsigma0    = par[ parameters.Index("fitsigma0")];
     double alphas_scaling       = par[ parameters.Index("alphascalingC2")]; // MATCH THIS IN IMPACTFACTOR ALPHA_S WHEN NLO
     double anomalous_dimension  = par[ parameters.Index("anomalous_dimension")];
     double initialconditionX0  = par[ parameters.Index("initialconditionX0")];
@@ -99,53 +99,39 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
 	bool useCharm = false;
 
 
-	if (qs0sqr < 0.0001 or qs0sqr > 100 or alphas_scaling < 0.01 or alphas_scaling > 99999 or fitsigma0 < 0.1 or fitsigma0 > 999 or e_c < 1 or e_c > 9999)
+	if (qs0sqr < 0.0001 or qs0sqr > 100 or alphas_scaling < 0.01 or alphas_scaling > 99999
+        /*or fitsigma0 < 0.1 or fitsigma0 > 999 */
+        or e_c < 1 or e_c > 9999)
 		return 9999999;
 
     cout << "=== Initializing Chi^2 regression === "<< " parameters (" << PrintVector(par) << ")" << endl;
 
-    /*
-    // ***Solve resummed BK***
-    */
-    //cout << "=== Initialize BK solver ===" << endl;
-
-    //Dipole dipole(&ic);
-    //
+    
     AmplitudeLib *DipoleAmplitude;
     
-    if (IsResultCached(par, parameters))
-    {
-        cout << "I want to use cahced result! " << endl;
-        DipoleAmplitude = new AmplitudeLib("tmp_datafile.dat");
-    }
-    else
-    {
-    
-        MV ic;                                            // Initial condition
-        ic.SetQsqr(qs0sqr);
-        ic.SetAnomalousDimension(anomalous_dimension);
-        ic.SetE(e_c);                                     // e_c of MVe parametrization
+   
+    MV ic;                                            // Initial condition
+    ic.SetQsqr(qs0sqr);
+    ic.SetAnomalousDimension(anomalous_dimension);
+    ic.SetE(e_c);                                     // e_c of MVe parametrization
 
         
-        Dipole dipole(&ic);
-        BKSolver solver(&dipole);
-        double maxy = std::log(initialconditionX0/(1e-5)); // divisor=smallest HERA xbj in Q^2 range (1E-05)? //6.8;
+    Dipole dipole(&ic);
+    BKSolver solver(&dipole);
+    double maxy = std::log(initialconditionX0/(1e-5)); // divisor=smallest HERA xbj in Q^2 range (1E-05)? //6.8;
 
         //cout << "=== Solving BK ===" << endl;
 
-        solver.SetAlphasScaling(alphas_scaling);
-        solver.Solve(maxy);                                // Solve up to maxy
+    solver.SetAlphasScaling(alphas_scaling);
+    solver.Solve(maxy);                                // Solve up to maxy
 
-        dipole.Save("tmp_datafile.dat");
+    dipole.Save("tmp_datafile.dat");
         
         
-        DipoleAmplitude = new AmplitudeLib(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
-        DipoleAmplitude->SetX0(initialconditionX0);         // TODO needs to match QG limit X0
-        DipoleAmplitude->SetOutOfRangeErrors(false);
-    }
+    DipoleAmplitude = new AmplitudeLib(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
+    DipoleAmplitude->SetX0(initialconditionX0);         // TODO needs to match QG limit X0
+    DipoleAmplitude->SetOutOfRangeErrors(false);
     
-    bkcache.params = par;
-
     
     
     AmplitudeLib *DipolePointer = DipoleAmplitude;
@@ -167,6 +153,14 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     int points=0, totalpoints = 0;
     for (unsigned int dataset=0; dataset<datasets.size(); dataset++)
         totalpoints += datasets[dataset]->NumOfPoints();
+    
+    double fitsigma0 = 1;
+    std::vector<double> datavals(totalpoints);
+    std::vector<double> dataerrs(totalpoints);
+    std::vector<double> thdata(totalpoints);  
+    
+    ///TODO: Does not yet fully support weight factors and NLO,
+    // after I have written a separate code that automatically finds optimal sigma02
 
     // These loops are trivially parallerizable
     // We only parallerize the inner loop where we have about
@@ -174,16 +168,28 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     for (unsigned int dataset=0; dataset<datasets.size(); dataset++)
     {
 #ifdef PARALLEL_CHISQR
-//    #pragma omp parallel for schedule(dynamic) reduction(+:chisqr) reduction(+:points)
+        //reduction(+:chisqr)
+    #pragma omp parallel for schedule(dynamic) reduction(+:points)
 #endif
         for (int i=0; i<datasets[dataset]->NumOfPoints(); i++)
         {
+            // Index for this in the final data array
+            int dataind=0;
+            for (int dseti=0; dseti < dataset; dseti++)
+                dataind += datasets[dseti]->NumOfPoints();
+            dataind += i;
+            
+            
+            
             double xbj      = datasets[dataset]->xbj(i);
             double y        = datasets[dataset]->y(i);              // inelasticity
             double Q2       = datasets[dataset]->Qsqr(i);
             double Q        = sqrt(Q2);
             double sigmar   = datasets[dataset]->ReducedCrossSection(i);
             double sigmar_err = datasets[dataset]->ReducedCrossSectionError(i);
+            
+            datavals[dataind] = sigmar;
+            dataerrs[dataind] = sigmar_err;
 
             double theory=0, theory_charm=0;
             if (!computeNLO && !useMasses) // Compute reduced cross section using leading order impact factors
@@ -198,9 +204,13 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
 				if (xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) < 0.01 and useCharm)
 					theory_charm = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) , y, true ); // charm
             }
+            
+            thdata[dataind] = theory;
 
             if (computeNLO) // Full NLO impact factors for reduced cross section
             {
+                cerr << "NLO DOES NOT SUPPORT SIGMA02 MINIMIZER" << endl;
+                exit(1);
                 theory = (fitsigma0)*SigmaComputer.SigmarNLO(Q , xbj , y );
             }
 
@@ -210,11 +220,11 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
                 theory = 99999999;
             }
 
-            chisqr += datasets[dataset]->Weight()*SQR( (theory+theory_charm - sigmar) / sigmar_err );
+            //chisqr += datasets[dataset]->Weight()*SQR( (theory+theory_charm - sigmar) / sigmar_err );
             points = points + datasets[dataset]->Weight();
 
             // Output for plotting
-            if(false){
+           /* if(false){
             cout    << setw(10) << xbj          << " "
                     << setw(10) << Q2           << " "
                     << setw(10) << y            << " "
@@ -223,10 +233,17 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
                     << setw(10) << theory       << " "
 					<< setw(10) << theory_charm << endl;
                   }
+            /// TODO DOes not support new sigma02
+            */
 
         }
+       
     }
-    cout << endl << "# Calculated chi^2/N = " << chisqr/points << " (N=" << points << "), parameters (" << PrintVector(par) << ")" << endl<<endl;
+    // Minimize sigma02
+    std::vector<double> sigma02fit = FindOptimalSigma02(datavals,dataerrs, thdata);
+    chisqr = sigma02fit[1];
+    double sigma02 = sigma02fit[0];
+    cout << endl << "# Calculated chi^2/N = " << chisqr << " (N=" << points << "), parameters (" << PrintVector(par) << ", sigma02=" << sigma02 << ")" << endl<<endl;
     
     delete DipoleAmplitude;
     return chisqr;

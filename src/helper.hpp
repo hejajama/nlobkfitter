@@ -22,4 +22,12 @@ struct BKCache
 extern BKCache bkcache;
 
 bool IsResultCached(std::vector<double> values, ROOT::Minuit2::MnUserParameters parameters);
+
+// Optimize sigma02 (the coefficient which multiplies SigmaComputer.SigmarLOmass
+// Returns optimal sigma02 and total chi^2
+std::vector<double> FindOptimalSigma02(std::vector<double> expdata, std::vector<double> experr,
+                         std::vector<double> thdata);
+
+
+
 #endif
