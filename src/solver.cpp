@@ -57,7 +57,7 @@ int BKSolver::Solve(double maxy)
     cout << "# Nc=" << NC << ", Nf=" << NF << " alphas(r=1) = " << Alphas(1) << endl;
     
 
-    int vecsize = dipole->RPoints();
+    size_t vecsize = dipole->RPoints();
     double *ampvec = new double [vecsize];
     dipole->InitializeInterpolation(0); // Initialize interpolation at y=yvals[0]=0
     for (unsigned int rind=0; rind<vecsize; rind++)
@@ -317,6 +317,29 @@ double Inthelperf_lo_z(double z, void* p)
     return result;
 }
 
+// Rapidity shift Delta_i as in
+// http://www.int.washington.edu/talks/WorkShops/int_18_3/People/Triantafyllopoulos_D/Triantafyllopoulos.pdf
+// slide "Numerical solution"
+double RapidityShift(double r, double X)
+{
+    double A = 1.0;
+    double B = 1.0;
+    if (r==0)
+        return 0;
+    
+    double kappa = X/r;
+    return (1.0 - kappa*kappa) / (A * std::pow(kappa,4) + B*std::pow(kappa,2) + 1.0) * std::log(1.0/(kappa*kappa));
+    
+}
+
+double StepFunction(double x)
+{
+    if (x>=0)
+        return 1.0;
+    else
+        return 0.0;
+}
+
 
 double Inthelperf_lo_theta(double theta, void* p)
 {
@@ -355,6 +378,7 @@ double Inthelperf_lo_theta(double theta, void* p)
             cerr << "Using KinematicalConstraint but not EulerMethod? " << LINEINFO << endl;
             exit(1);
         }
+        /*
         // Implement kinematical constraint from 1708.06557 Eq. 165
         double delta012 = std::max(0.0, std::log( std::min(X*X, Y*Y) / (r*r) ) ); // (166)
         double shifted_rapidity = helper->rapidity - delta012;
@@ -367,7 +391,24 @@ double Inthelperf_lo_theta(double theta, void* p)
         double s01 = 1.0 - N_r;
         
         return helper->solver->Kernel_lo(r, z, theta) * ( -s02*s12 + s01);
+        */
         
+        // Triantafyllopoulos et al, new resummation
+        if (RapidityShift(r,X)<0 or RapidityShift(r,Y)<0)
+        {
+            cout << RapidityShift(r,X) << " " << RapidityShift(r,Y) << " at r=" << r << " X=" << X << " Y=" << Y << endl;
+        }
+        
+        double shifted_1 = helper->rapidity - RapidityShift(r,X);
+        double shifted_2 = helper->rapidity - RapidityShift(r,Y);
+        if (shifted_1 < 0 or shifted_2 < 0)
+            return 0;
+        
+        double shifted_S_X = 1.0 - helper->solver->GetDipole()->InterpolateN(X, helper->rapidity - RapidityShift(r,X));
+        double shifted_S_Y = 1.0 - helper->solver->GetDipole()->InterpolateN(Y, helper->rapidity - RapidityShift(r,Y));
+        
+        // - as we evolve N, and this is written otherwise of S
+        return -helper->solver->Kernel_lo(r, z, theta)  * ( shifted_S_X * shifted_S_Y - (1.0 - N_r) );
     }
 }
 

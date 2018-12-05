@@ -23,6 +23,7 @@ class Dipole
 {
     public:
         Dipole(InitialCondition* ic_);             // Initialize from a given ic
+        Dipole(std::string filename);               // Initialize from file
         ~Dipole();
         int InitializeInterpolation(int yind);
             // Create interpolator of dipole amplitude values at rapidity yvals[i]

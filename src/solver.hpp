@@ -40,7 +40,7 @@ class BKSolver
         
         double Alphas(double r);
     
-        double SetAlphasScaling(double C2) { alphas_scaling = C2; }
+        void SetAlphasScaling(double C2) { alphas_scaling = C2; }
 
         void SetTmpOutput(std::string fname);
     private:

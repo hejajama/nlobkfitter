@@ -14,6 +14,7 @@
 #include <amplitudelib/amplitudelib.hpp>
 //#include "cuba-4.2.h"
 #include "nlodissigmar.hpp"
+#include "cache.hpp"
 
 
 // HOW TO INTRODUCE THESE?  // TODO
@@ -108,27 +109,46 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     */
     //cout << "=== Initialize BK solver ===" << endl;
 
-    MV ic;                                            // Initial condition
-    ic.SetQsqr(qs0sqr);
-    ic.SetAnomalousDimension(anomalous_dimension);
-    ic.SetE(e_c);                                     // e_c of MVe parametrization
+    //Dipole dipole(&ic);
+    //
+    AmplitudeLib *DipoleAmplitude;
+    
+    if (IsResultCached(par, parameters))
+    {
+        cout << "I want to use cahced result! " << endl;
+        DipoleAmplitude = new AmplitudeLib("tmp_datafile.dat");
+    }
+    else
+    {
+    
+        MV ic;                                            // Initial condition
+        ic.SetQsqr(qs0sqr);
+        ic.SetAnomalousDimension(anomalous_dimension);
+        ic.SetE(e_c);                                     // e_c of MVe parametrization
 
-    Dipole dipole(&ic);
-    BKSolver solver(&dipole);
-    double maxy = std::log(initialconditionX0/(1e-5)); // divisor=smallest HERA xbj in Q^2 range (1E-05)? //6.8;
+        
+        Dipole dipole(&ic);
+        BKSolver solver(&dipole);
+        double maxy = std::log(initialconditionX0/(1e-5)); // divisor=smallest HERA xbj in Q^2 range (1E-05)? //6.8;
 
-    //cout << "=== Solving BK ===" << endl;
+        //cout << "=== Solving BK ===" << endl;
 
-    solver.SetAlphasScaling(alphas_scaling);
-    solver.Solve(maxy);                                // Solve up to maxy
+        solver.SetAlphasScaling(alphas_scaling);
+        solver.Solve(maxy);                                // Solve up to maxy
 
-	dipole.Save("tmp_datafile.dat");
+        dipole.Save("tmp_datafile.dat");
+        
+        
+        DipoleAmplitude = new AmplitudeLib(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
+        DipoleAmplitude->SetX0(initialconditionX0);         // TODO needs to match QG limit X0
+        DipoleAmplitude->SetOutOfRangeErrors(false);
+    }
+    
+    bkcache.params = par;
 
-    // Give solution to the AmplitudeLib object
-    AmplitudeLib DipoleAmplitude(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
-    DipoleAmplitude.SetX0(initialconditionX0);         // TODO needs to match QG limit X0
-	DipoleAmplitude.SetOutOfRangeErrors(false);
-    AmplitudeLib *DipolePointer = &DipoleAmplitude;
+    
+    
+    AmplitudeLib *DipolePointer = DipoleAmplitude;
 
     ComputeSigmaR SigmaComputer(DipolePointer);
     SigmaComputer.SetX0(initialconditionX0);
@@ -207,6 +227,8 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
         }
     }
     cout << endl << "# Calculated chi^2/N = " << chisqr/points << " (N=" << points << "), parameters (" << PrintVector(par) << ")" << endl<<endl;
+    
+    delete DipoleAmplitude;
     return chisqr;
 }
 

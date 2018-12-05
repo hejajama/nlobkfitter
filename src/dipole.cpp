@@ -5,6 +5,7 @@
 
 #include "dipole.hpp"
 #include "ic.hpp"
+#include "amplitudelib/datafile.hpp"
 #include "nlobk_config.hpp"
 #include <iostream>
 #include <iomanip>
@@ -251,6 +252,7 @@ int Dipole::Save(std::string filename)
         }
     }
     out.close();
+    return 0;
 }
 
 
@@ -297,3 +299,23 @@ Dipole::~Dipole()
     }
 }
 
+
+Dipole::Dipole(std::string filename)
+{
+    DataFile data(filename);
+    data.GetData(amplitude, yvals);
+    int rpoints = data.RPoints();
+    double rmultiplier = data.RMultiplier();
+    double minr= data.MinR();
+    for (int i=0; i<rpoints; i++)
+    {
+        rvals.push_back(minr * std::pow(rmultiplier, i));
+    }
+    if (rvals.size() != amplitude[0].size())
+    {
+        cerr<< "I got " << rvals.size() << " r values and " <<amplitude[0].size() << " dipoles at y=0!" << LINEINFO << endl;
+        exit(1);
+    }
+    
+    cout << "# Data read from file " << filename << " maxy " << yvals[yvals.size()-1] << " rpoints/rapidity " << amplitude[0].size() << endl;
+}
