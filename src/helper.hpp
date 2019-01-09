@@ -1,11 +1,5 @@
 /*
- * Cache BK solution s.t. the code does not need to solve it again
- * if only sigma_r changes
- *
- * The idea is that the previous bk solution is always saved on the disk
- *
- * NOTE: THIS IS VERY DANGEROUS PIECE OF CODE
- * If MNINUIT is not complied in a single-thread mode, crazy things happen!!!
+ * Some helper stuff for BK DIS fits, e.g. find optimal sigma02
  */
 
 #ifndef _CACHE_H
@@ -13,16 +7,6 @@
 
 #include <Minuit2/MnUserParameterState.h>
 #include <vector>
-
-struct BKCache
-{
-    std::vector <double> params;     // Parameters that correspond to previous bk solution
-};
-
-extern BKCache bkcache;
-
-bool IsResultCached(std::vector<double> values, ROOT::Minuit2::MnUserParameters parameters);
-
 // Optimize sigma02 (the coefficient which multiplies SigmaComputer.SigmarLOmass
 // Returns optimal sigma02 and total chi^2
 std::vector<double> FindOptimalSigma02(std::vector<double> expdata, std::vector<double> experr,

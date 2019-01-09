@@ -159,7 +159,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     std::vector<double> dataerrs(totalpoints);
     std::vector<double> thdata(totalpoints);  
     
-    ///TODO: Does not yet fully support weight factors and NLO,
+    ///TODO: Does not yet fully support weight factors ,
     // after I have written a separate code that automatically finds optimal sigma02
 
     // These loops are trivially parallerizable
@@ -209,8 +209,6 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
 
             if (computeNLO) // Full NLO impact factors for reduced cross section
             {
-                cerr << "NLO DOES NOT SUPPORT SIGMA02 MINIMIZER" << endl;
-                exit(1);
                 theory = (fitsigma0)*SigmaComputer.SigmarNLO(Q , xbj , y );
             }
 
@@ -246,7 +244,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     cout << endl << "# Calculated chi^2/N = " << chisqr << " (N=" << points << "), parameters (" << PrintVector(par) << ", sigma02=" << sigma02 << ")" << endl<<endl;
     
     delete DipoleAmplitude;
-    return chisqr;
+    return chisqr*points;
 }
 
 void NLODISFitter::AddDataset(Data& d)

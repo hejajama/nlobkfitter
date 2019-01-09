@@ -18,7 +18,6 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_min.h>
 
-BKCache bkcache;
 
 using namespace std;
 
@@ -103,44 +102,3 @@ std::vector<double> FindOptimalSigma02(std::vector<double> expdata, std::vector<
     return result;
 }
 
-
-
-bool IsClose(double a, double b, double relative=0.0000001)
-{
-	if (a < 0 and b > 0)
-		return false;
-	if (b<0 and a>0)
-		return false;
-
-    if (std::abs(a-b)/std::min( std::abs(a), std::abs(b))<relative)
-        return true;
-    else
-        return false;
-}
-
-bool IsResultCached(std::vector<double> pars, MnUserParameters parameters)
-{
-    // Check if the BK parameters are the same as in the cached solution
-    if (pars.size() != bkcache.params.size())
-        return false;
-    
-    double qs0sqr       = pars[ parameters.Index("qs0sqr")];
-    double e_c          = pars[ parameters.Index("e_c")];
-    double alphas_scaling       = pars[ parameters.Index("alphascalingC2")];
-    double anomalous_dimension  = pars[ parameters.Index("anomalous_dimension")];
-    double initialconditionX0  = pars[ parameters.Index("initialconditionX0")];
-    
-    double qs0sqr_cache       = bkcache.params[ parameters.Index("qs0sqr")];
-    double e_c_cache          = bkcache.params[ parameters.Index("e_c")];
-    double alphas_scaling_cache       = bkcache.params[ parameters.Index("alphascalingC2")];
-    double anomalous_dimension_cache  = bkcache.params[ parameters.Index("anomalous_dimension")];
-    double initialconditionX0_cache  = bkcache.params[ parameters.Index("initialconditionX0")];
-    
-    if (IsClose(qs0sqr, qs0sqr_cache) and IsClose(e_c, e_c_cache) and
-        IsClose(alphas_scaling, alphas_scaling_cache) and IsClose(anomalous_dimension, anomalous_dimension_cache)
-        and IsClose(initialconditionX0, initialconditionX0_cache))
-        return true;
-    else
-        return false;
-    
-}

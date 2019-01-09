@@ -53,22 +53,22 @@ int main()
 
         config::RC_LO = config::GUILLAUME_LO;// Balitsky running coupling for LO kernel
         config::RESUM_RC = config::RESUM_RC_GUILLAUME; // Parent dipole in the resummation
-        config::RESUM_DLOG = true; // Resum doulbe logs
-        config::RESUM_SINGLE_LOG = true; // Resum single logs
+        config::RESUM_DLOG = false; // Resum doulbe logs
+        config::RESUM_SINGLE_LOG = false; // Resum single logs
         config::LO_BK = false; // Solve LO BK with running coupling, overrides RESUM settings
         config::KSUB = 0.65;  // Optimal value for K_sub
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
-        config::INTACCURACY = 0.0005;//0.02;
+        config::INTACCURACY = 0.0010;//0.02;
         config::MINR = 1e-5;
         config::MAXR = 30;
         config::RPOINTS = 80;
-        config::DE_SOLVER_STEP = 0.2; // Euler method probably requires smaller step!
+        config::DE_SOLVER_STEP = 0.15; // Euler method probably requires smaller step!
 		config::DNDY=false;
         //sigmar_config::maxy = 5.2;
 
         // If want to use kinematical constraint in the LO equation
-        config::EULER_METHOD = false;       // Kinematical constraint requires this
-        config::KINEMATICAL_CONSTRAINT = false;
+        config::EULER_METHOD = true;       // Kinematical constraint requires this
+        config::KINEMATICAL_CONSTRAINT = true; 
 
         // Constants
         config::NF=3;   // Only light quarks
@@ -114,12 +114,12 @@ int main()
          */
 		  // MV for resummed
 		  
-		  parameters.Add("qs0sqr", 0.1533036828274, 0.1);
+		  parameters.Add("qs0sqr", 0.2133036828274, 0.4);
           //parameters.Add("fitsigma0", 30.00000000000, 2 ); // 1mb = 2.568 GeV² // (2.568)*16.36
-          parameters.Add("alphascalingC2", 0.315       , 0.10);
-          parameters.Add("e_c", 1.6884630748, 0.5);
+          parameters.Add("alphascalingC2", 0.3       , 0.70);
+          parameters.Add("e_c", 1.0, 1.0);
           parameters.Add("anomalous_dimension", 1.0 );
-		  parameters.Add("initialconditionX0", 0.01 );
+		  parameters.Add("initialconditionX0", 0.1 );
 
           /*
           parameters.Add("qs0sqr", 0.0477335 , 0.04 );
