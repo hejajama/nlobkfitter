@@ -32,6 +32,8 @@
 
  #include <gsl/gsl_errno.h>
 
+#include "gitsha1.h"
+
 using namespace std;
 using namespace ROOT::Minuit2;
 //void ErrHandler(const char * reason,const char * file,int line,int gsl_errno);
@@ -48,6 +50,7 @@ void ErrHandlerCustom(const char * reason,
 
 int main()
 {
+	cout << "# NLOBKDISFitter, git version " << g_GIT_SHA1 << " local repo " << g_GIT_LOCAL_CHANGES << " main build " << __DATE__  << " " << __TIME__     << endl;
     gsl_set_error_handler(&ErrHandlerCustom);
     //gsl_set_error_handler_off();
 
