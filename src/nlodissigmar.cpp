@@ -123,11 +123,11 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
         //cout << "=== Solving BK ===" << endl;
 
     solver.SetAlphasScaling(alphas_scaling);
+	solver.SetEta0(par[ parameters.Index("eta0")]);
     solver.Solve(maxy);                                // Solve up to maxy
 
     dipole.Save("tmp_datafile.dat");
-        
-        
+//    exit(1);    
     DipoleAmplitude = new AmplitudeLib(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
     DipoleAmplitude->SetX0(initialconditionX0);         // TODO needs to match QG limit X0
     DipoleAmplitude->SetOutOfRangeErrors(false);

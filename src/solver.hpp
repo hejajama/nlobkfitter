@@ -43,10 +43,14 @@ class BKSolver
         void SetAlphasScaling(double C2) { alphas_scaling = C2; }
 
         void SetTmpOutput(std::string fname);
+
+		double GetEta0() const { return eta_0; }
+		double SetEta0(double e0) { eta_0 = e0; }
     private:
         double alphas_scaling;
         Dipole* dipole;
         std::string tmp_output;         // File which is updated along with the evolution, if empty no temporary results are saved
+		double eta_0;	// New eta-BK, eta < eta_0 gives initial condition
 
 };
 
