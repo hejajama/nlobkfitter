@@ -19,6 +19,7 @@
 #include "solver.hpp"
 
 #include "data.hpp"
+#include "nlodis_config.hpp"
 #include "nlodissigmar.hpp"
 
 #include <Minuit2/FunctionMinimum.h>
@@ -32,8 +33,6 @@
 
  #include <gsl/gsl_errno.h>
 
-#include "gitsha1.h"
-
 using namespace std;
 using namespace ROOT::Minuit2;
 //void ErrHandler(const char * reason,const char * file,int line,int gsl_errno);
@@ -42,153 +41,222 @@ void ErrHandlerCustom(const char * reason,
                         const char * file,
                         int line,
                         int gsl_errno)
-{
+{   // 14 = failed to reach tolerance
+    // 18 = roundoff error prevents tolerance from being achieved
+    // 11 = maximum number of subdivisions reached
+    // 15: underflows
+
+    if (gsl_errno == 15 or gsl_errno == 16) return;
+    // Ugly hack, comes from the edges of the z integral in virtual_photon.cpp
+    // Overflows come from IPsat::bint when it is done analytically
+    // Hope is that these errors are handled correctly everywhere
     errors_mmyiss++;
     std::cerr << file << ":"<< line <<": Error " << errors_mmyiss << ": " <<reason
             << " (code " << gsl_errno << ")." << std::endl;
 }
 
-int main()
+int main( int argc, char* argv[] )
 {
-	cout << "# NLOBKDISFitter, git version " << g_GIT_SHA1 << " local repo " << g_GIT_LOCAL_CHANGES << " main build " << __DATE__  << " " << __TIME__     << endl;
     gsl_set_error_handler(&ErrHandlerCustom);
-    //gsl_set_error_handler_off();
 
-        config::RC_LO = config::GUILLAUME_LO;// Balitsky running coupling for LO kernel
-        config::RESUM_RC = config::RESUM_RC_GUILLAUME; // Parent dipole in the resummation
-        config::RESUM_DLOG = false;; // Resum doulbe logs
-        config::RESUM_SINGLE_LOG = false; // Resum single logs
-        config::LO_BK = false; // Solve LO BK with running coupling, overrides RESUM settings
+        // NLO DIS SIGMA_R COMPUTATION CONFIGS
+        nlodis_config::CUBA_EPSREL = 2e-2;
+        nlodis_config::CUBA_MAXEVAL= 2e7;
+        nlodis_config::PRINTDATA = true;
+        bool useNLO = true;
+        //bool useSUB = true;               // Set by a command line switch in swarmscan
+        //bool useImprovedZ2Bound = true;   // Set by a command line switch in swarmscan
+        //bool useBoundLoop = true;         // Set by a command line switch in swarmscan
+        string cubaMethod = "suave";
+        //bool useResumBK = true;
+        //bool useKCBK = false;
+        //if (useResumBK == true and useKCBK == true) {cout << "Both ResumBK and KCBK enabled, exitting." << endl; return -1;}
+
+        //config::RC_LO = config::FIXED_LO;
+        config::RC_LO = config::BALITSKY_LO; // Balitsky running coupling for LO kernel
+        //config::RC_LO = config::GUILLAUME_LO;
+        config::RESUM_RC = config::RESUM_RC_PARENT; // Parent dipole in the resummation
+        config::RESUM_DLOG = true; // Resum doulbe logs
+        config::RESUM_SINGLE_LOG = true; // Resum single logs
+        config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
         config::KSUB = 0.65;  // Optimal value for K_sub
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
-        config::INTACCURACY = 0.015;//0.02;
+        config::INTACCURACY = 2e-2;//0.02;
         config::MINR = 1e-5;
         config::MAXR = 30;
-        config::RPOINTS = 80;
-        config::DE_SOLVER_STEP = 0.050;// Euler method probably requires smaller step!
-		config::DNDY=false;
-        //sigmar_config::maxy = 5.2;
+        config::RPOINTS = 100;
+        config::DE_SOLVER_STEP = 0.4; // Rungekutta step
 
+        /*
+        // RESUM BK
+        if (useResumBK == true){
+            config::LO_BK = false;  // Solve LO BK with running coupling, overrides RESUM settings
+        }
         // If want to use kinematical constraint in the LO equation
-        config::EULER_METHOD = true;;    // Kinematical constraint requires this
-        config::KINEMATICAL_CONSTRAINT = true;;
+        if (useKCBK == true){
+            config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
+            config::EULER_METHOD            = true;        // Kinematical constraint requires this
+            config::KINEMATICAL_CONSTRAINT  = true;
+            config::DE_SOLVER_STEP = 0.08; //0.02; // Euler method requires smaller step than RungeKutta!
+        }
+        */
 
         // Constants
         config::NF=3;   // Only light quarks
         config::LAMBDAQCD = 0.241;
 
+    // READING RUN CONFIGURATION FROM THE STDIN
+    bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop, useSigma3;
+    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q sigma0/2 C^2 X0 gamma Q0sq Y0";
+    if (argc<2){ cout << helpstring << endl; return 0;}
+    // Argv[0] is the name of the program
+
+    if (string(argv [1]) == "sub"){
+      useSUB = true;
+    } else if (string(argv [1]) == "unsub"){
+      useSUB = false;
+      useSigma3 = false;
+    } else if (string(argv [1]) == "unsub+"){
+      useSUB = false;
+      useSigma3 = true;
+    } else {cout << helpstring << endl; return -1;}
+
+    if (string(argv [2]) == "resumbk"){
+            config::LO_BK = false;  // Solve LO BK with running coupling, overrides RESUM settings
+    } else if (string(argv [2]) == "kcbk"){
+            config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
+            config::EULER_METHOD            = true;        // Kinematical constraint requires this
+            config::KINEMATICAL_CONSTRAINT  = true;
+            config::DE_SOLVER_STEP = 0.08; //0.02; // Euler method requires smaller step than RungeKutta!
+    }else if (string(argv [2]) == "lobk"){
+            config::LO_BK = true;
+    } else {cout << helpstring << endl; return -1;}
+
+    if (string(argv [3]) == "parentrc"){
+            config::RC_LO = config::BALITSKY_LO; 
+    } else if (string(argv [3]) == "guillaumerc"){
+            config::RC_LO = config::GUILLAUME_LO;
+    } else {cout << helpstring << endl; return -1;}
+
+    if (string(argv [4]) == "z2improved"){
+      useImprovedZ2Bound = true;
+    } else if (string(argv [4]) == "z2simple"){
+      useImprovedZ2Bound = false;
+    } else {cout << helpstring << endl; return -1;}
+
+    if (string(argv [5]) == "z2boundloop"){
+      useBoundLoop = true;
+    } else if (string(argv [5]) == "unboundloop"){
+      useBoundLoop = false;
+    } else {cout << helpstring << endl; return -1;}
+
+    int argi=5; argi++;
+    // reading fit initial condition parameters:
+    double icqs0sq   = stod( argv [argi] ); argi++;
+    double icsigma0  = stod( argv [argi] ); argi++;
+    double iccsq     = stod( argv [argi] ); argi++;
+    double icx0      = stod( argv [argi] ); argi++;
+    double icgamma   = stod( argv [argi] ); argi++;
+    double icQ0sq    = stod( argv [argi] ); argi++;
+    double icY0      = stod( argv [argi] );
+
+
+    MnUserParameters parameters;
+    // Fit parameters, first value is starting value, second is uncertainty
+        //if(argc = 13){
+        parameters.Add("qs0sqr",                icqs0sq , 0.2);
+        parameters.Add("fitsigma0",             icsigma0, 10.0); // 1mb = 2.568 GeV² // (2.568)*16.36
+        parameters.Add("alphascalingC2",        iccsq,    20.0);
+        parameters.Add("e_c", 1.0 );
+        parameters.Add("anomalous_dimension",   icgamma);
+        parameters.Add("initialconditionX0",    icx0 );
+        parameters.Add("initialconditionY0",    icY0 );
+        parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
+        //}
+        /*else{
+        cout << "INSUFFICIENT RUN PARAMETERS, running a preset test run:" << endl;
+        useSUB = true;
+        useSigma3 = false;            
+        config::LO_BK = false;  // Solve RESUM BK with running coupling
+        useImprovedZ2Bound = true;  
+        useBoundLoop = true;        
+        parameters.Add("qs0sqr", 0.1 );
+        parameters.Add("fitsigma0", 20.0 ); // 1mb = 2.568 GeV² // (2.568)*16.36
+        parameters.Add("alphascalingC2", 0.315 );
+        parameters.Add("e_c", 1.0 );
+        parameters.Add("anomalous_dimension", 1.0 );
+        parameters.Add("initialconditionX0", 1.0 );
+        parameters.Add("initialconditionY0", 0. );
+        parameters.Add("icTypicalPartonVirtualityQ0sqr", 1.0 ); }
+        */
+
+        //
+        // Set limits
+        //
+        parameters.SetLimits("qs0sqr",              0.001 , 0.7);
+        parameters.SetLimits("fitsigma0",           1.0   , 40.0);
+        parameters.SetLimits("alphascalingC2",      0.1  ,	30.0);
+        //parameters.SetLimits("e_c",                 0.4   , 10.0);
+        //parameters.SetLimits("anomalous_dimension", 0.1   ,	2.0);
+        //parameters.SetLimits("initialconditionX0",  0.01  ,	10.0);
+        //parameters.SetLimits("initialconditionY0",  0.01  ,	10.0);
+
 
     Data data;
     data.SetMinQsqr(0.75);
     data.SetMaxQsqr(50);
-    data.SetMaxX(0.01); // NLO, ic at xbj=1e-1;  TODO Is this necessary?
-
-    // Add datafiles, if 2nd parameter=CHARM, then this is only charmdata
-	data.LoadData("./data/hera_combined_sigmar.txt", TOTAL);
-//    data.LoadData("./data/light_quark_f2/hera_I_combined_eplus_lightq", TOTAL);
-    //data.LoadData("data/hera_combined_sigmar_cc.txt", CHARM); // charm data
-
-	MnMachinePrecision precision;
-////	precision.SetPrecision(0.01);
-	MnUserParameters parameters;
-	 //parameters.SetPrecision(0.001); 
-      // Constants
-        //parameters.Add("anomalous_dimension", 1.0);
-
-      // Fit parameters, second value is starting value, second is uncertainty
-        /*
-        // MASSLESS -- LO LO LO
-          parameters.Add("qs0sqr", 0.0564335 , 0.04 );
-          parameters.Add("fitsigma0", 42.0015 , 5.0); // 1mb = 2.568 GeV² // (2.568)*16.36
-          parameters.Add("alphascalingC2", 7.2 , 1.0 );
-          parameters.Add("e_c", 18.9692 , 0.5 );
-        */
-
-        ///*
-        // MASSLESS -- NLO NLO NLO
-
-          // MV
-    	 /* 
-          parameters.Add("qs0sqr", 0.104, 0.1 );
-          parameters.Add("fitsigma0", 48.304, 2.0 ); // 1mb = 2.568 GeV² // (2.568)*16.36
-          parameters.Add("alphascalingC2", 4.5 ,1);
-          parameters.Add("e_c", 1.0 );
-          parameters.Add("anomalous_dimension", 1.0 );
-		  parameters.Add("initialconditionX0", 0.01 );
-         */
-		  // MV for resummed
-		  
-		  parameters.Add("qs0sqr", 0.0484000000000, 0.4);
-          //parameters.Add("fitsigma0", 30.00000000000, 2 ); // 1mb = 2.568 GeV² // (2.568)*16.36
-          parameters.Add("alphascalingC2", 14.4      , 0.70);
-          parameters.Add("e_c", 21.5, 1.0);
-          parameters.Add("anomalous_dimension", 1.0 );
-		  parameters.Add("initialconditionX0", 1 );
-		  parameters.Add("eta0", std::log(1/0.01));
-
-          /*
-          parameters.Add("qs0sqr", 0.0477335 , 0.04 );
-          parameters.Add("fitsigma0", 91.5015 , 5.0); // 1mb = 2.568 GeV² // (2.568)*16.36
-          parameters.Add("alphascalingC2", 10.39 , 3.0 ); //alphas_scaling = exp(-2.0*0.5772);
-          parameters.Add("e_c", 1.0 );
-          parameters.Add("anomalous_dimension", 1.0 );
-          parameters.Add("initialconditionX0", 0.01 );
-          */
-
-          
-          // MVe
-/*			  parameters.Add("qs0sqr", 0.1635799830774, 0.1 );
-          parameters.Add("e_c", 1  );
-          parameters.Add("fitsigma0", 45.28377419688, 2);  //1mb = 2.568 GeV² // (2.568)*16.36
-         parameters.Add("alphascalingC2",02.15850740349, 2 );
-         
- 	parameters.Add("anomalous_dimension", 1.000005541673 , 0.1);
-          parameters.Add("initialconditionX0", 0.01 );
-          
-*/		  
-		  // AAMQS light
-		  /*
-		  parameters.Add("qs0sqr", 0.1604, 0.1 );
-          parameters.Add("e_c", 1.0  );
-          parameters.Add("fitsigma0", 20*2.568/2., 2); // 1mb = 2.568 GeV² // (2.568)*16.36
-         parameters.Add("alphascalingC2",4*4, 2 );
-         
- 	parameters.Add("anomalous_dimension", 1.2 , 0.1);
-          parameters.Add("initialconditionX0", 0.01 );
-*/
-        //*/
-
-         /*
-        // MASS
-          parameters.Add("qs0sqr", 0.06 , 0.04 );
-          parameters.Add("e_c", 18.9 , 0.5 );
-          parameters.Add("fitsigma0", (2.568)*16.36 , 5.0); // 1mb = 2.568 GeV² // (2.568)*16.36
-          parameters.Add("alphascalingC2", 7.2 , 1.0 );
-         */
-
-      /*// Set limits
-        parameters.SetLowerLimit("A_g", 0);
-        parameters.SetUpperLimit("mu_0", 1.43);
-      */
+    data.SetMaxX(0.01);
+    data.LoadData("./data/hera_combined_sigmar.txt", TOTAL);
 
     NLODISFitter fitter(parameters);
     fitter.AddDataset(data);
-    fitter.SetNLO(false);
+    fitter.SetNLO(useNLO);
+    fitter.SetSUB(useSUB);
+    fitter.UseImprovedZ2Bound(useImprovedZ2Bound);
+    fitter.UseConsistentlyBoundLoopTerm(useBoundLoop);
+    fitter.SetCubaMethod(cubaMethod);
 
+    cout << "=== Perturbative settings ===" << endl;
+    cout << std::boolalpha;
+    cout    << "Use ResumBK: " << !(config::LO_BK) << endl
+            << "KinematicalConstraint BK: " << config::KINEMATICAL_CONSTRAINT << endl
+            << "Running Coupling: " << config::RC_LO << " (4 parent, 6 guillaume)" << endl
+            << "Use NLOimpact: " << useNLO << endl
+            << "Use SUBscheme: " << useSUB << endl
+            << "Use Sigma3: " << useSigma3 << endl
+            << "Use improved Z2 bound: " << useImprovedZ2Bound << endl
+            << "Use Z2 loop term: " << useBoundLoop << endl
+            << "Cuba MC algorithm: " << cubaMethod << endl;
     cout << "=== Initial parameters ===" << endl;
     cout << parameters << endl;
-    cout << "=== Starting fit ===" << endl;
+    if(nlodis_config::VERBOSE) cout << "=== Starting fit ===" << endl;
 
+    //MnMachinePrecision precc();
+    //precc.SetPrecision(1e-2);
     // MnMinimize: use MIGRAD, if it fails, fall back to SIMPLEX
-    //MnSimplex fit(fitter,parameters);
+    // Optional 3rd argument, an unsigned int, set algorithm strategy: 0 = low (fast) , 1 = medium (def) , 2 = high (taxing)
+    //MnMigrad fit(fitter, parameters, 0);
     MnMinimize fit(fitter, parameters);
-    //MnMigrad fit(fitter, parameters);
+    //MnSimplex fit(fitter,parameters);
     //MnScan fit(fitter, parameters);
 
+    //fit.SetPrecision(0.01); // TODO Should this match BK solver acc?
     // minimize
     FunctionMinimum min = fit();
     // output
     std::cout<<"minimum: "<<min<<std::endl;
+
+    cout << "=== Perturbative settings were ===" << endl;
+    cout << std::boolalpha;
+    cout    << "Use ResumBK: " << !(config::LO_BK) << endl
+            << "KinematicalConstraint BK: " << config::KINEMATICAL_CONSTRAINT << endl
+            << "Running Coupling: " << config::RC_LO << " (4 parent, 6 guillaume)" << endl
+            << "Use NLOimpact: " << useNLO << endl
+            << "Use SUBscheme: " << useSUB << endl
+            << "Use Sigma3: " << useSigma3 << endl
+            << "Use improved Z2 bound: " << useImprovedZ2Bound << endl
+            << "Use Z2 loop term: " << useBoundLoop << endl
+            << "Cuba MC algorithm: " << cubaMethod << endl;
 
     return 0;
 }
