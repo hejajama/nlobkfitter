@@ -332,6 +332,11 @@ double RapidityShift(double r, double X)
     return (1.0 - kappa*kappa) / (A * std::pow(kappa,4) + B*std::pow(kappa,2) + 1.0) * std::log(1.0/(kappa*kappa));
 	*/
 
+	if (X < 1e-10) // Divergence
+	    return 0; // Would give -inf, force to 0
+
+    double result = std::max(0.0, std::log(r*r/(X*X)));
+
 	return std::max(0.0, std::log(r*r/(X*X)));
     
 }
@@ -429,6 +434,12 @@ double Inthelperf_lo_theta(double theta, void* p)
       
 	  
 	 // - as we evolve N, and this is written otherwise of S
+		double res =  -helper->solver->Kernel_lo(r, z, theta)  * ( shifted_S_X * shifted_S_Y - (1.0 - N_r) );
+		if (isnan(res))
+		{
+			cout << "NaN! rapidity " << helper->rapidity << " Xshift " << RapidityShift(r,X) << " Yshift " << RapidityShift(r,Y) << " X=" << X << ", Y=" << Y <<", r=" << r <<", S_X " << shifted_S_X << " S_Y " << shifted_S_Y << endl;
+			exit(1);
+		}
         return -helper->solver->Kernel_lo(r, z, theta)  * ( shifted_S_X * shifted_S_Y - (1.0 - N_r) );
     }
 }

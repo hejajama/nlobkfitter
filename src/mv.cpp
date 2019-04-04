@@ -54,6 +54,8 @@ cout << r<< " " << res << endl;
 	*/
 	if (b>1e-10)
 		cerr << "Impact parameter is not supported!" << LINEINFO << endl;
+	if (r < 1e-30)
+		return 0;
 	const double e = 2.7182818;
 	///TODO: some algorithm to determina small r, e.g. when one has to linearize
     if (r < 2e-6)   ///NOTE: factor 1/4 "correctly", not as in AAMS paper
