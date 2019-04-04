@@ -61,7 +61,7 @@ int main()
         config::LO_BK = false; // Solve LO BK with running coupling, overrides RESUM settings
         config::KSUB = 0.65;  // Optimal value for K_sub
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
-        config::INTACCURACY = 0.0025;//0.02;
+        config::INTACCURACY = 0.015;//0.02;
         config::MINR = 1e-5;
         config::MAXR = 30;
         config::RPOINTS = 80;
@@ -123,8 +123,8 @@ int main()
           parameters.Add("alphascalingC2", 14.4      , 0.70);
           parameters.Add("e_c", 21.5, 1.0);
           parameters.Add("anomalous_dimension", 1.0 );
-		  parameters.Add("initialconditionX0", 0.01 );
-		  parameters.Add("eta0", 0);
+		  parameters.Add("initialconditionX0", 1 );
+		  parameters.Add("eta0", std::log(1/0.01));
 
           /*
           parameters.Add("qs0sqr", 0.0477335 , 0.04 );

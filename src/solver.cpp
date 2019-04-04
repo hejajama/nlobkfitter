@@ -24,8 +24,8 @@
 // Integration constants
 const double eps = 1e-40;
 using namespace config;
-using std::isinf;
-using std::isnan;
+//using std::isinf;
+//using std::isnan;
 using std::abs;
 
 BKSolver::BKSolver(Dipole* d)
@@ -390,7 +390,7 @@ double Inthelperf_lo_theta(double theta, void* p)
             return 0;   // Step function in (165)
         
         // Dipoles at shifter rapidity
-        double s02 = 1.0 - helper->solver->GetDipole()->InterpolateN(X, shifted_rapidity);
+        ouble s02 = 1.0 - helper->solver->GetDipole()->InterpolateN(X, shifted_rapidity);
         double s12 = 1.0 - helper->solver->GetDipole()->InterpolateN(Y, shifted_rapidity);
         double s01 = 1.0 - N_r;
         
@@ -398,53 +398,37 @@ double Inthelperf_lo_theta(double theta, void* p)
         */
         
         // Triantafyllopoulos et al, new resummation
-		// https://arxiv.org/pdf/1902.06637.pdf eq 9.1
-/*
-        if (RapidityShift(r,X)<0 or RapidityShift(r,Y)<0)
-        {
-            cout << RapidityShift(r,X) << " " << RapidityShift(r,Y) << " at r=" << r << " X=" << X << " Y=" << Y << endl;
-        }
-  */      
+	// https://arxiv.org/pdf/1902.06637.pdf
+
         double shifted_1 = helper->rapidity - RapidityShift(r,X);
         double shifted_2 = helper->rapidity - RapidityShift(r,Y);
-        //if (shifted_1 < 0 or shifted_2 < 0)
-        //    return 0;
         
-		// Step function
-		// not in (9.3)
-		// double xyzshift = std::max(0.0, std::log(r*r / std::min( X*X, Y*Y ) ) );
+	double eta0 = helper->solver->GetEta0();
+
+	// Step function
+	// not in (9.3)
+	// double xyzshift = std::max(0.0, std::log(r*r / std::min( X*X, Y*Y ) ) );
+	// if (heper->rapidity - par->eta0 - xyzshift < 0) return 0;
 	
-
-		double eta0 = helper->solver->GetEta0();
-		
-		// step function in (9.1), not (9.3)
-		// if (helper->rapidity - eta0 - xyzshift < 0)
-	//			return 0;
-
-		// If eta < eta0, use initial condition
+	// (9.3)
+	// If shifted rapidity < eta0, use initial condition
+	/// TODO: I shoudl probably keep initialized interpolator at y=0 
         double shifted_S_X = 0;
-		if (helper->rapidity - RapidityShift(r,X) < eta0) 
-			shifted_S_X = 1.0 - N_X; 
-		else 
-			shifted_S_X =  1.0 - helper->solver->GetDipole()->InterpolateN(X, helper->rapidity - RapidityShift(r,X));
+	if (helper->rapidity - RapidityShift(r,X) < eta0) 
+		shifted_S_X = 1.0 - helper->solver->GetDipole()->InterpolateN(X, 0); 
+	else 
+		shifted_S_X = 1.0 - helper->solver->GetDipole()->GetInitialCondition()->DipoleAmplitude(X);
+		//shifted_S_X =  1.0 - helper->solver->GetDipole()->InterpolateN(X, helper->rapidity - RapidityShift(r,X));
 
         double shifted_S_Y = 0;
-		if (helper->rapidity - RapidityShift(r,Y) < eta0)
-			shifted_S_Y = 1.0 - N_Y;
-		else
-			shifted_S_Y = 1.0 - helper->solver->GetDipole()->InterpolateN(Y, helper->rapidity - RapidityShift(r,Y));
+	if (helper->rapidity - RapidityShift(r,Y) < eta0)
+		shifted_S_Y =helper->solver->GetDipole()->InterpolateN(X, helper->rapidity - RapidityShift(r,Y));
+	else
+		shifted_S_Y = helper->solver->GetDipole()->GetInitialCondition()->DipoleAmplitude(Y);
+//		shifted_S_Y = 1.0 - helper->solver->GetDipole()->InterpolateN(Y, helper->rapidity - RapidityShift(r,Y));
       
-	  // Todo negative eta, zero or freeze to 0
 	  
-	   // Consistency check
-	   if (helper->rapidity - RapidityShift(r,Y) < 0 or helper->rapidity - RapidityShift(r,X) < 0)
-	   {
-			  return 0;
-			cerr << "Why shiftd rapiditiy is negative? We gave " << helper->rapidity - RapidityShift(r,X) << " and " << helper->rapidity - RapidityShift(r,Y) << endl;
-	  		exit(1); 
-		}
-	 
-        // - as we evolve N, and this is written otherwise of S
+	 // - as we evolve N, and this is written otherwise of S
         return -helper->solver->Kernel_lo(r, z, theta)  * ( shifted_S_X * shifted_S_Y - (1.0 - N_r) );
     }
 }

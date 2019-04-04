@@ -49,6 +49,8 @@ class Dipole
         std::vector<double> &GetYvals() { return yvals; }
         std::vector<double> &GetRvals() { return rvals; }
 
+        InitialCondition *GetInitialCondition() { return ic; }
+
     private:
         // amplitude[i][j] is vector of dipole amplitude values at rapidity yvals[i]
         // at dipole size rvals[j] 
