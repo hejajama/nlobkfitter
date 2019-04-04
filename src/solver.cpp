@@ -414,17 +414,17 @@ double Inthelperf_lo_theta(double theta, void* p)
 	// If shifted rapidity < eta0, use initial condition
 	/// TODO: I shoudl probably keep initialized interpolator at y=0 
         double shifted_S_X = 0;
-	if (helper->rapidity - RapidityShift(r,X) < eta0) 
-		shifted_S_X = 1.0 - helper->solver->GetDipole()->InterpolateN(X, 0); 
+	if (helper->rapidity - RapidityShift(r,X) > eta0) 
+		shifted_S_X = 1.0 - helper->solver->GetDipole()->InterpolateN(X, helper->rapidity - RapidityShift(r,X)); 
 	else 
 		shifted_S_X = 1.0 - helper->solver->GetDipole()->GetInitialCondition()->DipoleAmplitude(X);
 		//shifted_S_X =  1.0 - helper->solver->GetDipole()->InterpolateN(X, helper->rapidity - RapidityShift(r,X));
 
         double shifted_S_Y = 0;
-	if (helper->rapidity - RapidityShift(r,Y) < eta0)
-		shifted_S_Y =helper->solver->GetDipole()->InterpolateN(X, helper->rapidity - RapidityShift(r,Y));
+	if (helper->rapidity - RapidityShift(r,Y) > eta0)
+		shifted_S_Y = 1.0 - helper->solver->GetDipole()->InterpolateN(Y, helper->rapidity - RapidityShift(r,Y));
 	else
-		shifted_S_Y = helper->solver->GetDipole()->GetInitialCondition()->DipoleAmplitude(Y);
+		shifted_S_Y = 1.0 - helper->solver->GetDipole()->GetInitialCondition()->DipoleAmplitude(Y);
 //		shifted_S_Y = 1.0 - helper->solver->GetDipole()->InterpolateN(Y, helper->rapidity - RapidityShift(r,Y));
       
 	  
