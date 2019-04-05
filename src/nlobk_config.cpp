@@ -14,6 +14,8 @@ using namespace config;
 // Default configs
 namespace config
 {
+     bool VERBOSE = false;
+
      double NC=3;
      double NF=3;
 

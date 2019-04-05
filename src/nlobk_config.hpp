@@ -18,6 +18,8 @@ inline double SQR(double x) { return x*x; }
 
 namespace config
 {
+    extern bool VERBOSE;
+    
     extern double NC;
     extern double NF;
 
