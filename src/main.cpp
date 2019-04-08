@@ -63,8 +63,8 @@ int main()
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
         config::INTACCURACY = 0.015;//0.02;
         config::MINR = 1e-5;
-        config::MAXR = 30;
-        config::RPOINTS = 80;
+        config::MAXR = 50;
+        config::RPOINTS = 100;
         config::DE_SOLVER_STEP = 0.050;// Euler method probably requires smaller step!
 		config::DNDY=false;
         //sigmar_config::maxy = 5.2;

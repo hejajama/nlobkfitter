@@ -181,11 +181,12 @@ int Evolve(double y, const double amplitude[], double dydt[], void *params)
         
         //if (dipole->RVal(i) < 0.001)
         //    continue;
-        if (amplitude[i] > 0.99999)
+/*        if (amplitude[i] > 0.99999)
         {
             dydt[i]=0;
             continue;
         }
+		*/
         double lo = par->solver->RapidityDerivative_lo(dipole->RVal(i), &interp, y);
 
         double nlo=0;
