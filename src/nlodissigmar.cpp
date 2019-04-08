@@ -19,8 +19,10 @@
 
 
 namespace sigmar_config{
-  double rmax=30.0; //300.0;
-  double rmin=1e-5;
+  // double rmax=30.0; //300.0;
+  // double rmin=1e-5;
+  double rmax = nlodis_config::MAXR;
+  double rmin = nlodis_config::MINR;
   double Nc=3.0;
   double sumef=6.0/9.0; // light quarks uds only.
   double CF=4.0/3.0; // (Nc()*Nc()-1.0)/(2.0*Nc());

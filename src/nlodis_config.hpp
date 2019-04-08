@@ -15,6 +15,9 @@ namespace nlodis_config
     extern double   CUBA_EPSREL;
     extern bool     VERBOSE;
     extern bool     PRINTDATA;
+
+    extern double MAXR;
+    extern double MINR;
 }
 
 #endif

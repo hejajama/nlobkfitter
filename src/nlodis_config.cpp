@@ -13,4 +13,7 @@ namespace nlodis_config
     double CUBA_EPSREL;
     bool VERBOSE = false;
     bool PRINTDATA = false;
+
+    double MAXR;
+    double MINR;
 }

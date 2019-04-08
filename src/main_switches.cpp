@@ -62,8 +62,10 @@ int main( int argc, char* argv[] )
     gsl_set_error_handler(&ErrHandlerCustom);
 
         // NLO DIS SIGMA_R COMPUTATION CONFIGS
-        nlodis_config::CUBA_EPSREL = 2e-2;
+        nlodis_config::CUBA_EPSREL = 15e-3;
         nlodis_config::CUBA_MAXEVAL= 2e7;
+        nlodis_config::MINR = 1e-5;
+        nlodis_config::MAXR = 50;
         nlodis_config::PRINTDATA = true;
         bool useNLO = true;
         //bool useSUB = true;               // Set by a command line switch in swarmscan
@@ -74,20 +76,23 @@ int main( int argc, char* argv[] )
         //bool useKCBK = false;
         //if (useResumBK == true and useKCBK == true) {cout << "Both ResumBK and KCBK enabled, exitting." << endl; return -1;}
 
-        //config::RC_LO = config::FIXED_LO;
-        config::RC_LO = config::BALITSKY_LO; // Balitsky running coupling for LO kernel
-        //config::RC_LO = config::GUILLAUME_LO;
-        config::RESUM_RC = config::RESUM_RC_PARENT; // Parent dipole in the resummation
+        // Constants
+        config::NF=3;   // Only light quarks
+        config::LAMBDAQCD = 0.241;
+        
+        config::RC_LO = config::GUILLAUME_LO;// FIXED_,PARENT_,PARENT_BETA_,SMALLEST_,BALITSKY_,FRAC_,GUILLAUME_,
+        config::RESUM_RC = config::RESUM_RC_GUILLAUME; // _BALITSKY,_PARENT,_SMALLEST,_GUILLAUME,
         config::RESUM_DLOG = true; // Resum doulbe logs
         config::RESUM_SINGLE_LOG = true; // Resum single logs
         config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
         config::KSUB = 0.65;  // Optimal value for K_sub
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
-        config::INTACCURACY = 2e-2;//0.02;
+        config::INTACCURACY = 15e-3;//0.02;
         config::MINR = 1e-5;
-        config::MAXR = 30;
+        config::MAXR = 50;
         config::RPOINTS = 100;
-        config::DE_SOLVER_STEP = 0.4; // Rungekutta step
+        // config::DE_SOLVER_STEP = 0.4; // Rungekutta step
+        config::DE_SOLVER_STEP = 0.05; // Euler step
 
         /*
         // RESUM BK
@@ -102,10 +107,6 @@ int main( int argc, char* argv[] )
             config::DE_SOLVER_STEP = 0.08; //0.02; // Euler method requires smaller step than RungeKutta!
         }
         */
-
-        // Constants
-        config::NF=3;   // Only light quarks
-        config::LAMBDAQCD = 0.241;
 
     // READING RUN CONFIGURATION FROM THE STDIN
     bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop, useSigma3;
