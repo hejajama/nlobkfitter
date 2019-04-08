@@ -54,8 +54,8 @@ int main()
     gsl_set_error_handler(&ErrHandlerCustom);
     //gsl_set_error_handler_off();
 
-        config::RC_LO = config::GUILLAUME_LO;// Balitsky running coupling for LO kernel
-        config::RESUM_RC = config::RESUM_RC_GUILLAUME; // Parent dipole in the resummation
+        config::RC_LO = config::GUILLAUME_LO;// FIXED_,PARENT_,PARENT_BETA_,SMALLEST_,BALITSKY_,FRAC_,GUILLAUME_,
+        config::RESUM_RC = config::RESUM_RC_GUILLAUME; // _BALITSKY,_PARENT,_SMALLEST,_GUILLAUME,
         config::RESUM_DLOG = false;; // Resum doulbe logs
         config::RESUM_SINGLE_LOG = false; // Resum single logs
         config::LO_BK = false; // Solve LO BK with running coupling, overrides RESUM settings

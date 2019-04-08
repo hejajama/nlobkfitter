@@ -93,13 +93,13 @@ int BKSolver::Solve(double maxy)
                     << " y=" << y << ", h=" << h << endl;
                 }
                 //if (std::abs(y - (int)(y+0.5))<0.01)
-                   // cout << "# Evolved up to " << y << "/" << nexty << ", h=" << h << endl;
+                if(VERBOSE)    cout << "# Evolved up to " << y << "/" << nexty << ", h=" << h << endl;
             }
 
             // Check ampvec
             for (int i=0; i<vecsize; i++)
             {
-                if (isinf(ampvec[i]) or isnan(ampvec[i]))
+                if (std::isinf(ampvec[i]) or std::isnan(ampvec[i]))
                 {
                     cerr << "Ampvec[i=" << i<< "]=" << ampvec[i] << " " << LINEINFO << endl;
                     exit(1);
@@ -118,7 +118,7 @@ int BKSolver::Solve(double maxy)
             }
             y = y + step;
             delete[] dydt;
-			//cout << "# Evolved at y=" << y << endl;
+			if(VERBOSE) cout << "# Evolved at y=" << y << endl;
         }
 
         yind = dipole->AddRapidity(y, ampvec);
@@ -207,7 +207,7 @@ int Evolve(double y, const double amplitude[], double dydt[], void *params)
                 cout << dipole->RVal(i) << " " << lo << " " << nlo << " " << amplitude[i] << endl;
         }
         dydt[i]= lo + nlo;
-		if (isnan(dydt[i]) or isinf(dydt[i]))
+		if (std::isnan(dydt[i]) or std::isinf(dydt[i]))
 		{
 			cerr << "Result " << dydt[i] << " at r " << dipole->RVal(i) << endl;
 			dydt[i]=0;
@@ -368,7 +368,7 @@ double Inthelperf_lo_theta(double theta, void* p)
     double Y = z;
 
 
-    if (isnan(X) or isnan(Y))
+    if (std::isnan(X) or std::isnan(Y))
     {
         cerr << "NaN! X=" << X <<", Y=" << Y << " " << LINEINFO << endl;
         exit(1);
@@ -397,7 +397,7 @@ double Inthelperf_lo_theta(double theta, void* p)
             return 0;   // Step function in (165)
         
         // Dipoles at shifter rapidity
-        ouble s02 = 1.0 - helper->solver->GetDipole()->InterpolateN(X, shifted_rapidity);
+        double s02 = 1.0 - helper->solver->GetDipole()->InterpolateN(X, shifted_rapidity);
         double s12 = 1.0 - helper->solver->GetDipole()->InterpolateN(Y, shifted_rapidity);
         double s01 = 1.0 - N_r;
         
@@ -447,7 +447,7 @@ double Inthelperf_lo_theta(double theta, void* p)
 	  
 	      // - as we evolve N, and this is written otherwise of S
 		double res =  -helper->solver->Kernel_lo(r, z, theta)  * ( shifted_S_X * shifted_S_Y - S_r );
-		if (isnan(res))
+		if (std::isnan(res))
 		{
 			cout << "NaN! rapidity " << helper->rapidity << " Xshift " << RapidityShift(r,X) << " Yshift " << RapidityShift(r,Y) << " X=" << X << ", Y=" << Y <<", r=" << r <<", S_X " << shifted_S_X << " S_Y " << shifted_S_Y << endl;
 			exit(1);
@@ -556,7 +556,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
         return -1;
     }
    
-    if (isnan(result) or isinf(result))
+    if (std::isnan(result) or std::isinf(result))
 		{
 				//cerr << "Result " << result << " at r=" << r << ", z=" << z << endl;
 				result=0;
@@ -617,7 +617,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
             
             if (status != GSL_SUCCESS)
             {
-				if (isnan(X) or isnan(Y))
+				if (std::isnan(X) or std::isnan(Y))
 					return 0;	// 0/0, probably z=x or z=y
                 cerr << "GSL error " << status <<", result " << res.val << ", as_x=" << as_x << ", x=" << x << ", r=" << r<<", X=" << X << ", Y=" << Y << ": " << " z: " << z  << LINEINFO << endl;
                 return 0;
@@ -625,7 +625,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
             resum = res.val / as_x; 
         }
 
-        if (isnan(resum))
+        if (std::isnan(resum))
         {
             resum =  1; //1.0;    // 0/0 -> 1 TODO: check
         }
@@ -716,7 +716,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
     
     
 
-    if (isnan(result) or isinf(result))
+    if (std::isnan(result) or std::isinf(result))
     {
         cerr << "infnan " << LINEINFO << ", r=" << r << ", X=" << X << ", Y=" << Y << endl;
         exit(1);
@@ -1151,7 +1151,7 @@ double Inthelperf_nlo(double r, double z, double theta_z, double z2, double thet
   
 
 
-	if (isnan(result) or isinf(result))
+	if (std::isnan(result) or std::isinf(result))
 	{
         return 0;    
     }
@@ -1203,7 +1203,7 @@ double BKSolver::Kernel_nlo(double r, double X, double Y, double X2, double Y2, 
         + SQR(r) / ( SQR(X*Y2*z_m_z2) )
         ) * 2.0*std::log( X*Y2/(X2*Y) );
 
-    if (isnan(kernel) or isinf(kernel))
+    if (std::isnan(kernel) or std::isinf(kernel))
     {
         //cerr << "Kernel " << kernel <<", r=" << r <<", X=" << X << ", Y=" << Y <<", X2=" << X2 <<", Y2=" << Y2 <<", z-z2=" << z_m_z2 << endl;
         return 0;
@@ -1224,7 +1224,7 @@ double BKSolver::Kernel_nlo_fermion(double r, double X, double Y, double X2, dou
     kernel *= NF/NC;        // Divided by NC, as in the kernel we have as^2 nc nf/(8pi^4), but
                     // this kernel is multiplied yb as^2 nc^2/(8pi^4)
 
-    if (isinf(kernel) or isnan(kernel))
+    if (std::isinf(kernel) or std::isnan(kernel))
         return 0;
         
 
@@ -1280,7 +1280,7 @@ double BKSolver::Kernel_nlo_conformal_1(double r, double X, double Y, double X2,
                                       + 2.0*SQR(r/(z_m_z2*X2*Y)) * 2.0*std::log(r*z_m_z2/(X*Y2));
     
     
-    if (isinf(result) or isnan(result))
+    if (std::isinf(result) or std::isnan(result))
         return 0;
 
     result /= 2.0;      // Conformal kernel is multiplied by as^2 Nc^2/(8pi^4) in the Inthelperf_nlo function,

@@ -292,7 +292,7 @@ double Dipole::YVal(unsigned int yind)
 
 Dipole::~Dipole()
 {
-    cout << "Destroying dipole..." << endl;
+    if(VERBOSE)     cout << "Destroying dipole..." << endl;
     if (dipole_interp != NULL)
     {
         delete dipole_interp;
