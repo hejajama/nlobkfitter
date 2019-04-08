@@ -447,7 +447,7 @@ double Inthelperf_lo_theta(double theta, void* p)
 	  
 	      // - as we evolve N, and this is written otherwise of S
 		double res =  -helper->solver->Kernel_lo(r, z, theta)  * ( shifted_S_X * shifted_S_Y - S_r );
-		if (isnan(res))
+		if (std::isnan(res))
 		{
 			cout << "NaN! rapidity " << helper->rapidity << " Xshift " << RapidityShift(r,X) << " Yshift " << RapidityShift(r,Y) << " X=" << X << ", Y=" << Y <<", r=" << r <<", S_X " << shifted_S_X << " S_Y " << shifted_S_Y << endl;
 			exit(1);
