@@ -33,6 +33,8 @@
 
  #include <gsl/gsl_errno.h>
 
+ #include "gitsha1.h"
+
 using namespace std;
 using namespace ROOT::Minuit2;
 //void ErrHandler(const char * reason,const char * file,int line,int gsl_errno);
