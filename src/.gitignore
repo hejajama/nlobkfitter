@@ -1,0 +1,3 @@
+# Ignore custom makefiles
+*.[oa]
+*.cstm
