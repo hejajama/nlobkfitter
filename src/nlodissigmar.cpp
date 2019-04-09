@@ -432,12 +432,18 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
             }
             if (!computeNLO && useMasses)
             {
-				theory=0;
-				if (datasets[dataset]->OnlyCharm(i)==false)
-	                theory = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj , y, false );
-				if (xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) < 0.01 and useCharm)
-					theory_charm = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) , y, true ); // charm
-                ++calccount;
+		theory=0;
+		if (datasets[dataset]->OnlyCharm(i)==false)
+	            theory = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj , y, false );
+		if (xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) < 0.01 and useCharm)
+		{
+		    theory_charm = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) , y, true ); // charm
+                    if (datasets[dataset]->OnlyCharm(i) == true)
+                        theory = theory_charm;
+                    else
+                        theory = theory + theory_charm;
+                }
+           	     ++calccount;
             }
             
             if (computeNLO && !UseSub) // UNSUB SCHEME Full NLO impact factors for reduced cross section
