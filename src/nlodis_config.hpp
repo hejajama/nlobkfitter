@@ -18,6 +18,15 @@ namespace nlodis_config
 
     extern double MAXR;
     extern double MINR;
+
+    enum RunningCouplingDIS
+    {
+        FIXED,
+        PARENT,      // Parent dipole where all beta terms are included
+		GUILLAUME // 1708.06557
+    };
+    extern RunningCouplingDIS RC_DIS;
+
 }
 
 #endif

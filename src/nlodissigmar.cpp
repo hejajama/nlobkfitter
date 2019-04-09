@@ -346,9 +346,18 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     // NLO: set runningcoupling and C2=Csq for the object.
     ComputeSigmaR::CmptrMemFn alphas_temppointer;
     ComputeSigmaR::CmptrMemFn_void alphas_temppointer_QG;
-    if      (config::RC_LO == config::FIXED_LO){    alphas_temppointer = &ComputeSigmaR::alpha_bar_fixed;      alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_fixed;               cout << "Using FIXED_LO" << endl;}
-    else if (config::RC_LO == config::BALITSKY_LO){ alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd; alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_pd;          cout << "Using parent dipole RC" << endl;}
-    else if (config::RC_LO == config::GUILLAUME_LO){alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd; alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_guillaume;   cout << "Using Guillaume RC" << endl;}
+    if      (nlodis_config::RC_DIS == nlodis_config::FIXED){
+        alphas_temppointer = &ComputeSigmaR::alpha_bar_fixed;
+        alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_fixed;
+        cout << "Using FIXED_LO" << endl;}
+    else if (nlodis_config::RC_DIS == nlodis_config::PARENT){
+        alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd;
+        alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_pd;
+        cout << "Using parent dipole RC" << endl;}
+    else if (nlodis_config::RC_DIS == nlodis_config::GUILLAUME){
+        alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd;
+        alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_guillaume;
+        cout << "Using Guillaume RC" << endl;}
     else {cout << "Problem with the choice of runnincoupling. Unkonwn config::RC_LO." << endl;}
     SigmaComputer.SetRunningCoupling(alphas_temppointer);
     SigmaComputer.SetRunningCoupling_QG(alphas_temppointer_QG);

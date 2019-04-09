@@ -16,4 +16,6 @@ namespace nlodis_config
 
     double MAXR;
     double MINR;
+
+    RunningCouplingDIS RC_DIS;
 }

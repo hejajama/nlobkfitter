@@ -80,6 +80,7 @@ int main( int argc, char* argv[] )
         config::NF=3;   // Only light quarks
         config::LAMBDAQCD = 0.241;
         
+        nlodis_config::RC_DIS = nlodis_config::GUILLAUME;
         config::RC_LO = config::GUILLAUME_LO;// FIXED_,PARENT_,PARENT_BETA_,SMALLEST_,BALITSKY_,FRAC_,GUILLAUME_,
         config::RESUM_RC = config::RESUM_RC_GUILLAUME; // _BALITSKY,_PARENT,_SMALLEST,_GUILLAUME,
         config::RESUM_DLOG = true; // Resum doulbe logs
