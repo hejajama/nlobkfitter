@@ -298,9 +298,9 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
 
     cout << "=== Initializing Chi^2 regression === "<< " parameters (" << PrintVector(par) << ")" << endl;
     // Manual limiting for parameter range as a fail safe for Minuit2 craziness:
-    if (  (qs0sqr < 0) || (fitsigma0 < 0) || (alphas_scaling < 0) || (anomalous_dimension < 0) || (e_c < 0.4) || (initialconditionX0 < 0.01) ||
-          (qs0sqr > 100) 	     || (fitsigma0 > 1000) 	   || (alphas_scaling > 1000)	      || (anomalous_dimension > 2) ) {
-            chisqr = 1e7 * ( 1.0 + abs(qs0sqr) + abs(fitsigma0) + abs(alphas_scaling) + abs(anomalous_dimension) + abs(e_c - 0.4)); // Should be some crazy large chisqr to deter Minuit2 from using this kind of parametrization.
+    if (  (qs0sqr < 0)    || (alphas_scaling < 0)     || (anomalous_dimension < 0) || (e_c < 0.4) || (initialconditionX0 < 0.01) ||
+          (qs0sqr > 100)  || (alphas_scaling > 1000)  || (anomalous_dimension > 2) ) {
+            chisqr = 1e7 * ( 1.0 + abs(qs0sqr) + abs(alphas_scaling) + abs(anomalous_dimension) + abs(e_c - 0.4)); // Should be some crazy large chisqr to deter Minuit2 from using this kind of parametrization.
             cout << endl << "# Calculated ILL PARAMETER chi^2 = " << chisqr  << ", parameters (" << PrintVector(par) << ")" << endl<<endl;
             return chisqr;
           }
@@ -462,7 +462,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
               cerr << "ERROR: Multiple computations. abort." << "count="<< calccount << endl;
               theory = 99999999;
               thdata[dataind] = 99999999;
-              exit(1)
+              exit(1);
             }
 
             if (std::isnan(theory) or std::isinf(theory))
@@ -483,7 +483,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     
     // Output for plotting
     if(nlodis_config::PRINTDATA){
-        for(int i=0, i<var_xbj.size(), i++){
+        for(int i=0; i<var_xbj.size(); i++){
         #pragma omp critical
         cout    << setw(10) << var_xbj[i]      << " "
                 << setw(10) << var_qsqr[i]     << " "

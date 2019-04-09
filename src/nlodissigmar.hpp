@@ -167,7 +167,7 @@ public:
     double ILNLOsigma3(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) ;
 
     double LLOp(double Q, double x) ;
-    double LLOpMass(double Q, double x) ;
+    double LLOpMass(double Q, double x, bool charm) ;
     double LNLOdip(double Q, double x) ;
     double LNLOdip_z2(double Q, double x) ;
     double LNLOqgunsub(double Q, double x) ;
@@ -187,7 +187,7 @@ public:
 
 
     double TLOp(double Q, double x) ;
-    double TLOpMass(double Q, double x) ;
+    double TLOpMass(double Q, double x, bool charm) ;
     double TNLOdip(double Q, double x) ;
     double TNLOdip_z2(double Q, double x) ;
     double TNLOqgunsub(double Q, double x) ;

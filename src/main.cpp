@@ -30,7 +30,7 @@
 #include <Minuit2/MnMinimize.h>
 #include <Minuit2/MnSimplex.h>
 
- #include <gsl/gsl_errno.h>
+#include <gsl/gsl_errno.h>
 
 #include "gitsha1.h"
 
