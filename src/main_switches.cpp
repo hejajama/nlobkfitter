@@ -110,7 +110,7 @@ int main( int argc, char* argv[] )
 
     // READING RUN CONFIGURATION FROM THE STDIN
     bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop, useSigma3;
-    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q sigma0/2 C^2 X0 gamma Q0sq Y0";
+    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q C^2 X0 gamma Q0sq Y0 eta0";
     if (argc<2){ cout << helpstring << endl; return 0;}
     // Argv[0] is the name of the program
 
@@ -156,25 +156,27 @@ int main( int argc, char* argv[] )
     int argi=5; argi++;
     // reading fit initial condition parameters:
     double icqs0sq   = stod( argv [argi] ); argi++;
-    double icsigma0  = stod( argv [argi] ); argi++;
+    // double icsigma0  = stod( argv [argi] ); argi++;
     double iccsq     = stod( argv [argi] ); argi++;
     double icx0      = stod( argv [argi] ); argi++;
     double icgamma   = stod( argv [argi] ); argi++;
     double icQ0sq    = stod( argv [argi] ); argi++;
-    double icY0      = stod( argv [argi] );
+    double icY0      = stod( argv [argi] ); argi++;
+    double icEta0    = stod( argv [argi] ); argi++;
 
 
     MnUserParameters parameters;
     // Fit parameters, first value is starting value, second is uncertainty
         //if(argc = 13){
         parameters.Add("qs0sqr",                icqs0sq , 0.2);
-        parameters.Add("fitsigma0",             icsigma0, 10.0); // 1mb = 2.568 GeV² // (2.568)*16.36
+        // parameters.Add("fitsigma0",             icsigma0, 10.0); // 1mb = 2.568 GeV² // (2.568)*16.36
         parameters.Add("alphascalingC2",        iccsq,    20.0);
         parameters.Add("e_c", 1.0 );
         parameters.Add("anomalous_dimension",   icgamma);
         parameters.Add("initialconditionX0",    icx0 );
         parameters.Add("initialconditionY0",    icY0 );
         parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
+        parameters.Add("eta0", icEta0 );
         //}
         /*else{
         cout << "INSUFFICIENT RUN PARAMETERS, running a preset test run:" << endl;
@@ -197,7 +199,7 @@ int main( int argc, char* argv[] )
         // Set limits
         //
         parameters.SetLimits("qs0sqr",              0.001 , 0.7);
-        parameters.SetLimits("fitsigma0",           1.0   , 40.0);
+        // parameters.SetLimits("fitsigma0",           1.0   , 40.0);
         parameters.SetLimits("alphascalingC2",      0.1  ,	30.0);
         //parameters.SetLimits("e_c",                 0.4   , 10.0);
         //parameters.SetLimits("anomalous_dimension", 0.1   ,	2.0);
