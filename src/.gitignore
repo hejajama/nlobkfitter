@@ -1,3 +1,5 @@
 # Ignore custom makefiles
-*.[oa]
 *.cstm
+
+# Ignore build related files
+*.[oa]
