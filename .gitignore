@@ -3,6 +3,10 @@
 
 # Ignore build related files
 *.[oa]
+fit
+swarmscan
+tool
+
 
 # Editor files
 .vscode/
