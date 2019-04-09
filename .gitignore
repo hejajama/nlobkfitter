@@ -1,1 +1,8 @@
+# Ignore custom makefiles
+*.cstm
+
+# Ignore build related files
+*.[oa]
+
+# Editor files
 .vscode/
