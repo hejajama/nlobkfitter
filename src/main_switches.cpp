@@ -38,7 +38,7 @@
 using namespace std;
 using namespace ROOT::Minuit2;
 //void ErrHandler(const char * reason,const char * file,int line,int gsl_errno);
-int errors_mmyiss;
+int errors_count;
 void ErrHandlerCustom(const char * reason,
                         const char * file,
                         int line,
@@ -52,8 +52,8 @@ void ErrHandlerCustom(const char * reason,
     // Ugly hack, comes from the edges of the z integral in virtual_photon.cpp
     // Overflows come from IPsat::bint when it is done analytically
     // Hope is that these errors are handled correctly everywhere
-    errors_mmyiss++;
-    std::cerr << file << ":"<< line <<": Error " << errors_mmyiss << ": " <<reason
+    errors_count++;
+    std::cerr << file << ":"<< line <<": Error " << errors_count << ": " <<reason
             << " (code " << gsl_errno << ")." << std::endl;
 }
 

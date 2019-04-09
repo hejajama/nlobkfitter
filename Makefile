@@ -13,5 +13,5 @@ fit: $(OBJECTS) src/main.o
 	g++ $(OBJECTS) src/main.o amplitudelib_v2/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o fit $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
 
 clean:
-	rm -f $(OBJECTS) $(AMPLITUDELIBO) src/main.o
+	rm -f $(OBJECTS) $(AMPLITUDELIBO) src/main.o src/main_switches.o
 	rm -f fit	
