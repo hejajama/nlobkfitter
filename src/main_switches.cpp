@@ -80,6 +80,8 @@ int main( int argc, char* argv[] )
         config::NF=3;   // Only light quarks
         config::LAMBDAQCD = 0.241;
         
+        config::VERBOSE = true;
+
         nlodis_config::RC_DIS = nlodis_config::GUILLAUME;
         config::RC_LO = config::GUILLAUME_LO;// FIXED_,PARENT_,PARENT_BETA_,SMALLEST_,BALITSKY_,FRAC_,GUILLAUME_,
         config::RESUM_RC = config::RESUM_RC_GUILLAUME; // _BALITSKY,_PARENT,_SMALLEST,_GUILLAUME,
@@ -88,12 +90,12 @@ int main( int argc, char* argv[] )
         config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
         config::KSUB = 0.65;  // Optimal value for K_sub
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
-        config::INTACCURACY = 15e-3;//0.02;
+        config::INTACCURACY = 2*15e-3;//0.02;
         config::MINR = 1e-5;
         config::MAXR = 50;
         config::RPOINTS = 100;
         // config::DE_SOLVER_STEP = 0.4; // Rungekutta step
-        config::DE_SOLVER_STEP = 0.05; // Euler step
+        config::DE_SOLVER_STEP = 0.5; // Euler step
 
         /*
         // RESUM BK
