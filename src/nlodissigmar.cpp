@@ -284,15 +284,15 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     double initialconditionY0  = par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
-	double qMass_charm = 1.35;
+    double qMass_charm = 1.35;
     bool useMasses = true;
-	bool useCharm = false;
+    bool useCharm = false;
 
 
-	if (qs0sqr < 0.0001 or qs0sqr > 100 or alphas_scaling < 0.01 or alphas_scaling > 99999
+  if (qs0sqr < 0.0001 or qs0sqr > 100 or alphas_scaling < 0.01 or alphas_scaling > 99999
         /*or fitsigma0 < 0.1 or fitsigma0 > 999 */
         or e_c < 1 or e_c > 9999)
-		return 9999999;
+    return 9999999;
 
     cout << "=== Initializing Chi^2 regression === "<< " parameters (" << PrintVector(par) << ")" << endl;
     // Manual limiting for parameter range as a fail safe for Minuit2 craziness:
@@ -322,7 +322,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     // cout << "=== Solving BK ===" << endl;
 
     solver.SetAlphasScaling(alphas_scaling);
-	solver.SetEta0(par[ parameters.Index("eta0")]);
+    solver.SetEta0(par[ parameters.Index("eta0")]);
     solver.Solve(maxy);                                // Solve up to maxy
 
     //solver.GetDipole()->Save("output_dipole_lobk_x0=10_euler_DESTEP0.02.dat");
@@ -340,7 +340,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     SigmaComputer.SetY0(initialconditionY0);
     SigmaComputer.SetQ0Sqr(icTypicalPartonVirtualityQ0sqr);
     SigmaComputer.SetQuarkMassLight(qMass_light);
-	SigmaComputer.SetQuarkMassCharm(qMass_charm);
+    SigmaComputer.SetQuarkMassCharm(qMass_charm);
     // NLO: set runningcoupling and C2=Csq for the object.
     ComputeSigmaR::CmptrMemFn alphas_temppointer;
     ComputeSigmaR::CmptrMemFn_void alphas_temppointer_QG;
@@ -402,7 +402,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
         {
             // Progress indication during fitting.
             #pragma omp critical
-            cout << "\r" << i << "/" << totalpoints << flush;
+            cout << "\r" << i+1 << "/" << totalpoints << flush;
 
             // Index for this in the final data array
             int dataind=0;
@@ -445,7 +445,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
                     else
                         theory = theory + theory_charm;
                 }
-           	     ++calccount;
+                  ++calccount;
             }
             
             if (computeNLO && !UseSub) // UNSUB SCHEME Full NLO impact factors for reduced cross section
@@ -494,6 +494,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
             points = points + datasets[dataset]->Weight();
         }
     }
+    cout << endl;
     // Minimize sigma02
     std::vector<double> sigma02fit = FindOptimalSigma02(datavals,dataerrs, thdata);
     chisqr = sigma02fit[1];
@@ -555,7 +556,7 @@ namespace cuba_config{
 }
 
 void Cuba(string method, int ndim, integrand_t integrand,
-	  void *userdata, double *integral, double *error, double *prob) {
+    void *userdata, double *integral, double *error, double *prob) {
   // common arguments
   int ncomp=1, nvec=1, seed=0, mineval=0, last=4;
   int nregions, neval, fail;
@@ -565,18 +566,18 @@ void Cuba(string method, int ndim, integrand_t integrand,
     // Vegas-specific arguments
     int nstart=1000, nincrease=1000, nbatch=1000, gridno=0;
     Vegas(ndim,ncomp,integrand,userdata,nvec,nlodis_config::CUBA_EPSREL,
-	  cuba_config::epsabs,cuba_config::verbose,seed,mineval,
-	  nlodis_config::CUBA_MAXEVAL,nstart,nincrease,nbatch,gridno,statefile,
-	  spin,&neval,&fail,integral,error,prob);
+    cuba_config::epsabs,cuba_config::verbose,seed,mineval,
+    nlodis_config::CUBA_MAXEVAL,nstart,nincrease,nbatch,gridno,statefile,
+    spin,&neval,&fail,integral,error,prob);
   }
   else if(method=="suave"){
     // Suave-specific arguments
     int nnew=2e3, nmin=2; // nnew=10e3
     double flatness=25; //25;
     Suave(ndim,ncomp,integrand,userdata,nvec,nlodis_config::CUBA_EPSREL,
-	  cuba_config::epsabs,cuba_config::verbose | last,seed,mineval,
-	  nlodis_config::CUBA_MAXEVAL,nnew,nmin,flatness,statefile,spin,
-	  &nregions,&neval,&fail,integral,error,prob);
+    cuba_config::epsabs,cuba_config::verbose | last,seed,mineval,
+    nlodis_config::CUBA_MAXEVAL,nnew,nmin,flatness,statefile,spin,
+    &nregions,&neval,&fail,integral,error,prob);
   }
   else if(method=="divonne"){
     if(ndim==1) ndim=2;
@@ -584,19 +585,19 @@ void Cuba(string method, int ndim, integrand_t integrand,
     int key1=-4e3, key2=-4e3, key3=1, maxpass=10, ngiven=0, nextra=0;
     double border=1e-4, maxchisq=10, mindeviation=0.1;
     Divonne(ndim,ncomp,integrand,userdata,nvec,nlodis_config::CUBA_EPSREL,
-	    cuba_config::epsabs,cuba_config::verbose,seed,mineval,
-	    nlodis_config::CUBA_MAXEVAL,key1,key2,key3,maxpass,border,maxchisq,
-	    mindeviation,ngiven,ndim,NULL,nextra,NULL,statefile,spin,
-	    &nregions,&neval,&fail,integral,error,prob);
+      cuba_config::epsabs,cuba_config::verbose,seed,mineval,
+      nlodis_config::CUBA_MAXEVAL,key1,key2,key3,maxpass,border,maxchisq,
+      mindeviation,ngiven,ndim,NULL,nextra,NULL,statefile,spin,
+      &nregions,&neval,&fail,integral,error,prob);
   }
   else if(method=="cuhre"){
     if(ndim==1) ndim=2;
     // Cuhre-specific arguments
     int key=0;
     Cuhre(ndim,ncomp,integrand,userdata,nvec,nlodis_config::CUBA_EPSREL,
-	  cuba_config::epsabs,cuba_config::verbose | last,mineval,
-	  nlodis_config::CUBA_MAXEVAL,key,statefile,spin,
-	  &nregions,&neval,&fail,integral,error,prob);
+    cuba_config::epsabs,cuba_config::verbose | last,mineval,
+    nlodis_config::CUBA_MAXEVAL,key,statefile,spin,
+    &nregions,&neval,&fail,integral,error,prob);
   }
 }
 
@@ -633,11 +634,11 @@ double ComputeSigmaR::heaviside_theta(double x) {
 
 // RUNNING COUPLINGS
 double ComputeSigmaR::alpha_bar_running_pd_sharpcutoff( double rsq ) { // alphabar = Nc/M_PI * alphas
-	double logvar = gsl_sf_log(	(4*(alpha_scaling_C2_)/(rsq*Sq(lambdaqcd))	)	);
-	double AlphaSres = 12*M_PI/(	(33.0-2*Nc)*logvar );
-	if ((logvar<0) || (AlphaSres>0.7)) {
-		AlphaSres = 0.7;
-		}
+  double logvar = gsl_sf_log(	(4*(alpha_scaling_C2_)/(rsq*Sq(lambdaqcd))	)	);
+  double AlphaSres = 12*M_PI/(	(33.0-2*Nc)*logvar );
+  if ((logvar<0) || (AlphaSres>0.7)) {
+    AlphaSres = 0.7;
+    }
     return Nc/M_PI*AlphaSres;
 }
 
@@ -648,8 +649,8 @@ double ComputeSigmaR::alpha_bar_running_pd( double rsq ) { // alphabar = Nc/M_PI
     double b0 = (11.0*config::NC - 2.0*config::NF)/3.0;
 
     double AlphaSres = 4.0*M_PI / ( b0 * std::log(
-		std::pow( std::pow(alphas_mu0, 2.0/alphas_freeze_c) + std::pow(scalefactor/(rsq*lambdaqcd*lambdaqcd), 1.0/alphas_freeze_c), alphas_freeze_c)
-		) );
+    std::pow( std::pow(alphas_mu0, 2.0/alphas_freeze_c) + std::pow(scalefactor/(rsq*lambdaqcd*lambdaqcd), 1.0/alphas_freeze_c), alphas_freeze_c)
+    ) );
   return Nc/M_PI*AlphaSres;
 }
 
@@ -676,8 +677,8 @@ double ComputeSigmaR::alpha_bar_QG_running_pd( void *userdata ) { // alphabar = 
     double b0 = (11.0*config::NC - 2.0*config::NF)/3.0;
 
     double AlphaSres = 4.0*M_PI / ( b0 * std::log(
-		std::pow( std::pow(alphas_mu0, 2.0/alphas_freeze_c) + std::pow(scalefactor/(rsq*lambdaqcd*lambdaqcd), 1.0/alphas_freeze_c), alphas_freeze_c)
-		) );
+    std::pow( std::pow(alphas_mu0, 2.0/alphas_freeze_c) + std::pow(scalefactor/(rsq*lambdaqcd*lambdaqcd), 1.0/alphas_freeze_c), alphas_freeze_c)
+    ) );
   return Nc/M_PI*AlphaSres;
 }
 
@@ -686,7 +687,7 @@ double ComputeSigmaR::alpha_bar_QG_running_guillaume( void *userdata ) { // alph
     double x01sq=dataptr->x01sq;
     double x02sq=dataptr->x02sq;
     double x21sq=dataptr->x21sq;
-	double r_eff_sqr = x01sq * std::pow( x21sq / (x02sq), (x02sq-x21sq)/(x01sq) ); // r = x01 , X = x02 , Y = x21 , Q_{123} = 4C^2 / r_eff_sqr.
+    double r_eff_sqr = x01sq * std::pow( x21sq / (x02sq), (x02sq-x21sq)/(x01sq) ); // r = x01 , X = x02 , Y = x21 , Q_{123} = 4C^2 / r_eff_sqr.
 
 
     double scalefactor = 4.0*alpha_scaling_C2_;
@@ -695,8 +696,8 @@ double ComputeSigmaR::alpha_bar_QG_running_guillaume( void *userdata ) { // alph
     double b0 = (11.0*config::NC - 2.0*config::NF)/3.0;
 
     double AlphaSres = 4.0*M_PI / ( b0 * std::log(
-		std::pow( std::pow(alphas_mu0, 2.0/alphas_freeze_c) + std::pow(scalefactor/(r_eff_sqr*lambdaqcd*lambdaqcd), 1.0/alphas_freeze_c), alphas_freeze_c)
-		) );
+    std::pow( std::pow(alphas_mu0, 2.0/alphas_freeze_c) + std::pow(scalefactor/(r_eff_sqr*lambdaqcd*lambdaqcd), 1.0/alphas_freeze_c), alphas_freeze_c)
+    ) );
   return Nc/M_PI*AlphaSres;
 }
 
@@ -724,8 +725,8 @@ double ComputeSigmaR::K_resum (double rsq, double x20sq, double x21sq) {
             
             if (status != GSL_SUCCESS)
             {
-				if (std::isnan(x20sq) or std::isnan(x21sq))
-					return 0;	// 0/0, probably z=x or z=y
+                if (std::isnan(x20sq) or std::isnan(x21sq))
+                    return 0;	// 0/0, probably z=x or z=y
                 cerr << "GSL error " << status <<", result " << res.val << ", as_x=" << as_x << ", xsq=" << xsq << LINEINFO << endl;
                 return 0;
             }
@@ -838,13 +839,13 @@ double ComputeSigmaR::LLOpMass(double Q, double x, bool charm) {
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
-	if (charm==false)
-    	userdata.qMass_light=qMass_light;
-	else
-		userdata.qMass_light=qMass_charm;
+    if (charm==false)
+        userdata.qMass_light=qMass_light;
+    else
+        userdata.qMass_light=qMass_charm;
     userdata.ComputerPtr=this;
-	double ef = sumef;
-	if (charm) ef = 4.0/9.0;
+    double ef = sumef;
+    if (charm) ef = 4.0/9.0;
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*ef;
     Cuba(cubamethod,ndim,integrand_ILLOpMass,&userdata,&integral,&error,&prob);
     return fac*2.0*M_PI*nlodis_config::MAXR*integral;
@@ -920,7 +921,7 @@ double ComputeSigmaR::TLOpMass(double Q, double x, bool charm) {
   userdata.Q=Q;
   userdata.xbj=x;
   if (charm==false)
-  	userdata.qMass_light=qMass_light;
+    userdata.qMass_light=qMass_light;
   else
     userdata.qMass_light = qMass_charm;
   userdata.ComputerPtr=this;
@@ -1000,109 +1001,109 @@ int integrand_ILdip_z2(const int *ndim, const double x[], const int *ncomp, doub
 }
 
 double ComputeSigmaR::Bessel0Tripole(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq, double X3sq) {
-		double x01=sqrt(x01sq);
-		double x02=sqrt(x02sq);
-		double x21=sqrt(x21sq);
+    double x01=sqrt(x01sq);
+    double x02=sqrt(x02sq);
+    double x21=sqrt(x21sq);
         double facNLO = 4.0*Sq(Q*gsl_sf_bessel_K0(Q*sqrt(X3sq)));
-		return facNLO*(1-SrTripole(x01,x02,x21,x));
+    return facNLO*(1-SrTripole(x01,x02,x21,x));
 }
 
 double ComputeSigmaR::ILNLOqg(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) { // old ILNLObeufQG
-  	double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
-  	double x20x21 = -0.5*(x01sq - x21sq - x02sq);
+    double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
+    double x20x21 = -0.5*(x01sq - x21sq - x02sq);
     double X3sq 	= z1*(1.0 - z1 - z2)*x01sq + z2*(1.0 - z1 - z2)*x02sq + z2*z1*x21sq;
     double X010sq = z1*(1.0 - z1)*x01sq;
 
-  	double fac1 = Sq(z1)*Sq(1.0 - z1);
+    double fac1 = Sq(z1)*Sq(1.0 - z1);
     double xi 	= z2/(1.0-z1);
-  	double fun1 = 1+Sq(1-xi);
+    double fun1 = 1+Sq(1-xi);
     double fun2 = x20x21/(x02sq*x21sq);
-  	double fac2 = 1/x02sq - fun2;
+    double fac2 = 1/x02sq - fun2;
     double fac3 = Sq(xi)*fun2;
 
     double facNLO1 = Bessel0Tripole(Q, x, z1, z2, x01sq, x02sq, x21sq, X3sq);
     double facNLO2 = Bessel0Tripole(Q, x, z1, z2, x01sq, 0    , x01sq, X010sq);
 
-  	double res = fac1*((fun1*fac2)*(facNLO1 - facNLO2) + fac3*facNLO1 );
-  	return res;
+    double res = fac1*((fun1*fac2)*(facNLO1 - facNLO2) + fac3*facNLO1 );
+    return res;
 }
 
 double ComputeSigmaR::ILNLOsigma3(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) {
-  	double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
+    double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
 
-  	double impactfac_lo = ILLO(Q,z1,x01sq);
+    double impactfac_lo = ILLO(Q,z1,x01sq);
     double BKkernel = (K_kernel(x01sq,x02sq,x21sq) - 1.0)*2*K_lobk(x01sq,x02sq,x21sq);
     double S012 = SrTripole(sqrt(x01sq),sqrt(x02sq),sqrt(x21sq),x);
     double Sdipole_bkevol = Sr(sqrt(x01sq),x) - S012;
 
-  	double res = BKkernel*Sdipole_bkevol*impactfac_lo;
-  	return res;
+    double res = BKkernel*Sdipole_bkevol*impactfac_lo;
+    return res;
 }
 
 double ComputeSigmaR::ILNLOqgRisto(double Q, double x, double z0, double z2, double x01sq, double x02sq, double phix0102){ // old ILNLOristo2QG
-	double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
-	double x20x21 = -0.5*(x01sq - x21sq - x02sq);
-	double z3 = 1 - z0 - z2;
-	double X3sq = z0*z3*x01sq + z0*z2*x02sq + z2*z3*x21sq;
+  double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
+  double x20x21 = -0.5*(x01sq - x21sq - x02sq);
+  double z3 = 1 - z0 - z2;
+  double X3sq = z0*z3*x01sq + z0*z2*x02sq + z2*z3*x21sq;
 
-	double fun2 = x20x21/(x02sq*x21sq);
+  double fun2 = x20x21/(x02sq*x21sq);
 
-	// FIRST FORM
-	double facterm1 = Sq(z3) * ( 2*z0*(z0+z2) + Sq(z2) )/x02sq;
-	double facterm2 = Sq(z0) * ( 2*z3*(z2+z3) + Sq(z2) )/x21sq;
-	double facterm3 = 2*( (z0+z2)*z0*Sq(z3) + (z2+z3)*z3*Sq(z0) ) * fun2;
+  // FIRST FORM
+  double facterm1 = Sq(z3) * ( 2*z0*(z0+z2) + Sq(z2) )/x02sq;
+  double facterm2 = Sq(z0) * ( 2*z3*(z2+z3) + Sq(z2) )/x21sq;
+  double facterm3 = 2*( (z0+z2)*z0*Sq(z3) + (z2+z3)*z3*Sq(z0) ) * fun2;
 
-	/* // SECOND FORM
-	double facterm1 = Sq(z3) * ( 2*z0*(z0+z2) + Sq(z2) ) * ( 1/(x02sq) - fun2 );
-	double facterm2 = Sq(z0) * ( 2*z3*(z2+z3) + Sq(z2) ) * ( 1/(x21sq) - fun2 );
-	double facterm1expn = Sq(z3) * ( 2*z0*(z0+z2) + Sq(z2) )*(1/x02sq);
-	double facterm2expo = Sq(z0) * ( 2*z3*(z2+z3) + Sq(z2) )*(1/x21sq);
-	double facterm3 = Sq(z2)*( Sq(z0) + Sq(z3) ) * fun2;
-	*/
+  /* // SECOND FORM
+  double facterm1 = Sq(z3) * ( 2*z0*(z0+z2) + Sq(z2) ) * ( 1/(x02sq) - fun2 );
+  double facterm2 = Sq(z0) * ( 2*z3*(z2+z3) + Sq(z2) ) * ( 1/(x21sq) - fun2 );
+  double facterm1expn = Sq(z3) * ( 2*z0*(z0+z2) + Sq(z2) )*(1/x02sq);
+  double facterm2expo = Sq(z0) * ( 2*z3*(z2+z3) + Sq(z2) )*(1/x21sq);
+  double facterm3 = Sq(z2)*( Sq(z0) + Sq(z3) ) * fun2;
+  */
 
-	double facBesselTrip = Bessel0Tripole(Q, x, z3, z2, x01sq, x02sq, x21sq, X3sq);
+  double facBesselTrip = Bessel0Tripole(Q, x, z3, z2, x01sq, x02sq, x21sq, X3sq);
 
-	double Qbarn = sqrt(z3*(1-z3))*Q;
-	double Qbaro = sqrt(z0*(1-z0))*Q;
-	double SKernel = 1.0 - Sr(sqrt(x01sq),x);
+  double Qbarn = sqrt(z3*(1-z3))*Q;
+  double Qbaro = sqrt(z0*(1-z0))*Q;
+  double SKernel = 1.0 - Sr(sqrt(x01sq),x);
 
   ///*
-	double facExpn, facExpo;
-	if(x02sq/x01sq>1e-8 && x02sq/x01sq<5e2){
-		facExpn = gsl_sf_exp(-x02sq/(gsl_sf_exp(M_EULER)*x01sq));
-	}else if (x02sq/x01sq<1e-8){
-		facExpn = 1;
-	}else{ facExpn = 0; }
-	if(x21sq/x01sq>1e-8 && x21sq/x01sq<5e2){
-		facExpo = gsl_sf_exp(-x21sq/(gsl_sf_exp(M_EULER)*x01sq));
-	}else if (x21sq/x01sq<1e-8){
-		facExpn = 1;
-	}else{ facExpn = 0; }
+  double facExpn, facExpo;
+  if(x02sq/x01sq>1e-8 && x02sq/x01sq<5e2){
+    facExpn = gsl_sf_exp(-x02sq/(gsl_sf_exp(M_EULER)*x01sq));
+  }else if (x02sq/x01sq<1e-8){
+    facExpn = 1;
+  }else{ facExpn = 0; }
+  if(x21sq/x01sq>1e-8 && x21sq/x01sq<5e2){
+    facExpo = gsl_sf_exp(-x21sq/(gsl_sf_exp(M_EULER)*x01sq));
+  }else if (x21sq/x01sq<1e-8){
+    facExpn = 1;
+  }else{ facExpn = 0; }
 
-	double facBesExpn, facBesExpo;
-	if(Qbarn*sqrt(x01sq)>1e-8 && Qbarn*sqrt(x01sq)<5e2){
-		facBesExpn = 4.0*Sq(Q*gsl_sf_bessel_K0(Qbarn*sqrt(x01sq)))*facExpn*SKernel;
-	}else{ facBesExpn = 0; }
-	if(Qbaro*sqrt(x01sq)>1e-8 && Qbaro*sqrt(x01sq)<5e2){
-		facBesExpo = 4.0*Sq(Q*gsl_sf_bessel_K0(Qbaro*sqrt(x01sq)))*facExpo*SKernel;
-	}else{ facBesExpo = 0; }
-	//*/
+  double facBesExpn, facBesExpo;
+  if(Qbarn*sqrt(x01sq)>1e-8 && Qbarn*sqrt(x01sq)<5e2){
+    facBesExpn = 4.0*Sq(Q*gsl_sf_bessel_K0(Qbarn*sqrt(x01sq)))*facExpn*SKernel;
+  }else{ facBesExpn = 0; }
+  if(Qbaro*sqrt(x01sq)>1e-8 && Qbaro*sqrt(x01sq)<5e2){
+    facBesExpo = 4.0*Sq(Q*gsl_sf_bessel_K0(Qbaro*sqrt(x01sq)))*facExpo*SKernel;
+  }else{ facBesExpo = 0; }
+  //*/
 
-	//double facBesExpn = 4.0*Sq(Q*gsl_sf_bessel_K0(Qbarn*sqrt(x01sq)))*gsl_sf_exp(-x02sq/(gsl_sf_exp(M_EULER)*x01sq))*SKernel;
-	//double facBesExpo = 4.0*Sq(Q*gsl_sf_bessel_K0(Qbaro*sqrt(x01sq)))*gsl_sf_exp(-x21sq/(gsl_sf_exp(M_EULER)*x01sq))*SKernel;
+  //double facBesExpn = 4.0*Sq(Q*gsl_sf_bessel_K0(Qbarn*sqrt(x01sq)))*gsl_sf_exp(-x02sq/(gsl_sf_exp(M_EULER)*x01sq))*SKernel;
+  //double facBesExpo = 4.0*Sq(Q*gsl_sf_bessel_K0(Qbaro*sqrt(x01sq)))*gsl_sf_exp(-x21sq/(gsl_sf_exp(M_EULER)*x01sq))*SKernel;
 
-	// FIRST FORM
-	double term1 = facterm1*( facBesselTrip - facBesExpn );
-	double term2 = facterm2*( facBesselTrip - facBesExpo );
-	double term3 = facterm3*facBesselTrip;
-	double res = term1 + term2 - term3;
+  // FIRST FORM
+  double term1 = facterm1*( facBesselTrip - facBesExpn );
+  double term2 = facterm2*( facBesselTrip - facBesExpo );
+  double term3 = facterm3*facBesselTrip;
+  double res = term1 + term2 - term3;
 
-	/* //SECOND FORM
-	double term1 = facterm1* facBesselTrip - facterm1expn*facBesExpn;
-	double term2 = facterm2* facBesselTrip - facterm2expo*facBesExpo;
-	double term3 = facterm3*facBesselTrip;
-	double res = term1 + term2 + term3;
-	*/
+  /* //SECOND FORM
+  double term1 = facterm1* facBesselTrip - facterm1expn*facBesExpn;
+  double term2 = facterm2* facBesselTrip - facterm2expo*facBesExpo;
+  double term3 = facterm3*facBesselTrip;
+  double res = term1 + term2 + term3;
+  */
 
   return res;
 }
@@ -1234,22 +1235,22 @@ int integrand_ILqgunsubRisto(const int *ndim, const double x[], const int *ncomp
     double X0=dataptr->icX0; //0.01;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
     double x0lim=xbj/X0;
-   double z0=(1.0-x0lim)*x[0];
-   double z2=(1.0-z0-x0lim)*x[1]+x0lim;
+    double z0=(1.0-x0lim)*x[0];
+    double z2=(1.0-z0-x0lim)*x[1]+x0lim;
     double x01=nlodis_config::MAXR*x[2];
     double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
-   double jac=(1.0-x0lim)*(1.0-z0-x0lim);
+    double jac=(1.0-x0lim)*(1.0-z0-x0lim);
     double Xrpdt=xbj/z2;
 
-   double alphabar=Optr->Alphabar(x01sq); //0.2;
+    double alphabar=Optr->Alphabar(x01sq); //0.2;
     double alphfac=alphabar*CF/Nc;
 
-   double res;
+    double res;
 
-   res =   jac*alphfac*( Optr->ILNLOqgRisto(Q,Xrpdt,z0,z2,x01sq,x02sq,phix0102) )/z2*x01*x02;
+    res =   jac*alphfac*( Optr->ILNLOqgRisto(Q,Xrpdt,z0,z2,x01sq,x02sq,phix0102) )/z2*x01*x02;
 
     if(gsl_finite(res)==1){
         *f=res;
@@ -1454,18 +1455,18 @@ int integrand_ITdip_z2(const int *ndim, const double x[], const int *ncomp, doub
 }
 
 double ComputeSigmaR::Bessel1Tripole(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq, double X3sq) {
-		double facNLO;
-		double x01=sqrt(x01sq);
-		double x02=sqrt(x02sq);
-		double x21=sqrt(x21sq);
+    double facNLO;
+    double x01=sqrt(x01sq);
+    double x02=sqrt(x02sq);
+    double x21=sqrt(x21sq);
 
-		if(Q*sqrt(X3sq)>1e-7&&Q*sqrt(X3sq)<1e2){
-			facNLO = Sq(Q*gsl_sf_bessel_K1(Q*sqrt(X3sq)));
-		}else{
-			facNLO = 0;
-		}
-		double res = facNLO*(1-SrTripole(x01,x02,x21,x));
-		return res;
+    if(Q*sqrt(X3sq)>1e-7&&Q*sqrt(X3sq)<1e2){
+      facNLO = Sq(Q*gsl_sf_bessel_K1(Q*sqrt(X3sq)));
+    }else{
+      facNLO = 0;
+    }
+    double res = facNLO*(1-SrTripole(x01,x02,x21,x));
+    return res;
 }
 
 double ComputeSigmaR::ITNLOqg(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) { // old ITNLObeufQG
@@ -1490,77 +1491,77 @@ double ComputeSigmaR::ITNLOqg(double Q, double x, double z1, double z2, double x
 }
 
 double ComputeSigmaR::ITNLOsigma3(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) {
-  	double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
+    double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
 
-  	double impactfac_lo = ITLO(Q,z1,x01sq);
+    double impactfac_lo = ITLO(Q,z1,x01sq);
     double BKkernel = (K_kernel(x01sq,x02sq,x21sq) - 1.0)*2*K_lobk(x01sq,x02sq,x21sq);
     double S012 = SrTripole(sqrt(x01sq),sqrt(x02sq),sqrt(x21sq),x);
     double Sdipole_bkevol = Sr(sqrt(x01sq),x) - S012;
 
-  	double res = BKkernel*Sdipole_bkevol*impactfac_lo;
-  	return res;
+    double res = BKkernel*Sdipole_bkevol*impactfac_lo;
+    return res;
 }
 
 double ComputeSigmaR::ITNLOqgRisto(double Q, double x, double z0, double z2, double x01sq, double x02sq, double phix0102){
-	  double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
-	  double x20x21 = -0.5*(x01sq - x21sq - x02sq);
-		double z3 = 1 - z0 - z2;
-		double X3sq = z0*z3*x01sq + z0*z2*x02sq + z2*z3*x21sq;
+    double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
+    double x20x21 = -0.5*(x01sq - x21sq - x02sq);
+    double z3 = 1 - z0 - z2;
+    double X3sq = z0*z3*x01sq + z0*z2*x02sq + z2*z3*x21sq;
 
-		double fun2 = x20x21/(x02sq*x21sq);
+    double fun2 = x20x21/(x02sq*x21sq);
 
-		double factermF = z3/(z0+z2) * ( 1-2*z3*(1-z3) ) * ( 2*z0*(z0+z2) + Sq(z2) )/x02sq;
-		double factermG = z0/(z2+z3) * ( 1-2*z0*(1-z0) ) * ( 2*z3*(z2+z3) + Sq(z2) )/x21sq;
-		double factermPI = (-2*z0*z3*(
-												(Sq(1-z0)+Sq(z0)) + (Sq(1-z3)+Sq(z3))
-												)*X3sq*fun2
-												+(2*z0*Sq(z2*z3))/(z0+z2)*x20x21/(x02sq)
-												+(2*z3*Sq(z2*z0))/(z2+z3)*x20x21/(x21sq)
-												+z0*z2*z3*(
-													Sq(z0+z2) + Sq(z2+z3) +2*(Sq(z0) + Sq(z3))
-													+Sq(z0*z3)/(Sq(z0+z2))+Sq(z0*z3)/(Sq(z2+z3))
-													-z2*( (z0+z2)/(z2+z3)+ (z2+z3)/(z0+z2) )
-													-( (1-2*z3*(1-z3))*(2*z0*(z0+z2)+Sq(z2)) )/(Sq(z0+z2))
-													-( (1-2*z0*(1-z0))*(2*z3*(z2+z3)+Sq(z2)) )/(Sq(z2+z3))
-												  )
-											  )/X3sq;
+    double factermF = z3/(z0+z2) * ( 1-2*z3*(1-z3) ) * ( 2*z0*(z0+z2) + Sq(z2) )/x02sq;
+    double factermG = z0/(z2+z3) * ( 1-2*z0*(1-z0) ) * ( 2*z3*(z2+z3) + Sq(z2) )/x21sq;
+    double factermPI = (-2*z0*z3*(
+                        (Sq(1-z0)+Sq(z0)) + (Sq(1-z3)+Sq(z3))
+                        )*X3sq*fun2
+                        +(2*z0*Sq(z2*z3))/(z0+z2)*x20x21/(x02sq)
+                        +(2*z3*Sq(z2*z0))/(z2+z3)*x20x21/(x21sq)
+                        +z0*z2*z3*(
+                          Sq(z0+z2) + Sq(z2+z3) +2*(Sq(z0) + Sq(z3))
+                          +Sq(z0*z3)/(Sq(z0+z2))+Sq(z0*z3)/(Sq(z2+z3))
+                          -z2*( (z0+z2)/(z2+z3)+ (z2+z3)/(z0+z2) )
+                          -( (1-2*z3*(1-z3))*(2*z0*(z0+z2)+Sq(z2)) )/(Sq(z0+z2))
+                          -( (1-2*z0*(1-z0))*(2*z3*(z2+z3)+Sq(z2)) )/(Sq(z2+z3))
+                          )
+                        )/X3sq;
 
-		double facBesselTrip = Bessel1Tripole(Q, x, z3, z2, x01sq, x02sq, x21sq, X3sq);
+    double facBesselTrip = Bessel1Tripole(Q, x, z3, z2, x01sq, x02sq, x21sq, X3sq);
 
-		double Qbarn = sqrt(z3*(1-z3))*Q;
-		double Qbaro = sqrt(z0*(1-z0))*Q;
-		double SKernel = 1.0 - Sr(sqrt(x01sq),x);
+    double Qbarn = sqrt(z3*(1-z3))*Q;
+    double Qbaro = sqrt(z0*(1-z0))*Q;
+    double SKernel = 1.0 - Sr(sqrt(x01sq),x);
 
     ///*
-  	double facExpn, facExpo;
-  	if(x02sq/x01sq>1e-8 && x02sq/x01sq<5e2){
-  		facExpn = gsl_sf_exp(-x02sq/(gsl_sf_exp(M_EULER)*x01sq));
-  	}else if (x02sq/x01sq<1e-8){
-  		facExpn = 1;
-  	}else{ facExpn = 0; }
-  	if(x21sq/x01sq>1e-8 && x21sq/x01sq<5e2){
-  		facExpo = gsl_sf_exp(-x21sq/(gsl_sf_exp(M_EULER)*x01sq));
-  	}else if (x21sq/x01sq<1e-8){
-  		facExpn = 1;
-  	}else{ facExpn = 0; }
+    double facExpn, facExpo;
+    if(x02sq/x01sq>1e-8 && x02sq/x01sq<5e2){
+      facExpn = gsl_sf_exp(-x02sq/(gsl_sf_exp(M_EULER)*x01sq));
+    }else if (x02sq/x01sq<1e-8){
+      facExpn = 1;
+    }else{ facExpn = 0; }
+    if(x21sq/x01sq>1e-8 && x21sq/x01sq<5e2){
+      facExpo = gsl_sf_exp(-x21sq/(gsl_sf_exp(M_EULER)*x01sq));
+    }else if (x21sq/x01sq<1e-8){
+      facExpn = 1;
+    }else{ facExpn = 0; }
 
-  	double facBesExpn, facBesExpo;
-  	if(Qbarn*sqrt(x01sq)>1e-8 && Qbarn*sqrt(x01sq)<5e2){
-  		facBesExpn = Sq(Q*gsl_sf_bessel_K1(Qbarn*sqrt(x01sq)))*facExpn*SKernel;
-  	}else{ facBesExpn = 0; }
-  	if(Qbaro*sqrt(x01sq)>1e-8 && Qbaro*sqrt(x01sq)<5e2){
-  		facBesExpo = Sq(Q*gsl_sf_bessel_K1(Qbaro*sqrt(x01sq)))*facExpo*SKernel;
-  	}else{ facBesExpo = 0; }
-  	//*/
-		//double facBesExpn = Sq(Q*gsl_sf_bessel_K1(Qbarn*sqrt(x01sq)))*gsl_sf_exp(-x02sq/(gsl_sf_exp(M_EULER)*x01sq))*SKernel;
-		//double facBesExpo = Sq(Q*gsl_sf_bessel_K1(Qbaro*sqrt(x01sq)))*gsl_sf_exp(-x21sq/(gsl_sf_exp(M_EULER)*x01sq))*SKernel;
+    double facBesExpn, facBesExpo;
+    if(Qbarn*sqrt(x01sq)>1e-8 && Qbarn*sqrt(x01sq)<5e2){
+      facBesExpn = Sq(Q*gsl_sf_bessel_K1(Qbarn*sqrt(x01sq)))*facExpn*SKernel;
+    }else{ facBesExpn = 0; }
+    if(Qbaro*sqrt(x01sq)>1e-8 && Qbaro*sqrt(x01sq)<5e2){
+      facBesExpo = Sq(Q*gsl_sf_bessel_K1(Qbaro*sqrt(x01sq)))*facExpo*SKernel;
+    }else{ facBesExpo = 0; }
+    //*/
+    //double facBesExpn = Sq(Q*gsl_sf_bessel_K1(Qbarn*sqrt(x01sq)))*gsl_sf_exp(-x02sq/(gsl_sf_exp(M_EULER)*x01sq))*SKernel;
+    //double facBesExpo = Sq(Q*gsl_sf_bessel_K1(Qbaro*sqrt(x01sq)))*gsl_sf_exp(-x21sq/(gsl_sf_exp(M_EULER)*x01sq))*SKernel;
 
-		double term1 = factermF*( facBesselTrip - facBesExpn );
-		double term2 = factermG*( facBesselTrip - facBesExpo );
-		double term3 = factermPI*facBesselTrip;
-		double res = term1 + term2 + term3;
+    double term1 = factermF*( facBesselTrip - facBesExpn );
+    double term2 = factermG*( facBesselTrip - facBesExpo );
+    double term3 = factermPI*facBesselTrip;
+    double res = term1 + term2 + term3;
 
-  	return res;
+    return res;
 }
 
 int integrand_ITqgunsub(const int *ndim, const double x[], const int *ncomp, double *f, void *userdata) { // old integrand_ITbeufQGian
@@ -1690,18 +1691,18 @@ int integrand_ITqgunsubRisto(const int *ndim, const double x[], const int *ncomp
     double X0=dataptr->icX0; //0.01;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
     double x0lim=xbj/X0;
-		double z0=(1.0-x0lim)*x[0];
+    double z0=(1.0-x0lim)*x[0];
     double z2=(1.0-z0-x0lim)*x[1]+x0lim;
     double x01=nlodis_config::MAXR*x[2];
     double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
-		double jac=(1.0-x0lim)*(1.0-z0-x0lim);
-		double Xrpdt=xbj/z2;
+    double jac=(1.0-x0lim)*(1.0-z0-x0lim);
+    double Xrpdt=xbj/z2;
 
     double alphabar=Optr->Alphabar(x01sq);
-		double alphfac=alphabar*CF/Nc;
+    double alphfac=alphabar*CF/Nc;
 
     double res;
     res =   jac*alphfac*( Optr->ITNLOqgRisto(Q,Xrpdt,z0,z2,x01sq,x02sq,phix0102) )/z2*x01*x02;
@@ -1721,14 +1722,14 @@ int integrand_ITqgsubRisto(const int *ndim, const double x[], const int *ncomp, 
     double X0=dataptr->icX0; //0.01;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
     double x0lim=xbj/X0;
-	double z0=x[0];
+    double z0=x[0];
     double z2=(1.0-x0lim)*x[1]+x0lim;
     double x01=nlodis_config::MAXR*x[2];
     double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
-	double jac=(1.0-x0lim);
+    double jac=(1.0-x0lim);
     double Xrpdt=xbj/z2;
 
     double alphabar=Optr->Alphabar(x01sq);
