@@ -21,8 +21,6 @@
 namespace sigmar_config{
   // double rmax=30.0; //300.0;
   // double rmin=1e-5;
-  double rmax = nlodis_config::MAXR;
-  double rmin = nlodis_config::MINR;
   double Nc=3.0;
   double sumef=6.0/9.0; // light quarks uds only.
   double CF=4.0/3.0; // (Nc()*Nc()-1.0)/(2.0*Nc());
@@ -398,10 +396,14 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     {
 #ifdef PARALLEL_CHISQR
         //reduction(+:chisqr)
-    #pragma omp parallel for schedule(dynamic) reduction(+:points)
+    // #pragma omp parallel for schedule(dynamic) reduction(+:points)
 #endif
         for (int i=0; i<datasets[dataset]->NumOfPoints(); i++)
         {
+            // printf("\r[%i / %i]",i,totalpoints);
+            // cout << "test" << endl;
+            cout << "\r" << i << "/" << totalpoints << flush;
+
             // Index for this in the final data array
             int dataind=0;
             for (int dseti=0; dseti < dataset; dseti++)
@@ -432,12 +434,12 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
             }
             if (!computeNLO && useMasses)
             {
-		theory=0;
-		if (datasets[dataset]->OnlyCharm(i)==false)
-	            theory = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj , y, false );
-		if (xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) < 0.01 and useCharm)
-		{
-		    theory_charm = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) , y, true ); // charm
+                theory=0;
+                if (datasets[dataset]->OnlyCharm(i)==false)
+                    theory = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj , y, false );
+                if (xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) < 0.01 and useCharm)
+                {
+                    theory_charm = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) , y, true ); // charm
                     if (datasets[dataset]->OnlyCharm(i) == true)
                         theory = theory_charm;
                     else
@@ -490,8 +492,8 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
 
             //chisqr += datasets[dataset]->Weight()*SQR( (theory+theory_charm - sigmar) / sigmar_err );
             points = points + datasets[dataset]->Weight();
-                  }
         }
+    }
     // Minimize sigma02
     std::vector<double> sigma02fit = FindOptimalSigma02(datavals,dataerrs, thdata);
     chisqr = sigma02fit[1];
@@ -599,9 +601,9 @@ void Cuba(string method, int ndim, integrand_t integrand,
 // HELPERS
 double ComputeSigmaR::Sr(double r, double x) {
     double Srx;//, Nrx;
-    if(r<rmin){
+    if(r<nlodis_config::MINR){
         Srx = 1.;
-    }else if(r>rmax-1e-7){
+    }else if(r>nlodis_config::MAXR-1e-7){
         Srx = 0.;
     }else{
         Srx = ClassScopeDipolePointer->S(r, (x*std::exp(-icY0)) ) ; //1-Nrx;
@@ -766,7 +768,14 @@ struct Userdata{
 // --- L L L --- LO -------- L L L --- LO -------- L L L --- LO -----------
 */
 double ComputeSigmaR::ILLO(double Q, double z1, double x01sq) {
-    double res = 4.0*Sq(Q)*Sq(z1)*Sq(1.0-z1)*Sq(gsl_sf_bessel_K0(Q*sqrt(z1*(1.0-z1)*x01sq)));
+    double bessel_inner_fun = Q*sqrt(z1*(1.0-z1)*x01sq);
+    double res = 0;
+    if (bessel_inner_fun < 1e-7){
+        cout << bessel_inner_fun << " " << Q << " " << z1 << " " << x01sq << endl;
+        res = 0;
+    }else{
+        res = 4.0*Sq(Q)*Sq(z1)*Sq(1.0-z1)*Sq(gsl_sf_bessel_K0( bessel_inner_fun ));
+    }   
     return res;
 }
 
@@ -777,7 +786,7 @@ int integrand_ILLOp(const int *ndim, const double x[], const int *ncomp,double *
     double xbj=dataptr->xbj;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
     double z1=x[0];
-    double x01=rmax*x[1];
+    double x01=nlodis_config::MAXR*x[1];
     double x01sq=x01*x01;
 
     double res=(1.0-(Optr->Sr(x01,xbj)))*(Optr->ILLO(Q,z1,x01sq))*x01;
@@ -794,7 +803,7 @@ double ComputeSigmaR::LLOp(double Q, double x) {
     userdata.ComputerPtr=this;
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
     Cuba(cubamethod,ndim,integrand_ILLOp,&userdata,&integral,&error,&prob);
-    return fac*2.0*M_PI*rmax*integral;
+    return fac*2.0*M_PI*nlodis_config::MAXR*integral;
 }
 
 // MASS
@@ -805,7 +814,7 @@ int integrand_ILLOpMass(const int *ndim, const double x[], const int *ncomp,doub
     double qmass=dataptr->qMass_light;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
     double z1=x[0];
-    double x01=rmax*x[1];
+    double x01=nlodis_config::MAXR*x[1];
     //double x01sq=x01*x01;
 
     double af = sqrt( Sq(Q)*z1*(1-z1) + Sq(qmass) );
@@ -834,7 +843,7 @@ double ComputeSigmaR::LLOpMass(double Q, double x, bool charm) {
 	if (charm) ef = 4.0/9.0;
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*ef;
     Cuba(cubamethod,ndim,integrand_ILLOpMass,&userdata,&integral,&error,&prob);
-    return fac*2.0*M_PI*rmax*integral;
+    return fac*2.0*M_PI*nlodis_config::MAXR*integral;
 }
 
 
@@ -854,7 +863,7 @@ int integrand_ITLOp(const int *ndim, const double x[], const int *ncomp,double *
   double xbj=dataptr->xbj;
   ComputeSigmaR *Optr = dataptr->ComputerPtr;
   double z1=x[0];
-  double x01=rmax*x[1];
+  double x01=nlodis_config::MAXR*x[1];
   double x01sq=x01*x01;
 
   double res=(1.0-(Optr->Sr(x01,xbj)))*(Optr->ITLO(Q,z1,x01sq))*x01;
@@ -875,7 +884,7 @@ double ComputeSigmaR::TLOp(double Q, double x) {
   userdata.ComputerPtr=this;
   double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
   Cuba(cubamethod,ndim,integrand_ITLOp,&userdata,&integral,&error,&prob);
-  return fac*2.0*M_PI*rmax*integral;
+  return fac*2.0*M_PI*nlodis_config::MAXR*integral;
 }
 
 // MASS
@@ -886,7 +895,7 @@ int integrand_ITLOpMass(const int *ndim, const double x[], const int *ncomp,doub
   double qmass=dataptr->qMass_light;
   ComputeSigmaR *Optr = dataptr->ComputerPtr;
   double z1=x[0];
-  double x01=rmax*x[1];
+  double x01=nlodis_config::MAXR*x[1];
   //double x01sq=x01*x01;
 
   double af = sqrt( Sq(Q)*z1*(1.0-z1) + Sq(qmass) );
@@ -917,7 +926,7 @@ double ComputeSigmaR::TLOpMass(double Q, double x, bool charm) {
 
   double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*ef;
   Cuba(cubamethod,ndim,integrand_ITLOpMass,&userdata,&integral,&error,&prob);
-  return fac*2.0*M_PI*rmax*integral;
+  return fac*2.0*M_PI*nlodis_config::MAXR*integral;
 }
 
 
@@ -940,7 +949,7 @@ int integrand_ILdip(const int *ndim, const double x[], const int *ncomp, double 
     double xbj=dataptr->xbj;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
     double z1=x[0];
-    double x01=rmax*x[1];
+    double x01=nlodis_config::MAXR*x[1];
     double x01sq=Sq(x01);
 
     double alphabar=Optr->Alphabar(x01sq); //2;
@@ -969,7 +978,7 @@ int integrand_ILdip_z2(const int *ndim, const double x[], const int *ncomp, doub
     }
     double z1=((1.0-z2min)-z2min)*x[0]+z2min;
     double z2=((z1)-z2min)*x[1]+z2min; // z2 integration variable for k1-term AND for the mirror symmetry combined integral!
-    double x01=rmax*x[2];
+    double x01=nlodis_config::MAXR*x[2];
     double x01sq=Sq(x01);
     double jac=((1.0-z2min)-z2min)*((z1)-z2min); // jacobiaaniin skaalaus molemmista z-muuttujista!
     double Xrpdt= z2min * X0/z2; // consistent with the qg-terms
@@ -1107,8 +1116,8 @@ int integrand_ILqgunsub(const int *ndim, const double x[], const int *ncomp,doub
     }
     double z1=(1.0-z2min)*x[0];
     double z2=((1.0-z1)-z2min)*x[1]+z2min;
-    double x01=rmax*x[2];
-    double x02=rmax*x[3];
+    double x01=nlodis_config::MAXR*x[2];
+    double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
@@ -1146,8 +1155,8 @@ int integrand_ILsigma3(const int *ndim, const double x[], const int *ncomp,doubl
     }
     double z1=(1.0-z2min)*x[0];
     double z2=((1.0-z1)-z2min)*x[1]+z2min;
-    double x01=rmax*x[2];
-    double x02=rmax*x[3];
+    double x01=nlodis_config::MAXR*x[2];
+    double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
@@ -1185,8 +1194,8 @@ int integrand_ILqgsub(const int *ndim, const double x[], const int *ncomp,double
     }
     double z1=x[0];
     double z2=(1.0-z2min)*x[1]+z2min;
-    double x01=rmax*x[2];
-    double x02=rmax*x[3];
+    double x01=nlodis_config::MAXR*x[2];
+    double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
@@ -1223,8 +1232,8 @@ int integrand_ILqgunsubRisto(const int *ndim, const double x[], const int *ncomp
     double x0lim=xbj/X0;
    double z0=(1.0-x0lim)*x[0];
    double z2=(1.0-z0-x0lim)*x[1]+x0lim;
-    double x01=rmax*x[2];
-    double x02=rmax*x[3];
+    double x01=nlodis_config::MAXR*x[2];
+    double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
@@ -1255,8 +1264,8 @@ int integrand_ILqgsubRisto(const int *ndim, const double x[], const int *ncomp, 
    double x0lim=xbj/X0;
    double z0=x[0];
    double z2=(1.0-x0lim)*x[1]+x0lim;
-   double x01=rmax*x[2];
-   double x02=rmax*x[3];
+   double x01=nlodis_config::MAXR*x[2];
+   double x02=nlodis_config::MAXR*x[3];
    double phix0102=2.0*M_PI*x[4];
    double x01sq=Sq(x01);
    double x02sq=Sq(x02);
@@ -1291,7 +1300,7 @@ double ComputeSigmaR::LNLOdip(double Q, double x) { // old LNLObeufDIP
     userdata.xbj=x;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ILdip,&userdata,&integral,&error,&prob);
-    return fac*2.0*M_PI*rmax*integral;
+    return fac*2.0*M_PI*nlodis_config::MAXR*integral;
 }
 
 double ComputeSigmaR::LNLOdip_z2(double Q, double x) { // old LNLObeufDIP
@@ -1304,7 +1313,7 @@ double ComputeSigmaR::LNLOdip_z2(double Q, double x) { // old LNLObeufDIP
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ILdip_z2,&userdata,&integral,&error,&prob);
-    return fac*2.0*M_PI*rmax*integral;
+    return fac*2.0*M_PI*nlodis_config::MAXR*integral;
 }
 
 double ComputeSigmaR::LNLOqgunsub(double Q, double x) { // old LNLObeufQGiancu
@@ -1317,7 +1326,7 @@ double ComputeSigmaR::LNLOqgunsub(double Q, double x) { // old LNLObeufQGiancu
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ILqgunsub,&userdata,&integral,&error,&prob);
-    return 2*fac*2.0*M_PI*rmax*rmax*integral;
+    return 2*fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
 
 double ComputeSigmaR::LNLOsigma3(double Q, double x) {
@@ -1330,7 +1339,7 @@ double ComputeSigmaR::LNLOsigma3(double Q, double x) {
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ILsigma3,&userdata,&integral,&error,&prob);
-    return fac*2.0*M_PI*rmax*rmax*integral;
+    return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
 
 double ComputeSigmaR::LNLOqgsub(double Q, double x) { // no old implementation/version. CXY is similar but distinct, sub vs. xbj-sub.
@@ -1343,7 +1352,7 @@ double ComputeSigmaR::LNLOqgsub(double Q, double x) { // no old implementation/v
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ILqgsub,&userdata,&integral,&error,&prob);
-    return 2*fac*2.0*M_PI*rmax*rmax*integral;
+    return 2*fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
 
 double ComputeSigmaR::LNLOqgunsubRisto(double Q, double x) {
@@ -1356,7 +1365,7 @@ double ComputeSigmaR::LNLOqgunsubRisto(double Q, double x) {
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ILqgunsubRisto,&userdata,&integral,&error,&prob);
-    return (2/2)*fac*2.0*M_PI*rmax*rmax*integral; // TODO a difference of a factor of 2 w.r.t. BEUF formulation was discovered in initial testing
+    return (2/2)*fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral; // TODO a difference of a factor of 2 w.r.t. BEUF formulation was discovered in initial testing
 }
 
 double ComputeSigmaR::LNLOqgsubRisto(double Q, double x) {
@@ -1369,7 +1378,7 @@ double ComputeSigmaR::LNLOqgsubRisto(double Q, double x) {
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ILqgsubRisto,&userdata,&integral,&error,&prob);
-    return (2/2)*fac*2.0*M_PI*rmax*rmax*integral; // TODO a difference of a factor of 2 w.r.t. BEUF formulation was discovered in initial testing
+    return (2/2)*fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral; // TODO a difference of a factor of 2 w.r.t. BEUF formulation was discovered in initial testing
 }
 //*/
 
@@ -1393,7 +1402,7 @@ int integrand_ITdip(const int *ndim, const double x[], const int *ncomp, double 
     double xbj=dataptr->xbj;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
     double z1=x[0];
-    double x01=rmax*x[1];
+    double x01=nlodis_config::MAXR*x[1];
     double x01sq=Sq(x01);
 
     double alphabar=Optr->Alphabar(x01sq);
@@ -1423,7 +1432,7 @@ int integrand_ITdip_z2(const int *ndim, const double x[], const int *ncomp, doub
     }
     double z1=((1.0-z2min)-z2min)*x[0]+z2min;
     double z2=((z1)-z2min)*x[1]+z2min; // z2 integration variable for k1-term AND for the mirror symmetry combined integral!
-    double x01=rmax*x[2];
+    double x01=nlodis_config::MAXR*x[2];
     double x01sq=Sq(x01);
     double jac=((1.0-z2min)-z2min)*((z1)-z2min); // jacobiaaniin skaalaus molemmista z-muuttujista!
     double Xrpdt= z2min * X0/z2; // consistent with the qg-terms
@@ -1563,8 +1572,8 @@ int integrand_ITqgunsub(const int *ndim, const double x[], const int *ncomp, dou
     }
     double z1=(1.0-z2min)*x[0];
     double z2=((1.0-z1)-z2min)*x[1]+z2min;
-    double x01=rmax*x[2];
-    double x02=rmax*x[3];
+    double x01=nlodis_config::MAXR*x[2];
+    double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
@@ -1602,8 +1611,8 @@ int integrand_ITsigma3(const int *ndim, const double x[], const int *ncomp,doubl
     }
     double z1=(1.0-z2min)*x[0];
     double z2=((1.0-z1)-z2min)*x[1]+z2min;
-    double x01=rmax*x[2];
-    double x02=rmax*x[3];
+    double x01=nlodis_config::MAXR*x[2];
+    double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
@@ -1641,8 +1650,8 @@ int integrand_ITqgsub(const int *ndim, const double x[], const int *ncomp, doubl
     }
     double z1=x[0];
     double z2=(1.0-z2min)*x[1]+z2min;
-    double x01=rmax*x[2];
-    double x02=rmax*x[3];
+    double x01=nlodis_config::MAXR*x[2];
+    double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
@@ -1679,8 +1688,8 @@ int integrand_ITqgunsubRisto(const int *ndim, const double x[], const int *ncomp
     double x0lim=xbj/X0;
 		double z0=(1.0-x0lim)*x[0];
     double z2=(1.0-z0-x0lim)*x[1]+x0lim;
-    double x01=rmax*x[2];
-    double x02=rmax*x[3];
+    double x01=nlodis_config::MAXR*x[2];
+    double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
@@ -1710,8 +1719,8 @@ int integrand_ITqgsubRisto(const int *ndim, const double x[], const int *ncomp, 
     double x0lim=xbj/X0;
 	double z0=x[0];
     double z2=(1.0-x0lim)*x[1]+x0lim;
-    double x01=rmax*x[2];
-    double x02=rmax*x[3];
+    double x01=nlodis_config::MAXR*x[2];
+    double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
@@ -1746,7 +1755,7 @@ double ComputeSigmaR::TNLOdip(double Q, double x) { // old name: TNLObeufDIP
     userdata.xbj=x;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ITdip,&userdata,&integral,&error,&prob);
-    return fac*2.0*M_PI*rmax*integral;
+    return fac*2.0*M_PI*nlodis_config::MAXR*integral;
 }
 
 double ComputeSigmaR::TNLOdip_z2(double Q, double x) { // old name: TNLObeufDIP
@@ -1759,7 +1768,7 @@ double ComputeSigmaR::TNLOdip_z2(double Q, double x) { // old name: TNLObeufDIP
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ITdip_z2,&userdata,&integral,&error,&prob);
-    return fac*2.0*M_PI*rmax*integral;
+    return fac*2.0*M_PI*nlodis_config::MAXR*integral;
 }
 
 double ComputeSigmaR::TNLOqgunsub(double Q, double x) { // old TNLObeufQGiancu
@@ -1772,7 +1781,7 @@ double ComputeSigmaR::TNLOqgunsub(double Q, double x) { // old TNLObeufQGiancu
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ITqgunsub,&userdata,&integral,&error,&prob);
-    return 2*fac*2.0*M_PI*rmax*rmax*integral;
+    return 2*fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
 
 double ComputeSigmaR::TNLOsigma3(double Q, double x) {
@@ -1785,7 +1794,7 @@ double ComputeSigmaR::TNLOsigma3(double Q, double x) {
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ITsigma3,&userdata,&integral,&error,&prob);
-    return fac*2.0*M_PI*rmax*rmax*integral;
+    return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
 
 double ComputeSigmaR::TNLOqgsub(double Q, double x) {
@@ -1798,7 +1807,7 @@ double ComputeSigmaR::TNLOqgsub(double Q, double x) {
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ITqgsub,&userdata,&integral,&error,&prob);
-    return 2*fac*2.0*M_PI*rmax*rmax*integral;
+    return 2*fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
 
 double ComputeSigmaR::TNLOqgunsubRisto(double Q, double x) {
@@ -1811,7 +1820,7 @@ double ComputeSigmaR::TNLOqgunsubRisto(double Q, double x) {
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ITqgunsubRisto,&userdata,&integral,&error,&prob);
-    return fac*2.0*M_PI*rmax*rmax*integral;
+    return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
 
 double ComputeSigmaR::TNLOqgsubRisto(double Q, double x) {
@@ -1824,7 +1833,7 @@ double ComputeSigmaR::TNLOqgsubRisto(double Q, double x) {
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ITqgsubRisto,&userdata,&integral,&error,&prob);
-    return fac*2.0*M_PI*rmax*rmax*integral;
+    return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
 
 //*/
