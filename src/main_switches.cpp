@@ -62,7 +62,7 @@ int main( int argc, char* argv[] )
     gsl_set_error_handler(&ErrHandlerCustom);
 
         // NLO DIS SIGMA_R COMPUTATION CONFIGS
-        nlodis_config::CUBA_EPSREL = 15e-3;
+        nlodis_config::CUBA_EPSREL = 6*15e-3;
         nlodis_config::CUBA_MAXEVAL= 2e7;
         nlodis_config::MINR = 1e-5;
         nlodis_config::MAXR = 50;

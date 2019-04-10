@@ -396,12 +396,12 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     {
 #ifdef PARALLEL_CHISQR
         //reduction(+:chisqr)
-    // #pragma omp parallel for schedule(dynamic) reduction(+:points)
+    #pragma omp parallel for schedule(dynamic) reduction(+:points)
 #endif
         for (int i=0; i<datasets[dataset]->NumOfPoints(); i++)
         {
-            // printf("\r[%i / %i]",i,totalpoints);
-            // cout << "test" << endl;
+            // Progress indication during fitting.
+            #pragma omp critical
             cout << "\r" << i << "/" << totalpoints << flush;
 
             // Index for this in the final data array
@@ -497,9 +497,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     // Minimize sigma02
     std::vector<double> sigma02fit = FindOptimalSigma02(datavals,dataerrs, thdata);
     chisqr = sigma02fit[1];
-    double sigma02 = sigma02fit[0];
-    cout << endl << "# Calculated chi^2/N = " << chisqr << " (N=" << points << "), parameters (" << PrintVector(par) << ", sigma02=" << sigma02 << ")" << endl<<endl;
-    
+    double sigma02 = sigma02fit[0];    
     // Output for plotting
     if(nlodis_config::PRINTDATA){
         for(int i=0; i<var_xbj.size(); i++){
@@ -513,9 +511,15 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
                 << setw(10) << sigma02*theory_charm <<*/ 
                 << endl;
             }
+    cout << endl 
+         << "# Calculated chi^2/N = " << chisqr 
+         << " (N=" << points 
+         << "), parameters (" << PrintVector(par) 
+         << ", sigma02=" << sigma02 
+         << ")" << endl<<endl;
     }
 
-    delete DipolePointer;
+    // delete DipolePointer;
     return chisqr*points;
 }
 
