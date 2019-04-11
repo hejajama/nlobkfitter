@@ -121,7 +121,6 @@ int BKSolver::Solve(double maxy)
 			// if(VERBOSE) cout << "# Evolved at y=" << y << endl;
             if(VERBOSE) cout << "\r" << "# Evolved at y=" << y << "/" << maxy << std::flush;
         }
-        if(VERBOSE) cout << endl;
 
         yind = dipole->AddRapidity(y, ampvec);
 
@@ -134,6 +133,8 @@ int BKSolver::Solve(double maxy)
         
     } while (y < maxy);
 
+    if(VERBOSE) cout << endl;
+    
     gsl_odeiv_evolve_free (e);
     gsl_odeiv_control_free (c);
     gsl_odeiv_step_free (s);

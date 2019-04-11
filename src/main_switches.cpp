@@ -63,8 +63,8 @@ int main( int argc, char* argv[] )
     gsl_set_error_handler(&ErrHandlerCustom);
 
         // NLO DIS SIGMA_R COMPUTATION CONFIGS
-        nlodis_config::CUBA_EPSREL = 6*15e-3;
-        nlodis_config::CUBA_MAXEVAL= 2e7;
+        nlodis_config::CUBA_EPSREL = 50e-3;
+        nlodis_config::CUBA_MAXEVAL= 1e7;
         nlodis_config::MINR = 1e-5;
         nlodis_config::MAXR = 50;
         nlodis_config::PRINTDATA = true;
@@ -72,7 +72,7 @@ int main( int argc, char* argv[] )
         //bool useSUB = true;               // Set by a command line switch in swarmscan
         //bool useImprovedZ2Bound = true;   // Set by a command line switch in swarmscan
         //bool useBoundLoop = true;         // Set by a command line switch in swarmscan
-        string cubaMethod = "suave";
+        string cubaMethod = "divonne";
         //bool useResumBK = true;
         //bool useKCBK = false;
         //if (useResumBK == true and useKCBK == true) {cout << "Both ResumBK and KCBK enabled, exitting." << endl; return -1;}
@@ -93,9 +93,9 @@ int main( int argc, char* argv[] )
         config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
         config::KSUB = 0.65;  // Optimal value for K_sub
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
-        config::INTACCURACY = 20e-3;//0.02;
-        config::MCINTACCURACY = 20e-3;//0.02;
-        config::MCINTPOINTS = 5e7;
+        config::INTACCURACY = nlodis_config::CUBA_EPSREL;//50e-3;//0.02;
+        config::MCINTACCURACY = nlodis_config::CUBA_EPSREL;//50e-3;//0.02;
+        config::MCINTPOINTS = 1e7;
         config::MINR = 1e-5;
         config::MAXR = 50;
         config::RPOINTS = 100;

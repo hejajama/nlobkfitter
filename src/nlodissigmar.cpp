@@ -564,7 +564,7 @@ void Cuba(string method, int ndim, integrand_t integrand,
   char *statefile=NULL;
   if(method=="vegas"){
     // Vegas-specific arguments
-    int nstart=1000, nincrease=1000, nbatch=1000, gridno=0;
+    int nstart=1000, nincrease=500, nbatch=1000, gridno=0;
     Vegas(ndim,ncomp,integrand,userdata,nvec,nlodis_config::CUBA_EPSREL,
     cuba_config::epsabs,cuba_config::verbose,seed,mineval,
     nlodis_config::CUBA_MAXEVAL,nstart,nincrease,nbatch,gridno,statefile,
@@ -572,8 +572,8 @@ void Cuba(string method, int ndim, integrand_t integrand,
   }
   else if(method=="suave"){
     // Suave-specific arguments
-    int nnew=2e3, nmin=2; // nnew=10e3
-    double flatness=25; //25;
+    int nnew=1e3, nmin=2; // nnew=10e3
+    double flatness=50; //25;
     Suave(ndim,ncomp,integrand,userdata,nvec,nlodis_config::CUBA_EPSREL,
     cuba_config::epsabs,cuba_config::verbose | last,seed,mineval,
     nlodis_config::CUBA_MAXEVAL,nnew,nmin,flatness,statefile,spin,
@@ -582,8 +582,8 @@ void Cuba(string method, int ndim, integrand_t integrand,
   else if(method=="divonne"){
     if(ndim==1) ndim=2;
     // Divonne-specific arguments
-    int key1=-4e3, key2=-4e3, key3=1, maxpass=10, ngiven=0, nextra=0;
-    double border=1e-4, maxchisq=10, mindeviation=0.1;
+    int key1=47, key2=1, key3=1, maxpass=5, ngiven=0, nextra=0;
+    double border=1e-10, maxchisq=10, mindeviation=0.25;
     Divonne(ndim,ncomp,integrand,userdata,nvec,nlodis_config::CUBA_EPSREL,
       cuba_config::epsabs,cuba_config::verbose,seed,mineval,
       nlodis_config::CUBA_MAXEVAL,key1,key2,key3,maxpass,border,maxchisq,
