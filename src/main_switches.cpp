@@ -48,6 +48,7 @@ void ErrHandlerCustom(const char * reason,
     // 11 = maximum number of subdivisions reached
     // 15: underflows
 
+    if (gsl_errno == 11) return; // ignore max subdivision errors
     if (gsl_errno == 18) return; // roundoff errors from small r?
     // if (gsl_errno == 15 or gsl_errno == 16) return; // underfows and overflows?
     // Ugly hack, comes from the edges of the z integral in virtual_photon.cpp
@@ -82,8 +83,8 @@ int main( int argc, char* argv[] )
         config::LAMBDAQCD = 0.241;
         
         config::VERBOSE = true;
-        config::RINTPOINTS = 8000;
-        config::THETAINTPOINTS = 8000;
+        config::RINTPOINTS = 512;
+        config::THETAINTPOINTS = 512;
 
         nlodis_config::RC_DIS = nlodis_config::DIS_RC_GUILLAUME;
         config::RC_LO = config::GUILLAUME_LO;// FIXED_,PARENT_,PARENT_BETA_,SMALLEST_,BALITSKY_,FRAC_,GUILLAUME_,
@@ -93,8 +94,8 @@ int main( int argc, char* argv[] )
         config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
         config::KSUB = 0.65;  // Optimal value for K_sub
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
-        config::INTACCURACY = nlodis_config::CUBA_EPSREL;//50e-3;//0.02;
-        config::MCINTACCURACY = nlodis_config::CUBA_EPSREL;//50e-3;//0.02;
+        config::INTACCURACY = 100e-3;//0.02;
+        config::MCINTACCURACY = 100e-3;//0.02;
         config::MCINTPOINTS = 1e7;
         config::MINR = 1e-5;
         config::MAXR = 50;

@@ -29,7 +29,7 @@ Dipole::Dipole(InitialCondition* ic_)
     // Initialize rvals
     double step = std::pow(MAXR/MINR, 1.0/RPOINTS);
     std::vector<double> initial_amplitude;
-    for (double r=MINR; r<=MAXR; r*=step)
+    for (double r=MINR; r<=MAXR+1e-3; r*=step)
     {
         rvals.push_back(r);
         initial_amplitude.push_back( ic->DipoleAmplitude(r) );
@@ -307,7 +307,7 @@ Dipole::Dipole(std::string filename)
     int rpoints = data.RPoints();
     double rmultiplier = data.RMultiplier();
     double minr= data.MinR();
-    for (int i=0; i<rpoints; i++)
+    for (int i=0; i<=rpoints; i++)
     {
         rvals.push_back(minr * std::pow(rmultiplier, i));
     }

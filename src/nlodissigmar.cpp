@@ -583,7 +583,7 @@ void Cuba(string method, int ndim, integrand_t integrand,
     if(ndim==1) ndim=2;
     // Divonne-specific arguments
     int key1=47, key2=1, key3=1, maxpass=5, ngiven=0, nextra=0;
-    double border=1e-10, maxchisq=10, mindeviation=0.25;
+    double border=1e-4, maxchisq=10, mindeviation=0.25;
     Divonne(ndim,ncomp,integrand,userdata,nvec,nlodis_config::CUBA_EPSREL,
       cuba_config::epsabs,cuba_config::verbose,seed,mineval,
       nlodis_config::CUBA_MAXEVAL,key1,key2,key3,maxpass,border,maxchisq,
