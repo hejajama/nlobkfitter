@@ -118,7 +118,7 @@ int main( int argc, char* argv[] )
 
     // READING RUN CONFIGURATION FROM THE STDIN
     bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop, useSigma3;
-    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q C^2 X0 gamma Q0sq Y0 eta0";
+    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q C^2 X0 gamma Q0sq Y0 eta0\nsub/unsub/unsub+ resumbk/trbk/lobk parentrc/guillaumerc/fixedrc z2improved/z2simple z2boundloop/unboundloop";
     string string_sub, string_bk, string_rc;
     if (argc<2){ cout << helpstring << endl; return 0;}
     // Argv[0] is the name of the program
@@ -144,7 +144,7 @@ int main( int argc, char* argv[] )
             config::EULER_METHOD            = true;        // Kinematical constraint requires this
             config::KINEMATICAL_CONSTRAINT  = true;
             config::DE_SOLVER_STEP = 0.08; //0.02; // Euler method requires smaller step than RungeKutta!
-    }else if (string(argv [2]) == "targetbk"){
+    }else if (string(argv [2]) == "trbk"){  // Target Rapidity BK
             config::LO_BK = true;  // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
             config::EULER_METHOD            = true;        // Kinematical constraint requires this
             config::KINEMATICAL_CONSTRAINT  = true;
