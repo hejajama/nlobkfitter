@@ -21,9 +21,9 @@ namespace nlodis_config
 
     enum RunningCouplingDIS
     {
-        FIXED,
-        PARENT,      // Parent dipole where all beta terms are included
-		GUILLAUME // 1708.06557
+        DIS_RC_FIXED,
+        DIS_RC_PARENT,      // Parent dipole where all beta terms are included
+		DIS_RC_GUILLAUME    // 1708.06557
     };
     extern RunningCouplingDIS RC_DIS;
 

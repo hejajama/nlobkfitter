@@ -344,15 +344,15 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     // NLO: set runningcoupling and C2=Csq for the object.
     ComputeSigmaR::CmptrMemFn alphas_temppointer;
     ComputeSigmaR::CmptrMemFn_void alphas_temppointer_QG;
-    if      (nlodis_config::RC_DIS == nlodis_config::FIXED){
+    if      (nlodis_config::RC_DIS == nlodis_config::DIS_RC_FIXED){
         alphas_temppointer = &ComputeSigmaR::alpha_bar_fixed;
         alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_fixed;
         cout << "Using FIXED_LO" << endl;}
-    else if (nlodis_config::RC_DIS == nlodis_config::PARENT){
+    else if (nlodis_config::RC_DIS == nlodis_config::DIS_RC_PARENT){
         alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd;
         alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_pd;
         cout << "Using parent dipole RC" << endl;}
-    else if (nlodis_config::RC_DIS == nlodis_config::GUILLAUME){
+    else if (nlodis_config::RC_DIS == nlodis_config::DIS_RC_GUILLAUME){
         alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd;
         alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_guillaume;
         cout << "Using Guillaume RC" << endl;}

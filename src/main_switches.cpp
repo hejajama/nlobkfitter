@@ -85,7 +85,7 @@ int main( int argc, char* argv[] )
         config::RINTPOINTS = 8000;
         config::THETAINTPOINTS = 8000;
 
-        nlodis_config::RC_DIS = nlodis_config::GUILLAUME;
+        nlodis_config::RC_DIS = nlodis_config::DIS_RC_GUILLAUME;
         config::RC_LO = config::GUILLAUME_LO;// FIXED_,PARENT_,PARENT_BETA_,SMALLEST_,BALITSKY_,FRAC_,GUILLAUME_,
         config::RESUM_RC = config::RESUM_RC_GUILLAUME; // _BALITSKY,_PARENT,_SMALLEST,_GUILLAUME,
         config::RESUM_DLOG = true; // Resum doulbe logs
@@ -119,9 +119,11 @@ int main( int argc, char* argv[] )
     // READING RUN CONFIGURATION FROM THE STDIN
     bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop, useSigma3;
     string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q C^2 X0 gamma Q0sq Y0 eta0";
+    string string_sub, string_bk, string_rc;
     if (argc<2){ cout << helpstring << endl; return 0;}
     // Argv[0] is the name of the program
 
+    string_sub = string(argv [1]);
     if (string(argv [1]) == "sub"){
       useSUB = true;
     } else if (string(argv [1]) == "unsub"){
@@ -132,10 +134,18 @@ int main( int argc, char* argv[] )
       useSigma3 = true;
     } else {cout << helpstring << endl; return -1;}
 
+    string_bk = string(argv [2]);
     if (string(argv [2]) == "resumbk"){
             config::LO_BK = false;  // Solve LO BK with running coupling, overrides RESUM settings
-    } else if (string(argv [2]) == "kcbk"){
-            config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
+    }else if (string(argv [2]) == "kcbk"){
+            cout << endl << "KCBK (old) unsupported at this time!" << endl << endl;
+            exit(1);
+            config::LO_BK = true;  // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
+            config::EULER_METHOD            = true;        // Kinematical constraint requires this
+            config::KINEMATICAL_CONSTRAINT  = true;
+            config::DE_SOLVER_STEP = 0.08; //0.02; // Euler method requires smaller step than RungeKutta!
+    }else if (string(argv [2]) == "targetbk"){
+            config::LO_BK = true;  // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
             config::EULER_METHOD            = true;        // Kinematical constraint requires this
             config::KINEMATICAL_CONSTRAINT  = true;
             config::DE_SOLVER_STEP = 0.08; //0.02; // Euler method requires smaller step than RungeKutta!
@@ -143,10 +153,22 @@ int main( int argc, char* argv[] )
             config::LO_BK = true;
     } else {cout << helpstring << endl; return -1;}
 
+    string_rc = string(argv [3]);
     if (string(argv [3]) == "parentrc"){
-            config::RC_LO = config::BALITSKY_LO; 
+            config::RC_LO = config::PARENT_LO;
+            config::RESUM_RC = config::RESUM_RC_PARENT;
+            nlodis_config::RC_DIS = nlodis_config::DIS_RC_PARENT;
     } else if (string(argv [3]) == "guillaumerc"){
             config::RC_LO = config::GUILLAUME_LO;
+            config::RESUM_RC = config::RESUM_RC_GUILLAUME;
+            nlodis_config::RC_DIS = nlodis_config::DIS_RC_GUILLAUME;
+    } else if (string(argv [3]) == "fixedrc"){
+            if (config::LO_BK == false){
+                cout << "There is no fixed coupling option for RESUM BK" << endl;
+                exit(1); }
+            config::RC_LO = config::FIXED_LO;
+            // config::RESUM_RC = config::RESUM_RC_FIXED; // no such option
+            nlodis_config::RC_DIS = nlodis_config::DIS_RC_FIXED;
     } else {cout << helpstring << endl; return -1;}
 
     if (string(argv [4]) == "z2improved"){
@@ -229,11 +251,14 @@ int main( int argc, char* argv[] )
     fitter.UseConsistentlyBoundLoopTerm(useBoundLoop);
     fitter.SetCubaMethod(cubaMethod);
 
-    cout << "=== Perturbative settings ===" << endl;
     cout << std::boolalpha;
-    cout    << "Use ResumBK: " << !(config::LO_BK) << endl
-            << "KinematicalConstraint BK: " << config::KINEMATICAL_CONSTRAINT << endl
-            << "Running Coupling: " << config::RC_LO << " (4 parent, 6 guillaume)" << endl
+    cout    << "=== Perturbative settings ===" << endl
+            << "Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
+            << "Use ResumBK: " << !(config::LO_BK) << endl
+            << "KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << endl
+            << "Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
+            << "Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 balitsky, 1 parent, 3 guillaume)" << endl
+            << "Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
             << "Use NLOimpact: " << useNLO << endl
             << "Use SUBscheme: " << useSUB << endl
             << "Use Sigma3: " << useSigma3 << endl
