@@ -65,7 +65,8 @@ int main( int argc, char* argv[] )
         nlodis_config::CUBA_EPSREL = 2e-2;
         nlodis_config::CUBA_MAXEVAL= 1e8;
         nlodis_config::PRINTDATA = true;
-        bool useNLO = true;
+        // bool useNLO = true;
+        bool computeNLO = true;
         //bool useSUB = true;               // Set by a command line switch in swarmscan
         //bool useImprovedZ2Bound = true;   // Set by a command line switch in swarmscan
         //bool useBoundLoop = true;         // Set by a command line switch in swarmscan
@@ -183,6 +184,18 @@ int main( int argc, char* argv[] )
     parameters.Add("initialconditionY0",    icY0 );
     parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
 
+/*
+This needs to go as well.
+
+    NLODISFitter fitter(parameters);
+    fitter.AddDataset(data);
+    fitter.SetNLO(useNLO);
+    fitter.SetSUB(useSUB);
+    fitter.SetSigma3(useSigma3);
+    fitter.UseImprovedZ2Bound(useImprovedZ2Bound);
+    fitter.UseConsistentlyBoundLoopTerm(useBoundLoop);
+    fitter.SetCubaMethod(cubaMethod);
+*/
 
     cout << "=== Perturbative settings ===" << endl;
     cout << std::boolalpha;
@@ -323,7 +336,7 @@ int main( int argc, char* argv[] )
                 ++calccount;
             }
 
-            if (computeNLO && !UseSub) // UNSUB SCHEME Full NLO impact factors for reduced cross section
+            if (computeNLO && !useSUB) // UNSUB SCHEME Full NLO impact factors for reduced cross section
             {
                 if (useBoundLoop){
                     // theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_UniformZ2Bound(Q , xbj , y );
@@ -344,14 +357,14 @@ int main( int argc, char* argv[] )
                     FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
                     FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
                     ++calccount;}
-                if (UseSigma3){
+                if (useSigma3){
                     // theory += (fitsigma0)*SigmaComputer.SigmarNLOunsub_sigma3(Q , xbj , y );
                     FL_sigma3 = SigmaComputer.Structf_LNLOsigma3(Q,xbj);
                     FT_sigma3 = SigmaComputer.Structf_TNLOsigma3(Q,xbj);
                     }
             }
 
-            if (computeNLO && UseSub) // SUB SCHEME Full NLO impact factors for reduced cross section
+            if (computeNLO && useSUB) // SUB SCHEME Full NLO impact factors for reduced cross section
             {
                 if (useBoundLoop){
                     // theory = (fitsigma0)*SigmaComputer.SigmarNLOsub_UniformZ2Bound(Q , xbj , y );
