@@ -175,26 +175,14 @@ int main( int argc, char* argv[] )
     cout << Qcalc << " " << Ccalc << endl;
 
 	parameters.Add("qs0sqr",		        Qcalc);
-        parameters.Add("fitsigma0",		        1.0); // 1mb = 2.568 GeV²
-        parameters.Add("alphascalingC2",	    Ccalc);
-        parameters.Add("e_c",                   1.0 );
-        parameters.Add("anomalous_dimension",   gammacalc );
-        parameters.Add("initialconditionX0",    X0calc ); // fixed initialx0 computations were done with 0.01
-        parameters.Add("initialconditionY0",    icY0 );
-        parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
+    parameters.Add("fitsigma0",		        1.0); // 1mb = 2.568 GeV²
+    parameters.Add("alphascalingC2",	    Ccalc);
+    parameters.Add("e_c",                   1.0 );
+    parameters.Add("anomalous_dimension",   gammacalc );
+    parameters.Add("initialconditionX0",    X0calc ); // fixed initialx0 computations were done with 0.01
+    parameters.Add("initialconditionY0",    icY0 );
+    parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
 
-/*
-This needs to go as well.
-
-    NLODISFitter fitter(parameters);
-    fitter.AddDataset(data);
-    fitter.SetNLO(useNLO);
-    fitter.SetSUB(useSUB);
-    fitter.SetSigma3(useSigma3);
-    fitter.UseImprovedZ2Bound(useImprovedZ2Bound);
-    fitter.UseConsistentlyBoundLoopTerm(useBoundLoop);
-    fitter.SetCubaMethod(cubaMethod);
-*/
 
     cout << "=== Perturbative settings ===" << endl;
     cout << std::boolalpha;
@@ -272,97 +260,155 @@ This needs to go as well.
 
     cout << "=== Computing Reduced Cross sections ===" << endl;
 
+            // Print column titles.
+            if(true){
+            #pragma omp critical
+            cout    << setw(10) << "xbj"          << " "
+                    << setw(10) << "Q^2"          << " "
+                    << setw(10) << "FL_LO"        << " "
+                    << setw(10) << "FL_dip"       << " "
+                    << setw(10) << "FL_qg"        << " "
+                    << setw(10) << "FL_sigma3"    << " "
+                    << setw(10) << "FT_LO"        << " "
+                    << setw(10) << "FT_dip"       << " "
+                    << setw(10) << "FT_qg"        << " "
+                    << setw(10) << "FT_sigma3"    << " "
+                    << endl;
+                  }
+
     /*
      * Loop over datapoints and compute theoretical predictions
      */
-    int points=0, totalpoints = 0;
-    for (unsigned int dataset=0; dataset<datasets.size(); dataset++)
-        totalpoints += datasets[dataset]->NumOfPoints();
+    // int points=0, totalpoints = 0;
+    // for (unsigned int dataset=0; dataset<datasets.size(); dataset++)
+    //     totalpoints += datasets[dataset]->NumOfPoints();
 
     // These loops are trivially parallerizable
     // We only parallerize the inner loop where we have about
     // 250 points (total sigmar) and 50 points (charm)
-    for (unsigned int dataset=0; dataset<datasets.size(); dataset++)
-    {
+    // for (unsigned int dataset=0; dataset<datasets.size(); dataset++)
+    // {
 #ifdef PARALLEL_CHISQR
     #pragma omp parallel for schedule(dynamic) reduction(+:chisqr) reduction(+:points)
 #endif
-        for (int i=0; i<datasets[dataset]->NumOfPoints(); i++)
+        // for (int i=0; i<datasets[dataset]->NumOfPoints(); i++)
+    for (Q )
+    {
+        for (xbj )
         {
             double xbj      = datasets[dataset]->xbj(i);
-            double y        = datasets[dataset]->y(i);              // inelasticity
-            double Q2       = datasets[dataset]->Qsqr(i);
+            // double y        = datasets[dataset]->y(i);              // inelasticity, compute FL FT like in the paper so no y needed
+            // double Q2       = datasets[dataset]->Qsqr(i);
             double Q        = sqrt(Q2);
-            double sigmar   = datasets[dataset]->ReducedCrossSection(i);
-            double sigmar_err = datasets[dataset]->ReducedCrossSectionError(i);
+            // double sigmar   = datasets[dataset]->ReducedCrossSection(i);
+            // double sigmar_err = datasets[dataset]->ReducedCrossSectionError(i);
 
-            double theory;
+            double FL_LO, FL_dip, FL_qg, FL_sigma3;
+            double FT_LO, FT_dip, FT_qg, FT_sigma3;
             int calccount=0;
             if (!computeNLO && !useMasses) // Compute reduced cross section using leading order impact factors
             {
-                theory = (fitsigma0)*SigmaComputer.SigmarLO(Q , xbj , y );
+                // theory = (fitsigma0)*SigmaComputer.SigmarLO(Q , xbj , y );
+                FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+                FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
                 ++calccount;
             }
             if (!computeNLO && useMasses)
             {
-                theory = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj , y );
+                // theory = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj , y );
+                bool charm = false;
+                double fac = structurefunfac*Sq(Q);
+                FL = fac*LLOpMass(Q,xbj,charm);
+                FT = fac*TLOpMass(Q,xbj,charm);
                 ++calccount;
             }
 
             if (computeNLO && !UseSub) // UNSUB SCHEME Full NLO impact factors for reduced cross section
             {
                 if (useBoundLoop){
-                    theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_UniformZ2Bound(Q , xbj , y );
+                    // theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_UniformZ2Bound(Q , xbj , y );
+                    FL_LO = SigmaComputer.Structf_LLO(Q,icX0);
+                    FT_LO = SigmaComputer.Structf_TLO(Q,icX0);
+                    FL_dip = SigmaComputer.Structf_LNLOdip_z2(Q,xbj);
+                    FT_dip = SigmaComputer.Structf_TNLOdip_z2(Q,xbj);
+                    FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
+                    FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
                     ++calccount;}
                 if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
-                    theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub(Q , xbj , y );
+                    // theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub(Q , xbj , y );
                     //theory = (fitsigma0)*SigmaComputer.SigmarNLOsubRisto(Q , xbj , y );
+                    FL_LO = SigmaComputer.Structf_LLO(Q,icX0);
+                    FT_LO = SigmaComputer.Structf_TLO(Q,icX0);
+                    FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
+                    FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
+                    FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
+                    FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
                     ++calccount;}
                 if (UseSigma3){
-                    theory += (fitsigma0)*SigmaComputer.SigmarNLOunsub_sigma3(Q , xbj , y );
+                    // theory += (fitsigma0)*SigmaComputer.SigmarNLOunsub_sigma3(Q , xbj , y );
+                    FL_sigma3 = SigmaComputer.Structf_LNLOsigma3(Q,xbj);
+                    FT_sigma3 = SigmaComputer.Structf_TNLOsigma3(Q,xbj);
                     }
             }
 
             if (computeNLO && UseSub) // SUB SCHEME Full NLO impact factors for reduced cross section
             {
                 if (useBoundLoop){
-                    theory = (fitsigma0)*SigmaComputer.SigmarNLOsub_UniformZ2Bound(Q , xbj , y );
+                    // theory = (fitsigma0)*SigmaComputer.SigmarNLOsub_UniformZ2Bound(Q , xbj , y );
+                    FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+                    FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
+                    FL_dip = SigmaComputer.Structf_LNLOdip_z2(Q,xbj);
+                    FT_dip = SigmaComputer.Structf_TNLOdip_z2(Q,xbj);
+                    FL_qg  = SigmaComputer.Structf_LNLOqg_sub(Q,xbj);
+                    FT_qg  = SigmaComputer.Structf_TNLOqg_sub(Q,xbj);
                     ++calccount;}
                 if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
-                    theory = (fitsigma0)*SigmaComputer.SigmarNLOsub(Q , xbj , y );
+                    // theory = (fitsigma0)*SigmaComputer.SigmarNLOsub(Q , xbj , y );
                     //theory = (fitsigma0)*SigmaComputer.SigmarNLOsubRisto(Q , xbj , y );
+                    FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+                    FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
+                    FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
+                    FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
+                    FL_qg  = SigmaComputer.Structf_LNLOqg_sub(Q,xbj);
+                    FT_qg  = SigmaComputer.Structf_TNLOqg_sub(Q,xbj);
+
                     ++calccount;}
             }
 
             if (calccount>1)
             {
               cerr << "ERROR: Multiple computations. abort." << "count="<< calccount << endl;
-              theory = 99999999;
+              exit(1);
             }
 
-            if (std::isnan(theory) or std::isinf(theory))
-            {
-                cerr << "Warning: theory result " << theory << " with parameters " << PrintVector(par) << endl;
-                theory = 99999999;
-            }
+            // if (std::isnan(theory) or std::isinf(theory))
+            // {
+            //     cerr << "Warning: theory result " << theory << " with parameters " << PrintVector(par) << endl;
+            //     exit(1);
+            // }
 
-            chisqr += datasets[dataset]->Weight()*SQR( (theory - sigmar) / sigmar_err );
-            points = points + datasets[dataset]->Weight();
+            // chisqr += datasets[dataset]->Weight()*SQR( (theory - sigmar) / sigmar_err );
+            // points = points + datasets[dataset]->Weight();
 
             // Output for plotting
-            if(nlodis_config::PRINTDATA){
+            if(true){
             #pragma omp critical
             cout    << setw(10) << xbj          << " "
-                    << setw(10) << Q2           << " "
-                    << setw(10) << y            << " "
-                    << setw(10) << sigmar       << " "
-                    << setw(10) << sigmar_err   << " "
-                    << setw(10) << theory       << endl;
+                    << setw(10) << Q*Q          << " "
+                    << setw(10) << FL_LO        << " "
+                    << setw(10) << FL_dip       << " "
+                    << setw(10) << FL_qg        << " "
+                    << setw(10) << FL_sigma3    << " "
+                    << setw(10) << FT_LO        << " "
+                    << setw(10) << FT_dip       << " "
+                    << setw(10) << FT_qg        << " "
+                    << setw(10) << FT_sigma3    << " "
+                    << endl;
                   }
-
         }
     }
-    cout << endl << "# Calculated chi^2/N = " << chisqr/points << " (N=" << points << "), parameters (" << PrintVector(par) << ")" << endl<<endl;
+    // }
+    // cout << endl << "# Calculated chi^2/N = " << chisqr/points << " (N=" << points << "), parameters (" << PrintVector(par) << ")" << endl<<endl;
 
 
     return 0;
