@@ -1012,7 +1012,14 @@ double ComputeSigmaR::Bessel0Tripole(double Q, double x, double z1, double z2, d
     double x01=sqrt(x01sq);
     double x02=sqrt(x02sq);
     double x21=sqrt(x21sq);
-        double facNLO = 4.0*Sq(Q*gsl_sf_bessel_K0(Q*sqrt(X3sq)));
+    double bessel_innerfun = Q*sqrt(X3sq);
+    double facNLO = 0;
+    if (bessel_innerfun < 1e-7){
+      cout << "bessel_innerfun = " << bessel_innerfun << " Q " << Q << " X3sq " << X3sq << endl;
+      return 0;
+    }else{
+      facNLO = 4.0*Sq(Q*gsl_sf_bessel_K0( bessel_innerfun ));
+    }
     return facNLO*(1-SrTripole(x01,x02,x21,x));
 }
 

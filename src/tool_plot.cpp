@@ -45,7 +45,7 @@ void ErrHandlerCustom(const char * reason,
     // 18 = roundoff error prevents tolerance from being achieved
     // 11 = maximum number of subdivisions reached
     // 15: underflows
-
+    // if (gsl_errno == 1){std::cout << "Problem";}
     if (gsl_errno == 11) return; // ignore max subdivision errors
     if (gsl_errno == 18) return; // roundoff errors from small r?
     // if (gsl_errno == 15 or gsl_errno == 16) return;
@@ -84,7 +84,7 @@ int main( int argc, char* argv[] )
         config::MINR = 1e-5;
         config::MAXR = 50;
         config::RPOINTS = 100;
-        config::DE_SOLVER_STEP = 0.4; // Rungekutta step
+        config::DE_SOLVER_STEP = 8*0.4; // Rungekutta step
 
         // Constants
         config::NF=3;   // Only light quarks
@@ -357,7 +357,7 @@ This needs to go as well.
     double icx0 = 1e-2;
     double xbj = icx0;
 
-    #pragma omp parallel for collapse(2)
+    // #pragma omp parallel for collapse(2)
     // for (double Q = 1.0; Q <= 10 + 1e-3; Q*=pow(10,1/20) )
     for (int i=0; i<=20; i++)
     {
@@ -408,8 +408,9 @@ This needs to go as well.
                     FT_LO = SigmaComputer.Structf_TLO(Q,initialconditionX0);
                     FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
                     FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
+                    cout << "Moving to QG L" << endl;
                     FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
-                    FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+                    // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
                     ++calccount;}
                 if (useSigma3){
                     // theory += (fitsigma0)*SigmaComputer.SigmarNLOunsub_sigma3(Q , xbj , y );
@@ -436,8 +437,9 @@ This needs to go as well.
                     FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
                     FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
                     FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
+                    cout << "Moving to QG L" << endl;
                     FL_qg  = SigmaComputer.Structf_LNLOqg_sub(Q,xbj);
-                    FT_qg  = SigmaComputer.Structf_TNLOqg_sub(Q,xbj);
+                    // FT_qg  = SigmaComputer.Structf_TNLOqg_sub(Q,xbj);
 
                     ++calccount;}
             }
