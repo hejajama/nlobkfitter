@@ -36,7 +36,7 @@
 using namespace std;
 using namespace ROOT::Minuit2;
 //void ErrHandler(const char * reason,const char * file,int line,int gsl_errno);
-int errors_mmyiss;
+int errors_counter;
 void ErrHandlerCustom(const char * reason,
                         const char * file,
                         int line,
@@ -52,8 +52,8 @@ void ErrHandlerCustom(const char * reason,
     // Ugly hack, comes from the edges of the z integral in virtual_photon.cpp
     // Overflows come from IPsat::bint when it is done analytically
     // Hope is that these errors are handled correctly everywhere
-    errors_mmyiss++;
-    std::cerr << file << ":"<< line <<": Error " << errors_mmyiss << ": " <<reason
+    errors_counter++;
+    std::cerr << file << ":"<< line <<": Error " << errors_counter << ": " <<reason
             << " (code " << gsl_errno << ")." << std::endl;
 }
 
@@ -62,35 +62,27 @@ int main( int argc, char* argv[] )
     gsl_set_error_handler(&ErrHandlerCustom);
 
         // NLO DIS SIGMA_R COMPUTATION CONFIGS
-        nlodis_config::CUBA_EPSREL = 2e-2;
-        nlodis_config::CUBA_MAXEVAL= 1e8;
+        nlodis_config::CUBA_EPSREL = 5e-3;
+        nlodis_config::CUBA_MAXEVAL= 1e7;
+        nlodis_config::MINR = 1e-5;
+        nlodis_config::MAXR = 50;
         nlodis_config::PRINTDATA = true;
         // bool useNLO = true;
         bool computeNLO = true;
-        //bool useSUB = true;               // Set by a command line switch in swarmscan
-        //bool useImprovedZ2Bound = true;   // Set by a command line switch in swarmscan
-        //bool useBoundLoop = true;         // Set by a command line switch in swarmscan
         string cubaMethod = "suave";
-        //bool useResumBK = true;
-        //bool useKCBK = false;
-        //if (useResumBK == true and useKCBK == true) {cout << "Both ResumBK and KCBK enabled, exitting." << endl; return -1;}
 
-        config::RC_LO = config::FIXED_LO;
-        //config::RC_LO = config::BALITSKY_LO; // Balitsky running coupling for LO kernel
-        //config::RC_LO = config::GUILLAUME_LO;
-        config::RESUM_RC = config::RESUM_RC_PARENT; // Parent dipole in the resummation
-        config::RESUM_DLOG = true; // Resum doulbe logs
-        config::RESUM_SINGLE_LOG = true; // Resum single logs
-        
         // Oliko paperissa LO + fc BK? Taisi olla ja resummaukset vasta olivat kiinnostuksen alla sen jälkeen?
         config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
         
-        
-        config::KSUB = 0.65;  // Optimal value for K_sub
-        config::NO_K2 = true;  // Do not include numerically demanding full NLO part
-        config::INTACCURACY = 1e-2;//0.02;
+        config::VERBOSE = true;
+        config::RINTPOINTS = 512;
+        config::THETAINTPOINTS = 512;
+
+        config::INTACCURACY = 10e-3;//0.02;
+        config::MCINTACCURACY = 10e-3;//0.02;
+        config::MCINTPOINTS = 1e7;
         config::MINR = 1e-5;
-        config::MAXR = 30;
+        config::MAXR = 50;
         config::RPOINTS = 100;
         config::DE_SOLVER_STEP = 0.4; // Rungekutta step
 
@@ -99,19 +91,21 @@ int main( int argc, char* argv[] )
         config::LAMBDAQCD = 0.241;
 
 
-    Data data;
-    data.SetMinQsqr(0.75);
-    data.SetMaxQsqr(50);
-    data.SetMaxX(0.01);
-//     data.LoadData("./data/hera_combined_sigmar.txt", TOTAL);
+    // Data data;
+    // data.SetMinQsqr(0.75);
+    // data.SetMaxQsqr(50);
+    // data.SetMaxX(0.01);
+    // data.LoadData("./data/hera_combined_sigmar.txt", TOTAL);
 
     MnUserParameters parameters;
 
     bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop, useSigma3;
-    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q C^2 X0 gamma Q0sq Y0";
+    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q C^2 X0 gamma Q0sq Y0 eta0\nsub/unsub/unsub+ resumbk/trbk/lobk parentrc/guillaumerc/fixedrc z2improved/z2simple z2boundloop/unboundloop";
+    string string_sub, string_bk, string_rc;
     if (argc<2){ cout << helpstring << endl; return 0;}
     // Argv[0] is the name of the program
 
+    string_sub = string(argv [1]);
     if (string(argv [1]) == "sub"){
       useSUB = true;
     } else if (string(argv [1]) == "unsub"){
@@ -122,10 +116,22 @@ int main( int argc, char* argv[] )
       useSigma3 = true;
     } else {cout << helpstring << endl; return -1;}
 
+    string_bk = string(argv [2]);
     if (string(argv [2]) == "resumbk"){
             config::LO_BK = false;  // Solve LO BK with running coupling, overrides RESUM settings
-    } else if (string(argv [2]) == "kcbk"){
-            config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
+            config::RESUM_DLOG = true; // Resum doulbe logs
+            config::RESUM_SINGLE_LOG = true; // Resum single logs
+            config::KSUB = 0.65;  // Optimal value for K_sub
+            config::NO_K2 = true;  // Do not include numerically demanding full NLO part
+    }else if (string(argv [2]) == "kcbk"){
+            cout << endl << "KCBK (old) unsupported at this time!" << endl << endl;
+            exit(1);
+            config::LO_BK = true;  // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
+            config::EULER_METHOD            = true;        // Kinematical constraint requires this
+            config::KINEMATICAL_CONSTRAINT  = true;
+            config::DE_SOLVER_STEP = 0.08; //0.02; // Euler method requires smaller step than RungeKutta!
+    }else if (string(argv [2]) == "trbk"){  // Target Rapidity BK
+            config::LO_BK = true;  // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
             config::EULER_METHOD            = true;        // Kinematical constraint requires this
             config::KINEMATICAL_CONSTRAINT  = true;
             config::DE_SOLVER_STEP = 0.08; //0.02; // Euler method requires smaller step than RungeKutta!
@@ -133,10 +139,22 @@ int main( int argc, char* argv[] )
             config::LO_BK = true;
     } else {cout << helpstring << endl; return -1;}
 
+    string_rc = string(argv [3]);
     if (string(argv [3]) == "parentrc"){
-            config::RC_LO = config::BALITSKY_LO; 
+            config::RC_LO = config::PARENT_LO;
+            config::RESUM_RC = config::RESUM_RC_PARENT;
+            nlodis_config::RC_DIS = nlodis_config::DIS_RC_PARENT;
     } else if (string(argv [3]) == "guillaumerc"){
             config::RC_LO = config::GUILLAUME_LO;
+            config::RESUM_RC = config::RESUM_RC_GUILLAUME;
+            nlodis_config::RC_DIS = nlodis_config::DIS_RC_GUILLAUME;
+    } else if (string(argv [3]) == "fixedrc"){
+            if (config::LO_BK == false){
+                cout << "There is no fixed coupling option for RESUM BK" << endl;
+                exit(1); }
+            config::RC_LO = config::FIXED_LO;
+            // config::RESUM_RC = config::RESUM_RC_FIXED; // no such option
+            nlodis_config::RC_DIS = nlodis_config::DIS_RC_FIXED;
     } else {cout << helpstring << endl; return -1;}
 
     if (string(argv [4]) == "z2improved"){
@@ -151,6 +169,7 @@ int main( int argc, char* argv[] )
       useBoundLoop = false;
     } else {cout << helpstring << endl; return -1;}
 
+/*
     int argi=5; argi++;
     double QAdditN   = stod( argv [argi] ); argi++;
     double CPowerN   = stod( argv [argi] ); argi++;
@@ -159,7 +178,7 @@ int main( int argc, char* argv[] )
     double icQ0sq    = stod( argv [argi] ); argi++;
     double icY0      = stod( argv [argi] );
     icY0 *= std::log(10.0/X0calc);
-
+*/
 
     // Constructing Q and C^2 grids
     double Qdown = 0;
@@ -197,11 +216,14 @@ This needs to go as well.
     fitter.SetCubaMethod(cubaMethod);
 */
 
-    cout << "=== Perturbative settings ===" << endl;
     cout << std::boolalpha;
-    cout    << "Use ResumBK: " << !(config::LO_BK) << endl
-            << "KinematicalConstraint BK: " << config::KINEMATICAL_CONSTRAINT << endl
-            << "Running Coupling: " << config::RC_LO << " (4 parent, 6 guillaume)" << endl
+    cout    << "=== Perturbative settings ===" << endl
+            << "Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
+            << "Use ResumBK: " << !(config::LO_BK) << endl
+            << "KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << endl
+            << "Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
+            << "Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 balitsky, 1 parent, 3 guillaume)" << endl
+            << "Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
             << "Use NLOimpact: " << useNLO << endl
             << "Use SUBscheme: " << useSUB << endl
             << "Use Sigma3: " << useSigma3 << endl
@@ -212,18 +234,19 @@ This needs to go as well.
     cout << parameters << endl;
     if(nlodis_config::VERBOSE) cout << "=== Starting fit ===" << endl;
 
-// Loop over grid here.
     // params to IC
     double qs0sqr       = par[ parameters.Index("qs0sqr")];
-    double initialconditionX0  = //par[ parameters.Index("initialconditionX0")];
-    double e_c          = 1.0 //par[ parameters.Index("e_c")];
-    double fitsigma0    = 2.568 //*par[ parameters.Index("fitsigma0")];  // 1mb = 2.568 GeV² -- unit change into GeV
-    double alphas_scaling       = 1.0 //par[ parameters.Index("alphascalingC2")]; // MATCH THIS IN IMPACTFACTOR ALPHA_S WHEN NLO
-    double anomalous_dimension  = 1.0 //par[ parameters.Index("anomalous_dimension")];
-    double initialconditionY0  = 1.0 //par[ parameters.Index("initialconditionY0")];
-    double icTypicalPartonVirtualityQ0sqr  = 1.0 //par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
+    double e_c          = par[ parameters.Index("e_c")];
+    //double fitsigma0    = 2.568*par[ parameters.Index("fitsigma0")];  // 1mb = 2.568 GeV² -- unit change into GeV
+    double alphas_scaling       = par[ parameters.Index("alphascalingC2")]; // MATCH THIS IN IMPACTFACTOR ALPHA_S WHEN NLO
+    double anomalous_dimension  = par[ parameters.Index("anomalous_dimension")];
+    double initialconditionX0  = par[ parameters.Index("initialconditionX0")];
+    double initialconditionY0  = par[ parameters.Index("initialconditionY0")];
+    double icTypicalPartonVirtualityQ0sqr  = par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
-    bool   useMasses    = true;
+    double qMass_charm = 1.35;
+    bool useMasses = true;
+    bool useCharm = false;
 
     /*
     // ***Solve resummed BK***
@@ -239,12 +262,15 @@ This needs to go as well.
     BKSolver solver(&dipole);
     double maxy = std::log(initialconditionX0/(1e-5)) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
 
+    double eta0 = 0;
     solver.SetAlphasScaling(alphas_scaling);
+    solver.SetEta0(eta0);
     solver.Solve(maxy);                                // Solve up to maxy
 
     // Give solution to the AmplitudeLib object
     AmplitudeLib DipoleAmplitude(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
     DipoleAmplitude.SetX0(initialconditionX0);
+    DipoleAmplitude.SetOutOfRangeErrors(false);
     AmplitudeLib *DipolePointer = &DipoleAmplitude;
 
     ComputeSigmaR SigmaComputer(DipolePointer);
@@ -252,12 +278,22 @@ This needs to go as well.
     SigmaComputer.SetY0(initialconditionY0);
     SigmaComputer.SetQ0Sqr(icTypicalPartonVirtualityQ0sqr);
     SigmaComputer.SetQuarkMassLight(qMass_light);
-    // NLO: set runnincoupling and C2=Csq for the object.
+    SigmaComputer.SetQuarkMassCharm(qMass_charm);
+    // NLO: set runningcoupling and C2=Csq for the object.
     ComputeSigmaR::CmptrMemFn alphas_temppointer;
     ComputeSigmaR::CmptrMemFn_void alphas_temppointer_QG;
-    if      (config::RC_LO == config::FIXED_LO){    alphas_temppointer = &ComputeSigmaR::alpha_bar_fixed;      alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_fixed;               cout << "Using FIXED_LO" << endl;}
-    else if (config::RC_LO == config::BALITSKY_LO){ alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd; alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_pd;          cout << "Using parent dipole RC" << endl;}
-    else if (config::RC_LO == config::GUILLAUME_LO){alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd; alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_guillaume;   cout << "Using Guillaume RC" << endl;}
+    if      (nlodis_config::RC_DIS == nlodis_config::DIS_RC_FIXED){
+        alphas_temppointer = &ComputeSigmaR::alpha_bar_fixed;
+        alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_fixed;
+        cout << "Using FIXED_LO" << endl;}
+    else if (nlodis_config::RC_DIS == nlodis_config::DIS_RC_PARENT){
+        alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd;
+        alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_pd;
+        cout << "Using parent dipole RC" << endl;}
+    else if (nlodis_config::RC_DIS == nlodis_config::DIS_RC_GUILLAUME){
+        alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd;
+        alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_guillaume;
+        cout << "Using Guillaume RC" << endl;}
     else {cout << "Problem with the choice of runnincoupling. Unkonwn config::RC_LO." << endl;}
     SigmaComputer.SetRunningCoupling(alphas_temppointer);
     SigmaComputer.SetRunningCoupling_QG(alphas_temppointer_QG);
@@ -289,6 +325,8 @@ This needs to go as well.
                     << endl;
                   }
 
+// Loop over grid here.
+
     /*
      * Loop over datapoints and compute theoretical predictions
      */
@@ -301,10 +339,12 @@ This needs to go as well.
     // 250 points (total sigmar) and 50 points (charm)
     // for (unsigned int dataset=0; dataset<datasets.size(); dataset++)
     // {
-#ifdef PARALLEL_CHISQR
-    #pragma omp parallel for schedule(dynamic) reduction(+:chisqr) reduction(+:points)
-#endif
+// #ifdef PARALLEL_CHISQR
+//     #pragma omp parallel for schedule(dynamic) reduction(+:Q) reduction(+:xbj)
+// #endif
+
         // for (int i=0; i<datasets[dataset]->NumOfPoints(); i++)
+    #pragma omp parallel for collarpse(2)
     for (Q )
     {
         for (xbj )
@@ -329,10 +369,9 @@ This needs to go as well.
             if (!computeNLO && useMasses)
             {
                 // theory = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj , y );
-                bool charm = false;
                 double fac = structurefunfac*Sq(Q);
-                FL = fac*LLOpMass(Q,xbj,charm);
-                FT = fac*TLOpMass(Q,xbj,charm);
+                FL = fac*LLOpMass(Q,xbj,useCharm);
+                FT = fac*TLOpMass(Q,xbj,useCharm);
                 ++calccount;
             }
 
