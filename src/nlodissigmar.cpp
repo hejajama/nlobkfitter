@@ -964,7 +964,11 @@ int integrand_ILdip(const int *ndim, const double x[], const int *ncomp, double 
     double res;
 
     res = SKernel*(Optr->ILdip(Q,z1,x01sq))*x01*( alphfac*(0.5*Sq(log(z1/(1-z1))) + regconst ) );
-    *f=res;
+    if(gsl_finite(res)==1){
+        *f=res;
+    }else{
+        *f=0;
+    }
     return 0;
 }
 
@@ -996,7 +1000,11 @@ int integrand_ILdip_z2(const int *ndim, const double x[], const int *ncomp, doub
     double loopcontribution = 1.0/z2 * ( log(1.0 + z2 / (1.0-z1) ) + log(1.0 - z2 / z1) ) + 1.0/z1 * fivefourths ; // a.k.a k1- or z1-term
     res = 2 * jac * SKernel*(Optr->ILdip(Q,z1,x01sq))*x01*( alphfac*( loopcontribution ) ); // factor of 2 is from the combination of the mirror symmteric q/qbar terms.
 
-    *f=res;
+    if(gsl_finite(res)==1){
+        *f=res;
+    }else{
+        *f=0;
+    }
     return 0;
 }
 
@@ -1418,7 +1426,11 @@ int integrand_ITdip(const int *ndim, const double x[], const int *ncomp, double 
 
     res = SKernel*( Optr->ITdip(Q,z1,x01sq) )*x01*( alphfac*(0.5*Sq(log(z1/(1-z1))) + regconst ) );
 
+    if(gsl_finite(res)==1){
         *f=res;
+    }else{
+        *f=0;
+    }
     return 0;
     }
 
@@ -1450,7 +1462,11 @@ int integrand_ITdip_z2(const int *ndim, const double x[], const int *ncomp, doub
     double loopcontribution = 1.0/z2 * ( log(1.0 + z2 / (1.0-z1) ) + log(1.0 - z2 / z1) ) + 1.0/z1 * fivefourths ; // a.k.a k1- or z1-term
     res = 2 * jac * SKernel*(Optr->ITdip(Q,z1,x01sq))*x01*( alphfac*( loopcontribution ) ); // factor of 2 is from the combination of the mirror symmteric q/qbar terms.
 
-    *f=res;
+    if(gsl_finite(res)==1){
+        *f=res;
+    }else{
+        *f=0;
+    }
     return 0;
 }
 
