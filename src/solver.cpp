@@ -119,7 +119,10 @@ int BKSolver::Solve(double maxy)
             y = y + step;
             delete[] dydt;
 			// if(VERBOSE) cout << "# Evolved at y=" << y << endl;
-            if(VERBOSE) cout << "\r" << "# Evolved at y=" << y << "/" << maxy << std::flush;
+            if(VERBOSE){
+                cout << "\r                                               " << std::flush;
+                cout << "\r" << "# Evolved at y=" << y << "/" << maxy << std::flush;
+            }
         }
 
         yind = dipole->AddRapidity(y, ampvec);
