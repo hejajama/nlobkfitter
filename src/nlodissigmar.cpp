@@ -573,7 +573,7 @@ void Cuba(string method, int ndim, integrand_t integrand,
   else if(method=="suave"){
     // Suave-specific arguments
     int nnew=1e3, nmin=2; // nnew=10e3
-    double flatness=50; //25;
+    double flatness=25; //25;
     Suave(ndim,ncomp,integrand,userdata,nvec,nlodis_config::CUBA_EPSREL,
     cuba_config::epsabs,cuba_config::verbose | last,seed,mineval,
     nlodis_config::CUBA_MAXEVAL,nnew,nmin,flatness,statefile,spin,
@@ -582,8 +582,8 @@ void Cuba(string method, int ndim, integrand_t integrand,
   else if(method=="divonne"){
     if(ndim==1) ndim=2;
     // Divonne-specific arguments
-    int key1=47, key2=1, key3=1, maxpass=5, ngiven=0, nextra=0;
-    double border=1e-4, maxchisq=10, mindeviation=0.25;
+    int key1=1*47, key2=1, key3=1, maxpass=5, ngiven=0, nextra=0;
+    double border=1e-6, maxchisq=10, mindeviation=0.25;
     Divonne(ndim,ncomp,integrand,userdata,nvec,nlodis_config::CUBA_EPSREL,
       cuba_config::epsabs,cuba_config::verbose,seed,mineval,
       nlodis_config::CUBA_MAXEVAL,key1,key2,key3,maxpass,border,maxchisq,
