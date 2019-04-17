@@ -357,7 +357,7 @@ This needs to go as well.
     double icx0 = 1e-2;
     double xbj = icx0;
 
-    // #pragma omp parallel for collapse(2)
+    #pragma omp parallel for collapse(2)
     // for (double Q = 1.0; Q <= 10 + 1e-3; Q*=pow(10,1/20) )
     for (int i=0; i<=20; i++)
     {
