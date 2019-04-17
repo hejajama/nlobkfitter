@@ -64,7 +64,7 @@ int main( int argc, char* argv[] )
     gsl_set_error_handler(&ErrHandlerCustom);
 
         // NLO DIS SIGMA_R COMPUTATION CONFIGS
-        nlodis_config::CUBA_EPSREL = 50e-3;
+        nlodis_config::CUBA_EPSREL = 10e-3;
         nlodis_config::CUBA_MAXEVAL= 1e7;
         nlodis_config::MINR = 1e-5;
         nlodis_config::MAXR = 50;
@@ -73,7 +73,7 @@ int main( int argc, char* argv[] )
         //bool useSUB = true;               // Set by a command line switch in swarmscan
         //bool useImprovedZ2Bound = true;   // Set by a command line switch in swarmscan
         //bool useBoundLoop = true;         // Set by a command line switch in swarmscan
-        string cubaMethod = "divonne";
+        string cubaMethod = "suave";
         //bool useResumBK = true;
         //bool useKCBK = false;
         //if (useResumBK == true and useKCBK == true) {cout << "Both ResumBK and KCBK enabled, exitting." << endl; return -1;}
@@ -94,8 +94,8 @@ int main( int argc, char* argv[] )
         config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
         config::KSUB = 0.65;  // Optimal value for K_sub
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
-        config::INTACCURACY = 100e-3;//0.02;
-        config::MCINTACCURACY = 100e-3;//0.02;
+        config::INTACCURACY = 10e-3;//0.02;
+        config::MCINTACCURACY = 10e-3;//0.02;
         config::MCINTPOINTS = 1e7;
         config::MINR = 1e-5;
         config::MAXR = 50;
@@ -103,19 +103,6 @@ int main( int argc, char* argv[] )
         config::DE_SOLVER_STEP = 0.4; // Rungekutta step
         // config::DE_SOLVER_STEP = 0.05; // Euler step
 
-        /*
-        // RESUM BK
-        if (useResumBK == true){
-            config::LO_BK = false;  // Solve LO BK with running coupling, overrides RESUM settings
-        }
-        // If want to use kinematical constraint in the LO equation
-        if (useKCBK == true){
-            config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
-            config::EULER_METHOD            = true;        // Kinematical constraint requires this
-            config::KINEMATICAL_CONSTRAINT  = true;
-            config::DE_SOLVER_STEP = 0.08; //0.02; // Euler method requires smaller step than RungeKutta!
-        }
-        */
 
     // READING RUN CONFIGURATION FROM THE STDIN
     bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop, useSigma3;
@@ -200,8 +187,10 @@ int main( int argc, char* argv[] )
     // Fit parameters, first value is starting value, second is uncertainty
         //if(argc = 13){
         parameters.Add("qs0sqr",                icqs0sq , 0.2);
+        // parameters.Add("qs0sqr",                icqs0sq);
         // parameters.Add("fitsigma0",             icsigma0, 10.0); // 1mb = 2.568 GeV² // (2.568)*16.36
         parameters.Add("alphascalingC2",        iccsq,    20.0);
+        // parameters.Add("alphascalingC2",        iccsq);
         parameters.Add("e_c", 1.0 );
         parameters.Add("anomalous_dimension",   icgamma);
         parameters.Add("initialconditionX0",    icx0 );
