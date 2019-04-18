@@ -1040,6 +1040,11 @@ double ComputeSigmaR::ILNLOqg(double Q, double x, double z1, double z2, double x
     double facNLO2 = Bessel0Tripole(Q, x, z1, z2, x01sq, 0    , x01sq, X010sq);
 
     double res = fac1*((fun1*fac2)*(facNLO1 - facNLO2) + fac3*facNLO1 );
+    if(gsl_finite(res)==1){
+        return res;
+    }else{
+        res=0;
+    }
     return res;
 }
 
