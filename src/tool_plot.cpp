@@ -69,22 +69,28 @@ int main( int argc, char* argv[] )
         nlodis_config::PRINTDATA = true;
         bool useNLO = true;
         bool computeNLO = useNLO;
+        // string cubaMethod = "vegas";
         string cubaMethod = "suave";
 
         // Oliko paperissa LO + fc BK? Taisi olla ja resummaukset vasta olivat kiinnostuksen alla sen jälkeen?
         config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
-        
+        config::RESUM_DLOG = true; // Resum doulbe logs
+        config::RESUM_SINGLE_LOG = true; // Resum single logs
+        config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
+        config::KSUB = 0.65;  // Optimal value for K_sub
+        config::NO_K2 = true;  // Do not include numerically demanding full NLO part
+
         config::VERBOSE = true;
         config::RINTPOINTS = 512;
         config::THETAINTPOINTS = 512;
 
-        config::INTACCURACY = 100e-3;//0.02;
-        config::MCINTACCURACY = 100e-3;//0.02;
-        config::MCINTPOINTS = 1e7;
+        config::INTACCURACY = 50e-3;//0.02;
+        config::MCINTACCURACY = 50e-3;//0.02;
+        // config::MCINTPOINTS = 1e7;
         config::MINR = 1e-5;
         config::MAXR = 50;
         config::RPOINTS = 100;
-        config::DE_SOLVER_STEP = 8*0.4; // Rungekutta step
+        config::DE_SOLVER_STEP = 4*0.4; // Rungekutta step
 
         // Constants
         config::NF=3;   // Only light quarks
@@ -354,20 +360,23 @@ This needs to go as well.
  * 
  */
     double Q = 1.0;
-    double icx0 = 1e-2;
+    double icx0 = initialconditionX0;
     double xbj = icx0;
 
     // #pragma omp parallel for collapse(2)
     // for (double Q = 1.0; Q <= 10 + 1e-3; Q*=pow(10,1/20) )
     for (int i=0; i<=20; i++)
+    // for (int i=0; i<=1; i++)
     {
         // for (double xbj = 1e-3; xbj >= 5e-7 - 1e-9; xbj*=pow(10,1/4) )
         for (int j=0; j<=17; j++)
+        // for (int j=0; j<=1; j++)
         {
+            if (j==0 and cubaMethod=="suave"){j++;}
             Q = 1.0*pow(10,(double)i/20.0);
             xbj = icx0/pow(10,(double)j/4.0);
-            #pragma omp critical
-            cout << "Q=" << Q << ", xbj=" << xbj << endl;
+            // #pragma omp critical
+            // cout << "Q=" << Q << ", xbj=" << xbj << endl;
             
             double FL_LO=0, FL_dip=0, FL_qg=0, FL_sigma3=0;
             double FT_LO=0, FT_dip=0, FT_qg=0, FT_sigma3=0;
@@ -408,9 +417,9 @@ This needs to go as well.
                     FT_LO = SigmaComputer.Structf_TLO(Q,initialconditionX0);
                     FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
                     FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
-                    cout << "Moving to QG L" << endl;
+                    // cout << "Moving to QG L" << endl;
                     FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
-                    // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+                    FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
                     ++calccount;}
                 if (useSigma3){
                     // theory += (fitsigma0)*SigmaComputer.SigmarNLOunsub_sigma3(Q , xbj , y );
@@ -437,9 +446,9 @@ This needs to go as well.
                     FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
                     FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
                     FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
-                    cout << "Moving to QG L" << endl;
+                    // cout << "Moving to QG L" << endl;
                     FL_qg  = SigmaComputer.Structf_LNLOqg_sub(Q,xbj);
-                    // FT_qg  = SigmaComputer.Structf_TNLOqg_sub(Q,xbj);
+                    FT_qg  = SigmaComputer.Structf_TNLOqg_sub(Q,xbj);
 
                     ++calccount;}
             }
