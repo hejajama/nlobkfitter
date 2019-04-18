@@ -161,7 +161,7 @@ public:
     // Longitudinal
     double ILLO(double Q, double z1, double x01sq) ;
     double ILdip(double Q, double z1, double x01sq) ;
-    double Bessel0Tripole(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq, double X3sq) ;
+    double Bessel0Tripole(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) ;
     double ILNLOqg(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) ;
     double ILNLOqgRisto(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) ;
     double ILNLOsigma3(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) ;
@@ -180,7 +180,7 @@ public:
     // Transverse
     double ITLO(double Q, double z1, double x01sq) ;
     double ITdip(double Q, double z1, double x01sq) ;
-    double Bessel1Tripole(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq, double X3sq) ;
+    double Bessel1Tripole(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) ;
     double ITNLOqg(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) ;
     double ITNLOqgRisto(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) ;
     double ITNLOsigma3(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) ;

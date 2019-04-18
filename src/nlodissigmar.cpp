@@ -1008,14 +1008,17 @@ int integrand_ILdip_z2(const int *ndim, const double x[], const int *ncomp, doub
     return 0;
 }
 
-double ComputeSigmaR::Bessel0Tripole(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq, double X3sq) {
+double ComputeSigmaR::Bessel0Tripole(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) {
     double x01=sqrt(x01sq);
     double x02=sqrt(x02sq);
     double x21=sqrt(x21sq);
+
+    double X3sq 	= z1*(1.0 - z1 - z2)*x01sq + z2*(1.0 - z1 - z2)*x02sq + z2*z1*x21sq;
+
     double bessel_innerfun = Q*sqrt(X3sq);
     double facNLO = 0;
     if (bessel_innerfun < 1e-7){
-      cout << "bessel_innerfun = " << bessel_innerfun << " Q " << Q << " X3sq " << X3sq << endl;
+      // cout << "bessel_innerfun = " << bessel_innerfun << " Q " << Q << " X3sq " << X3sq << endl;
       return 0;
     }else{
       facNLO = 4.0*Sq(Q*gsl_sf_bessel_K0( bessel_innerfun ));
@@ -1026,8 +1029,6 @@ double ComputeSigmaR::Bessel0Tripole(double Q, double x, double z1, double z2, d
 double ComputeSigmaR::ILNLOqg(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) { // old ILNLObeufQG
     double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
     double x20x21 = -0.5*(x01sq - x21sq - x02sq);
-    double X3sq 	= z1*(1.0 - z1 - z2)*x01sq + z2*(1.0 - z1 - z2)*x02sq + z2*z1*x21sq;
-    double X010sq = z1*(1.0 - z1)*x01sq;
 
     double fac1 = Sq(z1)*Sq(1.0 - z1);
     double xi 	= z2/(1.0-z1);
@@ -1036,8 +1037,8 @@ double ComputeSigmaR::ILNLOqg(double Q, double x, double z1, double z2, double x
     double fac2 = 1/x02sq - fun2;
     double fac3 = Sq(xi)*fun2;
 
-    double facNLO1 = Bessel0Tripole(Q, x, z1, z2, x01sq, x02sq, x21sq, X3sq);
-    double facNLO2 = Bessel0Tripole(Q, x, z1, z2, x01sq, 0    , x01sq, X010sq);
+    double facNLO1 = Bessel0Tripole(Q, x, z1, z2, x01sq, x02sq, x21sq);
+    double facNLO2 = Bessel0Tripole(Q, x, z1, z2, x01sq, 0    , x01sq);
 
     double res = fac1*((fun1*fac2)*(facNLO1 - facNLO2) + fac3*facNLO1 );
     if(gsl_finite(res)==1){
@@ -1081,7 +1082,8 @@ double ComputeSigmaR::ILNLOqgRisto(double Q, double x, double z0, double z2, dou
   double facterm3 = Sq(z2)*( Sq(z0) + Sq(z3) ) * fun2;
   */
 
-  double facBesselTrip = Bessel0Tripole(Q, x, z3, z2, x01sq, x02sq, x21sq, X3sq);
+  // double facBesselTrip = Bessel0Tripole(Q, x, z3, z2, x01sq, x02sq, x21sq, X3sq);
+  double facBesselTrip = Bessel0Tripole(Q, x, z3, z2, x01sq, x02sq, x21sq);
 
   double Qbarn = sqrt(z3*(1-z3))*Q;
   double Qbaro = sqrt(z0*(1-z0))*Q;
@@ -1213,7 +1215,7 @@ int integrand_ILqgsub(const int *ndim, const double x[], const int *ncomp,double
     double X0=dataptr->icX0;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
     double z2min = Optr->z2lower_bound(xbj,Sq(Q));
-    if (z2min > 1.0){ // Check that z2min is not too large. IF it is too large, return *f=0.
+    if (z2min >= 1.0){ // Check that z2min is not too large. IF it is too large, return *f=0.
         *f=0;
         return 0;
     }
@@ -1235,10 +1237,17 @@ int integrand_ILqgsub(const int *ndim, const double x[], const int *ncomp,double
     double alphabar=Optr->Alphabar_QG( &alphasdata );
     double alphfac=alphabar*CF/Nc;
 
+    double ILNLOqg_z2 = 0;
+    if (1-z1-z2 > 0){ // heaviside theta front factor on the full NLO term
+      ILNLOqg_z2 = (Optr->ILNLOqg(Q,Xrpdt,z1,z2,x01sq,x02sq,phix0102));
+    }
+    double ILNLOqg_z2_to_0 = Optr->ILNLOqg(Q,Xrpdt,z1, 0,x01sq,x02sq,phix0102);
+
     double res =   jac*alphfac*(
-                    (Optr->ILNLOqg(Q,Xrpdt,z1,z2,x01sq,x02sq,phix0102))*(Optr->heaviside_theta(1-z1-z2))
-                    -Optr->ILNLOqg(Q,Xrpdt,z1, 0,x01sq,x02sq,phix0102)
-                  )/z2*x01*x02;
+                    ILNLOqg_z2
+                    -
+                    ILNLOqg_z2_to_0
+                  )/(z2)*x01*x02;
 
     if(gsl_finite(res)==1){
         *f=res;
@@ -1482,16 +1491,20 @@ int integrand_ITdip_z2(const int *ndim, const double x[], const int *ncomp, doub
     return 0;
 }
 
-double ComputeSigmaR::Bessel1Tripole(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq, double X3sq) {
-    double facNLO;
+double ComputeSigmaR::Bessel1Tripole(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) {
     double x01=sqrt(x01sq);
     double x02=sqrt(x02sq);
     double x21=sqrt(x21sq);
 
-    if(Q*sqrt(X3sq)>1e-7&&Q*sqrt(X3sq)<1e2){
-      facNLO = Sq(Q*gsl_sf_bessel_K1(Q*sqrt(X3sq)));
+    double X3sq 	= z1*(1.0 - z1 - z2)*x01sq + z2*(1.0 - z1 - z2)*x02sq + z2*z1*x21sq;
+
+    double bessel_innerfun = Q*sqrt(X3sq);
+    double facNLO = 0;
+    if (bessel_innerfun < 1e-7){
+      // cout << "bessel_innerfun = " << bessel_innerfun << " Q " << Q << " X3sq " << X3sq << endl;
+      return 0;
     }else{
-      facNLO = 0;
+      facNLO = Sq(Q*gsl_sf_bessel_K1(bessel_innerfun));
     }
     double res = facNLO*(1-SrTripole(x01,x02,x21,x));
     return res;
@@ -1501,7 +1514,6 @@ double ComputeSigmaR::ITNLOqg(double Q, double x, double z1, double z2, double x
     double x21sq 	= x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
     double x20x21 = -0.5*(x01sq - x21sq - x02sq);
     double X3sq 	= z1*(1.0 - z1 - z2)*x01sq + z2*(1.0 - z1 - z2)*x02sq + z2*z1*x21sq;
-    double X010sq = z1*(1.0 - z1)*x01sq;
 
     double fac1 	= z1*(1.0 - z1);
     double xi 		= z2/(1.0-z1);
@@ -1511,8 +1523,8 @@ double ComputeSigmaR::ITNLOqg(double Q, double x, double z1, double z2, double x
     double fac13 	= 1/x02sq - fun2;
     double fac3 	= Sq(xi)*(	fac11*fun2	+ 2*fac1*(1-xi)*x20x21/(x02sq*X3sq)	-	(1-z1)*(1-xi)*(z1+xi-z1*xi)/X3sq	);
 
-    double facNLO1 = Bessel1Tripole(Q, x, z1, z2, x01sq, x02sq, x21sq, X3sq);
-    double facNLO2 = Bessel1Tripole(Q, x, z1, z2, x01sq, 0    , x01sq, X010sq);
+    double facNLO1 = Bessel1Tripole(Q, x, z1, z2, x01sq, x02sq, x21sq);
+    double facNLO2 = Bessel1Tripole(Q, x, z1, z2, x01sq, 0    , x01sq);
 
     double res = fac1*((fac11*fac12*fac13)*(facNLO1 - facNLO2) + fac3*facNLO1);
     return res;
@@ -1554,7 +1566,7 @@ double ComputeSigmaR::ITNLOqgRisto(double Q, double x, double z0, double z2, dou
                           )
                         )/X3sq;
 
-    double facBesselTrip = Bessel1Tripole(Q, x, z3, z2, x01sq, x02sq, x21sq, X3sq);
+    double facBesselTrip = Bessel1Tripole(Q, x, z3, z2, x01sq, x02sq, x21sq);
 
     double Qbarn = sqrt(z3*(1-z3))*Q;
     double Qbaro = sqrt(z0*(1-z0))*Q;
@@ -1677,7 +1689,7 @@ int integrand_ITqgsub(const int *ndim, const double x[], const int *ncomp, doubl
     double X0=dataptr->icX0;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
     double z2min = Optr->z2lower_bound(xbj,Sq(Q));
-    if (z2min > 1.0){ // Check that z2min is not too large. IF it is too large, return res=0.
+    if (z2min >= 1.0){ // Check that z2min is not too large. IF it is too large, return res=0.
         *f=0;
         return 0;
     }
@@ -1699,10 +1711,17 @@ int integrand_ITqgsub(const int *ndim, const double x[], const int *ncomp, doubl
     double alphabar=Optr->Alphabar_QG( &alphasdata );
     double alphfac=alphabar*CF/Nc;
 
+    double ITNLOqg_z2 = 0;
+    if (1-z1-z2 > 0){ // heaviside theta front factor on the full NLO term
+      ITNLOqg_z2 = (Optr->ITNLOqg(Q,Xrpdt,z1,z2,x01sq,x02sq,phix0102));
+    }
+    double ITNLOqg_z2_to_0 = Optr->ITNLOqg(Q,Xrpdt,z1,0,x01sq,x02sq,phix0102);
+
     double res = jac*alphfac*(
-                  (Optr->ITNLOqg(Q,Xrpdt,z1,z2,x01sq,x02sq,phix0102))*(Optr->heaviside_theta(1-z1-z2))
-                  -Optr->ITNLOqg(Q,Xrpdt,z1,0,x01sq,x02sq,phix0102)
-                )/z2*x01*x02;
+                  ITNLOqg_z2
+                  -
+                  ITNLOqg_z2_to_0
+                )/(z2)*x01*x02;
 
     if(gsl_finite(res)==1){
         *f=res;
