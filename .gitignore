@@ -10,5 +10,7 @@ tool
 plottool
 
 
-# Editor files
+# Editor and other files
 .vscode/
+doc/
+out/
