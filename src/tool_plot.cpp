@@ -62,15 +62,15 @@ int main( int argc, char* argv[] )
     gsl_set_error_handler(&ErrHandlerCustom);
 
         // NLO DIS SIGMA_R COMPUTATION CONFIGS
-        nlodis_config::CUBA_EPSREL = 10e-3;
+        nlodis_config::CUBA_EPSREL = 5e-3;
         nlodis_config::CUBA_MAXEVAL= 1e7;
         nlodis_config::MINR = 1e-5;
         nlodis_config::MAXR = 50;
         nlodis_config::PRINTDATA = true;
         bool useNLO = true;
         bool computeNLO = useNLO;
-        // string cubaMethod = "vegas";
-        string cubaMethod = "suave";
+        string cubaMethod = "vegas";
+        //string cubaMethod = "suave";
 
         // Oliko paperissa LO + fc BK? Taisi olla ja resummaukset vasta olivat kiinnostuksen alla sen jälkeen?
         config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
@@ -84,13 +84,13 @@ int main( int argc, char* argv[] )
         config::RINTPOINTS = 512;
         config::THETAINTPOINTS = 512;
 
-        config::INTACCURACY = 50e-3;//0.02;
-        config::MCINTACCURACY = 50e-3;//0.02;
+        config::INTACCURACY = 10e-3;//0.02;
+        config::MCINTACCURACY = 10e-3;//0.02;
         // config::MCINTPOINTS = 1e7;
         config::MINR = 1e-5;
         config::MAXR = 50;
         config::RPOINTS = 100;
-        config::DE_SOLVER_STEP = 4*0.4; // Rungekutta step
+        config::DE_SOLVER_STEP = 0.4; // Rungekutta step
 
         // Constants
         config::NF=3;   // Only light quarks
