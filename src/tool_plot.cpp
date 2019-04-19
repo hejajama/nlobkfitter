@@ -135,12 +135,12 @@ int main( int argc, char* argv[] )
             config::LO_BK = true;  // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
             config::EULER_METHOD            = true;        // Kinematical constraint requires this
             config::KINEMATICAL_CONSTRAINT  = true;
-            config::DE_SOLVER_STEP = 0.08; //0.02; // Euler method requires smaller step than RungeKutta!
+            config::DE_SOLVER_STEP = 0.05; //0.02; // Euler method requires smaller step than RungeKutta!
     }else if (string(argv [2]) == "trbk"){  // Target Rapidity BK
             config::LO_BK = true;  // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
             config::EULER_METHOD            = true;        // Kinematical constraint requires this
             config::KINEMATICAL_CONSTRAINT  = true;
-            config::DE_SOLVER_STEP = 0.08; //0.02; // Euler method requires smaller step than RungeKutta!
+            config::DE_SOLVER_STEP = 0.05; //0.02; // Euler method requires smaller step than RungeKutta!
     }else if (string(argv [2]) == "lobk"){
             config::LO_BK = true;
     } else {cout << helpstring << endl; return -1;}
