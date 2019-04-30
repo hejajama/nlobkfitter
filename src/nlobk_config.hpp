@@ -26,7 +26,6 @@ namespace config
     
 
     extern double LAMBDAQCD;
-    extern double LAMBDAQCD2;
 
     extern int RINTPOINTS;
     extern int THETAINTPOINTS;
@@ -118,10 +117,16 @@ namespace config
 
     extern bool ONLY_K1FIN; // Only K1fin contribution from K_1
     
-    extern bool KINEMATICAL_CONSTRAINT; // Solve nonlocal kinematically constrained BK (LO part)
+    enum KINEMATICAL_CONSTRAINTS
+    {
+        KC_BEUF_K_PLUS,
+        KC_EDMOND_K_MINUS,
+        KC_NONE
+    };
+    
+    extern KINEMATICAL_CONSTRAINTS KINEMATICAL_CONSTRAINT; // Solve nonlocal kinematically constrained BK (LO part)
     
     extern bool EULER_METHOD;    // Use Euler method instead of Runge Kutta, must be true if KINEMATICA_CONSTRAINT is used
-
     
 }
 std::string NLOBK_CONFIG_STRING();
