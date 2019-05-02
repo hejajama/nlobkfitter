@@ -776,7 +776,7 @@ double ComputeSigmaR::ILLO(double Q, double z1, double x01sq) {
     double bessel_inner_fun = Q*sqrt(z1*(1.0-z1)*x01sq);
     double res = 0;
     if (bessel_inner_fun < 1e-7){
-        cout << bessel_inner_fun << " " << Q << " " << z1 << " " << x01sq << endl;
+        // cout << bessel_inner_fun << " " << Q << " " << z1 << " " << x01sq << endl;
         res = 0;
     }else{
         res = 4.0*Sq(Q)*Sq(z1)*Sq(1.0-z1)*Sq(gsl_sf_bessel_K0( bessel_inner_fun ));
@@ -857,7 +857,14 @@ double ComputeSigmaR::LLOpMass(double Q, double x, bool charm) {
 */
 
 double ComputeSigmaR::ITLO(double Q, double z1, double x01sq) {
-  double res = Sq(Q)*z1*(1.0-z1)*(1.0-2.0*z1+2.0*Sq(z1))*Sq(gsl_sf_bessel_K1(Q*sqrt(z1*(1.0-z1)*x01sq)));
+  double bessel_inner_fun = Q*sqrt(z1*(1.0-z1)*x01sq);
+  double res = 0;
+  if (bessel_inner_fun < 1e-7){
+        // cout << bessel_inner_fun << " " << Q << " " << z1 << " " << x01sq << endl;
+        res = 0;
+    }else{
+        res = Sq(Q)*z1*(1.0-z1)*(1.0-2.0*z1+2.0*Sq(z1))*Sq(gsl_sf_bessel_K1(bessel_inner_fun));
+    }
   return res;
 }
 
