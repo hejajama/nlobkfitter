@@ -130,16 +130,14 @@ int main( int argc, char* argv[] )
             config::KSUB = 0.65;  // Optimal value for K_sub
             config::NO_K2 = true;  // Do not include numerically demanding full NLO part
     }else if (string(argv [2]) == "kcbk"){
-            cout << endl << "KCBK (old) unsupported at this time!" << endl << endl;
-            exit(1);
             config::LO_BK = true;  // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
             config::EULER_METHOD            = true;        // Kinematical constraint requires this
-            config::KINEMATICAL_CONSTRAINT  = true;
+            config::KINEMATICAL_CONSTRAINT  = config::KC_BEUF_K_PLUS;
             config::DE_SOLVER_STEP = 0.05; //0.02; // Euler method requires smaller step than RungeKutta!
     }else if (string(argv [2]) == "trbk"){  // Target Rapidity BK
             config::LO_BK = true;  // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
             config::EULER_METHOD            = true;        // Kinematical constraint requires this
-            config::KINEMATICAL_CONSTRAINT  = true;
+            config::KINEMATICAL_CONSTRAINT  = config::KC_EDMOND_K_MINUS;
             config::DE_SOLVER_STEP = 0.05; //0.02; // Euler method requires smaller step than RungeKutta!
     }else if (string(argv [2]) == "lobk"){
             config::LO_BK = true;
