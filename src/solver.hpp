@@ -45,7 +45,7 @@ class BKSolver
         void SetTmpOutput(std::string fname);
 
 	double GetEta0() const { return eta_0; }
-	double SetEta0(double e0) { eta_0 = e0; }
+	void SetEta0(double e0) { eta_0 = e0; }
     private:
         double alphas_scaling;
         Dipole* dipole;

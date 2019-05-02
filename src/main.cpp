@@ -71,7 +71,7 @@ int main()
 
         // If want to use kinematical constraint in the LO equation
         config::EULER_METHOD = true;;    // Kinematical constraint requires this
-        config::KINEMATICAL_CONSTRAINT = true;;
+        config::KINEMATICAL_CONSTRAINT = config::KC_NONE;;
 
         // Constants
         config::NF=3;   // Only light quarks
@@ -93,79 +93,20 @@ int main()
 	MnUserParameters parameters;
 	 //parameters.SetPrecision(0.001); 
       // Constants
-        //parameters.Add("anomalous_dimension", 1.0);
-
-      // Fit parameters, second value is starting value, second is uncertainty
-        /*
-        // MASSLESS -- LO LO LO
-          parameters.Add("qs0sqr", 0.0564335 , 0.04 );
-          parameters.Add("fitsigma0", 42.0015 , 5.0); // 1mb = 2.568 GeV² // (2.568)*16.36
-          parameters.Add("alphascalingC2", 7.2 , 1.0 );
-          parameters.Add("e_c", 18.9692 , 0.5 );
-        */
-
-        ///*
-        // MASSLESS -- NLO NLO NLO
-
-          // MV
-    	 /* 
-          parameters.Add("qs0sqr", 0.104, 0.1 );
-          parameters.Add("fitsigma0", 48.304, 2.0 ); // 1mb = 2.568 GeV² // (2.568)*16.36
-          parameters.Add("alphascalingC2", 4.5 ,1);
-          parameters.Add("e_c", 1.0 );
-          parameters.Add("anomalous_dimension", 1.0 );
-		  parameters.Add("initialconditionX0", 0.01 );
-         */
-		  // MV for resummed
-		  
-		  parameters.Add("qs0sqr", 0.0484000000000, 0.4);
-          //parameters.Add("fitsigma0", 30.00000000000, 2 ); // 1mb = 2.568 GeV² // (2.568)*16.36
-          parameters.Add("alphascalingC2", 14.4      , 0.70);
-          parameters.Add("e_c", 21.5, 1.0);
-          parameters.Add("anomalous_dimension", 1.0 );
-		  parameters.Add("initialconditionX0", 1 );
-		  parameters.Add("eta0", std::log(1/0.01));
-
-          /*
-          parameters.Add("qs0sqr", 0.0477335 , 0.04 );
-          parameters.Add("fitsigma0", 91.5015 , 5.0); // 1mb = 2.568 GeV² // (2.568)*16.36
-          parameters.Add("alphascalingC2", 10.39 , 3.0 ); //alphas_scaling = exp(-2.0*0.5772);
-          parameters.Add("e_c", 1.0 );
-          parameters.Add("anomalous_dimension", 1.0 );
-          parameters.Add("initialconditionX0", 0.01 );
-          */
-
-          
-          // MVe
-/*			  parameters.Add("qs0sqr", 0.1635799830774, 0.1 );
-          parameters.Add("e_c", 1  );
-          parameters.Add("fitsigma0", 45.28377419688, 2);  //1mb = 2.568 GeV² // (2.568)*16.36
-         parameters.Add("alphascalingC2",02.15850740349, 2 );
-         
- 	parameters.Add("anomalous_dimension", 1.000005541673 , 0.1);
-          parameters.Add("initialconditionX0", 0.01 );
-          
-*/		  
-		  // AAMQS light
-		  /*
-		  parameters.Add("qs0sqr", 0.1604, 0.1 );
-          parameters.Add("e_c", 1.0  );
-          parameters.Add("fitsigma0", 20*2.568/2., 2); // 1mb = 2.568 GeV² // (2.568)*16.36
-         parameters.Add("alphascalingC2",4*4, 2 );
-         
- 	parameters.Add("anomalous_dimension", 1.2 , 0.1);
-          parameters.Add("initialconditionX0", 0.01 );
-*/
-        //*/
-
-         /*
-        // MASS
-          parameters.Add("qs0sqr", 0.06 , 0.04 );
-          parameters.Add("e_c", 18.9 , 0.5 );
-          parameters.Add("fitsigma0", (2.568)*16.36 , 5.0); // 1mb = 2.568 GeV² // (2.568)*16.36
-          parameters.Add("alphascalingC2", 7.2 , 1.0 );
-         */
-
+    
+    parameters.Add("qs0sqr", 0.0484000000000, 0.4);
+    parameters.Add("alphascalingC2", 14.4      , 0.70);
+    parameters.Add("e_c", 21.5, 1.0);
+    parameters.Add("anomalous_dimension", 1.0 );
+	
+    // eta_0 starint value for the k^- evolution
+	parameters.Add("eta0", std::log(1/0.01));
+    
+    // Constants
+    parameters.Add("initialconditionX0", 1 );
+    parameters.Add("initialconditionY0", 0 ); // What rapidity is our IC
+    parameters.Add("icTypicalPartonVirtualityQ0sqr", 1.0);
+    
       /*// Set limits
         parameters.SetLowerLimit("A_g", 0);
         parameters.SetUpperLimit("mu_0", 1.43);
@@ -174,6 +115,9 @@ int main()
     NLODISFitter fitter(parameters);
     fitter.AddDataset(data);
     fitter.SetNLO(false);
+    
+    cout <<"=== BK solver setup: ===" << endl;
+    cout << NLOBK_CONFIG_STRING()<<endl;
 
     cout << "=== Initial parameters ===" << endl;
     cout << parameters << endl;

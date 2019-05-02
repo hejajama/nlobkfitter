@@ -54,7 +54,22 @@ int BKSolver::Solve(double maxy)
      */
 
     cout <<"#### Solving BK equation up to y=" << maxy <<", mcintpoints " << MCINTPOINTS << endl;
-    cout << "# Nc=" << NC << ", Nf=" << NF << " alphas(r=1) = " << Alphas(1) << endl;
+    //cout << "# Nc=" << NC << ", Nf=" << NF << " alphas(r=1) = " << Alphas(1) << endl;
+    
+    // First check that configs make sense
+    if (config::LO_BK)
+    {
+        if (config::RESUM_DLOG or config::RESUM_SINGLE_LOG or config::KINEMATICAL_CONSTRAINT != config::KC_NONE)
+        {
+            cerr << "STOP! config::LO_BK can't be used with Resummation or kinematical constraint!" << endl;
+            exit(1);
+        }
+    }
+    if (config::RESUM_DLOG and config::KINEMATICAL_CONSTRAINT != config::KC_NONE)
+    {
+        cerr << "STOP! User wants to use both resummation of dlogs and kinematical constraint!" << endl;
+        exit(1);
+    }
     
 
     size_t vecsize = dipole->RPoints();
@@ -380,7 +395,7 @@ double Inthelperf_lo_theta(double theta, void* p)
         exit(1);
     }
 
-    if (!KINEMATICAL_CONSTRAINT)
+    if (KINEMATICAL_CONSTRAINT == config::KC_NONE)
 	{
          double N_X = helper->dipole_interp->Evaluate(X);    // N(X)
          double N_Y = helper->dipole_interp->Evaluate(Y);
@@ -395,70 +410,82 @@ double Inthelperf_lo_theta(double theta, void* p)
             cerr << "Using KinematicalConstraint but not EulerMethod? " << LINEINFO << endl;
             exit(1);
         }
-        /*
+        
         // Implement kinematical constraint from 1708.06557 Eq. 165
-        double delta012 = std::max(0.0, std::log( std::min(X*X, Y*Y) / (r*r) ) ); // (166)
-        double shifted_rapidity = helper->rapidity - delta012;
-        if (shifted_rapidity < 0)
-            return 0;   // Step function in (165)
+        if (KINEMATICAL_CONSTRAINT == config::KC_BEUF_K_PLUS)
+        {
+            double delta012 = std::max(0.0, std::log( std::min(X*X, Y*Y) / (r*r) ) ); // (166)
+            double shifted_rapidity = helper->rapidity - delta012;
+            if (shifted_rapidity < 0)
+                return 0;   // Step function in (165)
+            
+            double N_r = helper->dipole_interp->Evaluate(r);
+            
+            // Dipoles at shifter rapidity
+            double s02 = 1.0 - helper->solver->GetDipole()->InterpolateN(X, shifted_rapidity);
+            double s12 = 1.0 - helper->solver->GetDipole()->InterpolateN(Y, shifted_rapidity);
+            double s01 = 1.0 - N_r;
+            
+            return helper->solver->Kernel_lo(r, z, theta) * ( -s02*s12 + s01);
+        }
+        else if (KINEMATICAL_CONSTRAINT == config::KC_EDMOND_K_MINUS)
+        {
         
-        // Dipoles at shifter rapidity
-        double s02 = 1.0 - helper->solver->GetDipole()->InterpolateN(X, shifted_rapidity);
-        double s12 = 1.0 - helper->solver->GetDipole()->InterpolateN(Y, shifted_rapidity);
-        double s01 = 1.0 - N_r;
+            // Triantafyllopoulos et al, new resummation
+        // https://arxiv.org/pdf/1902.06637.pdf
+
+            double shifted_1 = helper->rapidity - RapidityShift(r,X);
+            double shifted_2 = helper->rapidity - RapidityShift(r,Y);
+            
+            double eta0 = helper->solver->GetEta0();
+
+            // Step function
+            // not in (9.3)
+            // double xyzshift = std::max(0.0, std::log(r*r / std::min( X*X, Y*Y ) ) );
+            // if (heper->rapidity - par->eta0 - xyzshift < 0) return 0;
         
-        return helper->solver->Kernel_lo(r, z, theta) * ( -s02*s12 + s01);
-        */
-        
-        // Triantafyllopoulos et al, new resummation
-	// https://arxiv.org/pdf/1902.06637.pdf
+            // (9.3)
+            // If shifted rapidity < eta0, use initial condition
+            double shifted_S_X = 0;
+            if (helper->rapidity - RapidityShift(r,X) > eta0)
+                shifted_S_X = 1.0 - helper->solver->GetDipole()->InterpolateN(X, helper->rapidity - RapidityShift(r,X));
+            else
+                shifted_S_X = 1.0 - helper->solver->GetDipole()->GetInitialCondition()->DipoleAmplitude(X);
+                //shifted_S_X =  1.0 - helper->solver->GetDipole()->InterpolateN(X, helper->rapidity - RapidityShift(r,X));
 
-        double shifted_1 = helper->rapidity - RapidityShift(r,X);
-        double shifted_2 = helper->rapidity - RapidityShift(r,Y);
-        
-	    double eta0 = helper->solver->GetEta0();
+            double shifted_S_Y = 0;
+            if (helper->rapidity - RapidityShift(r,Y) > eta0)
+                shifted_S_Y = 1.0 - helper->solver->GetDipole()->InterpolateN(Y, helper->rapidity - RapidityShift(r,Y));
+            else
+                shifted_S_Y = 1.0 - helper->solver->GetDipole()->GetInitialCondition()->DipoleAmplitude(Y);
+    //		shifted_S_Y = 1.0 - helper->solver->GetDipole()->InterpolateN(Y, helper->rapidity - RapidityShift(r,Y));
+          
+         
+             double S_r = 0;
+             if (helper->rapidity > eta0)
+                 S_r = 1.0 - helper->dipole_interp->Evaluate(r);
+             else
+                 S_r = 1.0 - helper->solver->GetDipole()->GetInitialCondition()->DipoleAmplitude(r);
 
-	    // Step function
-	    // not in (9.3)
-	    // double xyzshift = std::max(0.0, std::log(r*r / std::min( X*X, Y*Y ) ) );
-	    // if (heper->rapidity - par->eta0 - xyzshift < 0) return 0;
-	
-	    // (9.3)
-	    // If shifted rapidity < eta0, use initial condition
-        double shifted_S_X = 0;
-	    if (helper->rapidity - RapidityShift(r,X) > eta0) 
-		    shifted_S_X = 1.0 - helper->solver->GetDipole()->InterpolateN(X, helper->rapidity - RapidityShift(r,X)); 
-	    else 
-		    shifted_S_X = 1.0 - helper->solver->GetDipole()->GetInitialCondition()->DipoleAmplitude(X);
-		    //shifted_S_X =  1.0 - helper->solver->GetDipole()->InterpolateN(X, helper->rapidity - RapidityShift(r,X));
-
-        double shifted_S_Y = 0;
-	    if (helper->rapidity - RapidityShift(r,Y) > eta0)
-		    shifted_S_Y = 1.0 - helper->solver->GetDipole()->InterpolateN(Y, helper->rapidity - RapidityShift(r,Y));
-	    else
-		    shifted_S_Y = 1.0 - helper->solver->GetDipole()->GetInitialCondition()->DipoleAmplitude(Y);
-//		shifted_S_Y = 1.0 - helper->solver->GetDipole()->InterpolateN(Y, helper->rapidity - RapidityShift(r,Y));
-      
-	 
-	     double S_r = 0;
-	     if (helper->rapidity > eta0)
-		     S_r = 1.0 - helper->dipole_interp->Evaluate(r);
-	     else
-		     S_r = 1.0 - helper->solver->GetDipole()->GetInitialCondition()->DipoleAmplitude(r);
-
-	      // Check possible numerical errors
-         if (shifted_S_X < 0) shifted_S_X  = 0;
-	     if (shifted_S_Y < 0) shifted_S_Y = 0;
-         if (S_r < 0) S_r= 0;
-	  
-	      // - as we evolve N, and this is written otherwise of S
-		double res =  -helper->solver->Kernel_lo(r, z, theta)  * ( shifted_S_X * shifted_S_Y - S_r );
-		if (std::isnan(res))
-		{
-			cout << "NaN! rapidity " << helper->rapidity << " Xshift " << RapidityShift(r,X) << " Yshift " << RapidityShift(r,Y) << " X=" << X << ", Y=" << Y <<", r=" << r <<", S_X " << shifted_S_X << " S_Y " << shifted_S_Y << endl;
-			exit(1);
-		}
-		return res;
+              // Check possible numerical errors
+             if (shifted_S_X < 0) shifted_S_X  = 0;
+             if (shifted_S_Y < 0) shifted_S_Y = 0;
+             if (S_r < 0) S_r= 0;
+          
+              // - as we evolve N, and this is written otherwise of S
+            double res =  -helper->solver->Kernel_lo(r, z, theta)  * ( shifted_S_X * shifted_S_Y - S_r );
+            if (std::isnan(res))
+            {
+                cout << "NaN! rapidity " << helper->rapidity << " Xshift " << RapidityShift(r,X) << " Yshift " << RapidityShift(r,Y) << " X=" << X << ", Y=" << Y <<", r=" << r <<", S_X " << shifted_S_X << " S_Y " << shifted_S_Y << endl;
+                exit(1);
+            }
+            return res;
+        } // end if KC_EDMOND_K_MINUS
+        else
+        {
+            cerr << "Unknown kinematical constraint specified! " << LINEINFO << endl;
+            exit(1);
+        }
     }
 }
 
@@ -509,6 +536,8 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
         min=r;
 
     double alphas_scale = 0;
+    
+    double eps = 1e-50;
 
     // Fixed as or Balitsky
     // Note: in the limit alphas(r)=const Balitsky -> Fixed coupling as
@@ -520,7 +549,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
         result = 
          NC/(2.0*SQR(M_PI))*Alphas(r)
             * (
-            SQR(r) / ( SQR(X) * SQR(Y)  )
+            SQR(r) / ( SQR(X+eps) * SQR(Y+eps)  )
             + 1.0/SQR(Y)*(alphas_y/alphas_x - 1.0)
             + 1.0/SQR(X)*(alphas_x/alphas_y - 1.0)
             );
@@ -528,12 +557,12 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
     }
     else if (RC_LO == SMALLEST_LO)
     {
-        result = NC*Alphas(min) / (2.0*SQR(M_PI))*SQR(r/(X*Y));
+        result = NC*Alphas(min) / (2.0*SQR(M_PI))*SQR(r/(X*Y+eps));
         alphas_scale = min;
     }
     else if (RC_LO == PARENT_LO)
     {
-        result = NC*Alphas(r) / (2.0*SQR(M_PI)) * SQR(r/(X*Y));
+        result = NC*Alphas(r) / (2.0*SQR(M_PI)) * SQR(r/(X*Y+eps));
         alphas_scale = r;
     }
 	else if (RC_LO == FRAC_LO)
@@ -552,7 +581,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
 	{
 		// 1708.06557 Eq. 169
 		double r_eff_sqr = r*r * std::pow( Y*Y / (X*X), (X*X-Y*Y)/(r*r) );
-		result = NC*Alphas(std::sqrt(r_eff_sqr)) / (2.0*SQR(M_PI)) * SQR(r/(X*Y + 1e-50));
+		result = NC*Alphas(std::sqrt(r_eff_sqr)) / (2.0*SQR(M_PI)) * SQR(r/(X*Y + eps));
 		alphas_scale = std::sqrt(r_eff_sqr);
 
 	}
@@ -590,7 +619,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
 
     if (config::ONLY_DOUBLELOG)
     {  
-        return resummation_alphas*NC/(2.0*M_PI*M_PI) * r*r / (X*X * Y*Y )
+        return resummation_alphas*NC/(2.0*M_PI*M_PI) * r*r / (X*X * Y*Y + eps )
                     * resummation_alphas * NC / (4.0*M_PI)
                     * (- 2.0 * 2.0*std::log( X/r ) * 2.0*std::log( Y/r ) ) ;
     }
@@ -754,7 +783,6 @@ double BKSolver::RapidityDerivative_nlo(double r, Interpolator* dipole_interp, I
     Inthelper_nlobk helper;
     helper.solver=this;
     helper.r=r;
-    helper.dipole_interp;
     helper.dipole_interp = dipole_interp;
     helper.dipole_interp_s = dipole_interp_s;
     
