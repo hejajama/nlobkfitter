@@ -246,7 +246,7 @@ int main( int argc, char* argv[] )
         cout << "# Using Guillaume RC" << endl;}
     else {
         cout << "ERROR: Problem with the choice of runnincoupling. Unkonwn config::RC_LO." << endl;
-        exit(1)
+        exit(1);
         }
     SigmaComputer.SetRunningCoupling(alphas_temppointer);
     SigmaComputer.SetRunningCoupling_QG(alphas_temppointer_QG);
