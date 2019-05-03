@@ -74,9 +74,8 @@ int main( int argc, char* argv[] )
 
         // Oliko paperissa LO + fc BK? Taisi olla ja resummaukset vasta olivat kiinnostuksen alla sen jälkeen?
         config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
-        config::RESUM_DLOG = true; // Resum doulbe logs
-        config::RESUM_SINGLE_LOG = true; // Resum single logs
-        config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
+        config::RESUM_DLOG = false; // Resum doulbe logs
+        config::RESUM_SINGLE_LOG = false; // Resum single logs
         config::KSUB = 0.65;  // Optimal value for K_sub
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
 
@@ -96,12 +95,6 @@ int main( int argc, char* argv[] )
         config::NF=3;   // Only light quarks
         config::LAMBDAQCD = 0.241;
 
-
-    // Data data;
-    // data.SetMinQsqr(0.75);
-    // data.SetMaxQsqr(50);
-    // data.SetMaxX(0.01);
-    // data.LoadData("./data/hera_combined_sigmar.txt", TOTAL);
 
     MnUserParameters parameters;
 
@@ -173,72 +166,25 @@ int main( int argc, char* argv[] )
       useBoundLoop = false;
     } else {cout << helpstring << endl; return -1;}
 
-/*
-    int argi=5; argi++;
-    double QAdditN   = stod( argv [argi] ); argi++;
-    double CPowerN   = stod( argv [argi] ); argi++;
-    double X0calc    = stod( argv [argi] ); argi++;
-    double gammacalc = stod( argv [argi] ); argi++;
-    double icQ0sq    = stod( argv [argi] ); argi++;
-    double icY0      = stod( argv [argi] );
-    icY0 *= std::log(10.0/X0calc);
-
-    // Constructing Q and C^2 grids
-    double Qdown = 0;
-    double Qup = 0.2;
-    double QStep = (Qup-Qdown)/200.;
-    double Qcalc = Qdown + QAdditN * QStep;
-
-    double Cdown = 0.1;
-    double Cup = 5.0;
-    double CStep = pow(Cup/Cdown , CPowerN/240.);
-    double Ccalc = Cdown * CStep;
-
-
-    cout << Qcalc << " " << Ccalc << endl;
-
-	parameters.Add("qs0sqr",		        Qcalc);
-    parameters.Add("fitsigma0",		        1.0); // 1mb = 2.568 GeV²
-    parameters.Add("alphascalingC2",	    Ccalc);
-    parameters.Add("e_c",                   1.0 );
-    parameters.Add("anomalous_dimension",   gammacalc );
-    parameters.Add("initialconditionX0",    X0calc ); // fixed initialx0 computations were done with 0.01
-    parameters.Add("initialconditionY0",    icY0 );
-    parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
-*/
-
-/*
-This needs to go as well.
-
-    NLODISFitter fitter(parameters);
-    fitter.AddDataset(data);
-    fitter.SetNLO(useNLO);
-    fitter.SetSUB(useSUB);
-    fitter.SetSigma3(useSigma3);
-    fitter.UseImprovedZ2Bound(useImprovedZ2Bound);
-    fitter.UseConsistentlyBoundLoopTerm(useBoundLoop);
-    fitter.SetCubaMethod(cubaMethod);
-*/
 
     cout << std::boolalpha;
-    cout    << "=== Perturbative settings ===" << endl
-            << "Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
-            << "Use ResumBK: " << !(config::LO_BK) << endl
-            << "KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << endl
-            << "Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
-            << "Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 balitsky, 1 parent, 3 guillaume)" << endl
-            << "Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
-            << "Use NLOimpact: " << useNLO << endl
-            << "Use SUBscheme: " << useSUB << endl
-            << "Use Sigma3: " << useSigma3 << endl
-            << "Use improved Z2 bound: " << useImprovedZ2Bound << endl
-            << "Use Z2 loop term: " << useBoundLoop << endl
-            << "Cuba MC algorithm: " << cubaMethod << endl;
-    // cout << "=== Initial parameters ===" << endl;
-    // cout << parameters << endl;
-    // if(nlodis_config::VERBOSE) cout << "=== Starting fit ===" << endl;
+    cout    << "# === Perturbative settings ===" << endl
+            << "# Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
+            << "# Use ResumBK: " << !(config::LO_BK) << endl
+            << "# KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << endl
+            << "# Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
+            << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 balitsky, 1 parent, 3 guillaume)" << endl
+            << "# Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
+            << "# Use NLOimpact: " << useNLO << endl
+            << "# Use SUBscheme: " << useSUB << endl
+            << "# Use Sigma3: " << useSigma3 << endl
+            << "# Use improved Z2 bound: " << useImprovedZ2Bound << endl
+            << "# Use Z2 loop term: " << useBoundLoop << endl
+            << "# Cuba MC algorithm: " << cubaMethod << endl;
 
-    // params to IC
+    /*
+    *   PARAMS TO IC
+    */
     double qs0sqr       = 0.2; //par[ parameters.Index("qs0sqr")];
     double e_c          = 1.0; //par[ parameters.Index("e_c")];
     //double fitsigma0    = 2.568*par[ parameters.Index("fitsigma0")];  // 1mb = 2.568 GeV² -- unit change into GeV
@@ -255,8 +201,6 @@ This needs to go as well.
     /*
     // ***Solve resummed BK***
     */
-    //cout << "=== Initialize BK solver ===" << endl;
-
     MV ic;                                            // Initial condition
     ic.SetQsqr(qs0sqr);
     ic.SetAnomalousDimension(anomalous_dimension);
@@ -266,6 +210,7 @@ This needs to go as well.
     BKSolver solver(&dipole);
     // double maxy = std::log(initialconditionX0/(1e-5)) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
     double maxy = 10; // from the paper, fcBK_MV.dat, 15=10+5 extra for z2improved extended evolution
+    if (useImprovedZ2Bound){ maxy += 5; }
 
     double eta0 = 0;
     solver.SetAlphasScaling(alphas_scaling);
@@ -290,16 +235,19 @@ This needs to go as well.
     if      (nlodis_config::RC_DIS == nlodis_config::DIS_RC_FIXED){
         alphas_temppointer = &ComputeSigmaR::alpha_bar_fixed;
         alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_fixed;
-        cout << "Using FIXED_LO" << endl;}
+        cout << "# Using FIXED_LO" << endl;}
     else if (nlodis_config::RC_DIS == nlodis_config::DIS_RC_PARENT){
         alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd;
         alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_pd;
-        cout << "Using parent dipole RC" << endl;}
+        cout << "# Using parent dipole RC" << endl;}
     else if (nlodis_config::RC_DIS == nlodis_config::DIS_RC_GUILLAUME){
         alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd;
         alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_guillaume;
-        cout << "Using Guillaume RC" << endl;}
-    else {cout << "Problem with the choice of runnincoupling. Unkonwn config::RC_LO." << endl;}
+        cout << "# Using Guillaume RC" << endl;}
+    else {
+        cout << "ERROR: Problem with the choice of runnincoupling. Unkonwn config::RC_LO." << endl;
+        exit(1)
+        }
     SigmaComputer.SetRunningCoupling(alphas_temppointer);
     SigmaComputer.SetRunningCoupling_QG(alphas_temppointer_QG);
     SigmaComputer.SetAlphasScalingC2(alphas_scaling);
@@ -312,17 +260,19 @@ This needs to go as well.
     SigmaComputer.SetCubaMethod(cubaMethod);
 
 
-    cout << "=== Computing Reduced Cross sections ===" << endl;
+    cout << "# === Computing Reduced Cross sections ===" << endl;
 
             // Print column titles.
             if(true){
             #pragma omp critical
-            cout    << setw(15) << "xbj"          << " "
+            cout    << setw(15) << "# xbj"        << " "
                     << setw(15) << "Q^2"          << " "
+                    << setw(15) << "FL_IC"        << " "
                     << setw(15) << "FL_LO"        << " "
                     << setw(15) << "FL_dip"       << " "
                     << setw(15) << "FL_qg"        << " "
                     << setw(15) << "FL_sigma3"    << " "
+                    << setw(15) << "FT_IC"        << " "
                     << setw(15) << "FT_LO"        << " "
                     << setw(15) << "FT_dip"       << " "
                     << setw(15) << "FT_qg"        << " "
@@ -331,18 +281,7 @@ This needs to go as well.
                   }
 
 
-    /*
-     * Loop over datapoints and compute theoretical predictions
-     */
-    // int points=0, totalpoints = 0;
-    // for (unsigned int dataset=0; dataset<datasets.size(); dataset++)
-    //     totalpoints += datasets[dataset]->NumOfPoints();
 
-    // These loops are trivially parallerizable
-    // We only parallerize the inner loop where we have about
-    // 250 points (total sigmar) and 50 points (charm)
-    // for (unsigned int dataset=0; dataset<datasets.size(); dataset++)
-    // {
 // #ifdef PARALLEL_CHISQR
 //     #pragma omp parallel for schedule(dynamic) reduction(+:Q) reduction(+:xbj)
 // #endif
@@ -350,7 +289,6 @@ This needs to go as well.
         // for (int i=0; i<datasets[dataset]->NumOfPoints(); i++)
 
 
-// Loop over grid here.
 /*
  *  In the paper we used the following grids for the plots   
  *  	- Q[0] = 1.0, Q*=10^(1/20), while Q <= 10
@@ -362,11 +300,9 @@ This needs to go as well.
     double xbj = icx0;
 
     // #pragma omp parallel for collapse(2)
-    // for (double Q = 1.0; Q <= 10 + 1e-3; Q*=pow(10,1/20) )
     for (int i=0; i<=20; i++)
     // for (int i=0; i<=1; i++)
     {
-        // for (double xbj = 1e-3; xbj >= 5e-7 - 1e-9; xbj*=pow(10,1/4) )
         for (int j=0; j<=17; j++)
         // for (int j=0; j<=1; j++)
         {
@@ -376,19 +312,17 @@ This needs to go as well.
             // #pragma omp critical
             // cout << "Q=" << Q << ", xbj=" << xbj << endl;
             
-            double FL_LO=0, FL_dip=0, FL_qg=0, FL_sigma3=0;
-            double FT_LO=0, FT_dip=0, FT_qg=0, FT_sigma3=0;
+            double FL_IC=0, FL_LO=0, FL_dip=0, FL_qg=0, FL_sigma3=0;
+            double FT_IC=0, FT_LO=0, FT_dip=0, FT_qg=0, FT_sigma3=0;
             int calccount=0;
             if (!computeNLO && !useMasses) // Compute reduced cross section using leading order impact factors
             {
-                // theory = (fitsigma0)*SigmaComputer.SigmarLO(Q , xbj , y );
                 FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
                 FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
                 ++calccount;
             }
             if (!computeNLO && useMasses)
             {
-                // theory = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj , y );
                 double alphaem=1.0/137.0;
                 double structurefunfac=1./(Sq(2*M_PI)*alphaem);
                 double fac = structurefunfac*Sq(Q);
@@ -400,27 +334,26 @@ This needs to go as well.
             if (computeNLO && !useSUB) // UNSUB SCHEME Full NLO impact factors for reduced cross section
             {
                 if (useBoundLoop){
-                    // theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_UniformZ2Bound(Q , xbj , y );
-                    FL_LO = SigmaComputer.Structf_LLO(Q,initialconditionX0);
-                    FT_LO = SigmaComputer.Structf_TLO(Q,initialconditionX0);
+                    FL_IC = SigmaComputer.Structf_LLO(Q,initialconditionX0);
+                    FT_IC = SigmaComputer.Structf_TLO(Q,initialconditionX0);
+                    FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+                    FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
                     FL_dip = SigmaComputer.Structf_LNLOdip_z2(Q,xbj);
                     FT_dip = SigmaComputer.Structf_TNLOdip_z2(Q,xbj);
                     FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
                     FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
                     ++calccount;}
                 if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
-                    // theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub(Q , xbj , y );
-                    //theory = (fitsigma0)*SigmaComputer.SigmarNLOsubRisto(Q , xbj , y );
-                    FL_LO = SigmaComputer.Structf_LLO(Q,initialconditionX0);
-                    FT_LO = SigmaComputer.Structf_TLO(Q,initialconditionX0);
+                    FL_IC = SigmaComputer.Structf_LLO(Q,initialconditionX0);
+                    FT_IC = SigmaComputer.Structf_TLO(Q,initialconditionX0);
+                    FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+                    FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
                     FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
                     FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
-                    // cout << "Moving to QG L" << endl;
                     FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
                     FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
                     ++calccount;}
                 if (useSigma3){
-                    // theory += (fitsigma0)*SigmaComputer.SigmarNLOunsub_sigma3(Q , xbj , y );
                     FL_sigma3 = SigmaComputer.Structf_LNLOsigma3(Q,xbj);
                     FT_sigma3 = SigmaComputer.Structf_TNLOsigma3(Q,xbj);
                     }
@@ -429,7 +362,6 @@ This needs to go as well.
             if (computeNLO && useSUB) // SUB SCHEME Full NLO impact factors for reduced cross section
             {
                 if (useBoundLoop){
-                    // theory = (fitsigma0)*SigmaComputer.SigmarNLOsub_UniformZ2Bound(Q , xbj , y );
                     FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
                     FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
                     FL_dip = SigmaComputer.Structf_LNLOdip_z2(Q,xbj);
@@ -438,16 +370,12 @@ This needs to go as well.
                     FT_qg  = SigmaComputer.Structf_TNLOqg_sub(Q,xbj);
                     ++calccount;}
                 if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
-                    // theory = (fitsigma0)*SigmaComputer.SigmarNLOsub(Q , xbj , y );
-                    //theory = (fitsigma0)*SigmaComputer.SigmarNLOsubRisto(Q , xbj , y );
                     FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
                     FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
                     FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
                     FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
-                    // cout << "Moving to QG L" << endl;
                     FL_qg  = SigmaComputer.Structf_LNLOqg_sub(Q,xbj);
                     FT_qg  = SigmaComputer.Structf_TNLOqg_sub(Q,xbj);
-
                     ++calccount;}
             }
 
@@ -457,24 +385,17 @@ This needs to go as well.
               exit(1);
             }
 
-            // if (std::isnan(theory) or std::isinf(theory))
-            // {
-            //     cerr << "Warning: theory result " << theory << " with parameters " << PrintVector(par) << endl;
-            //     exit(1);
-            // }
-
-            // chisqr += datasets[dataset]->Weight()*SQR( (theory - sigmar) / sigmar_err );
-            // points = points + datasets[dataset]->Weight();
-
             // Output for plotting
             if(true){
             #pragma omp critical
             cout    << setw(15) << xbj          << " "
                     << setw(15) << Q*Q          << " "
+                    << setw(15) << FL_IC        << " "
                     << setw(15) << FL_LO        << " "
                     << setw(15) << FL_dip       << " "
                     << setw(15) << FL_qg        << " "
                     << setw(15) << FL_sigma3    << " "
+                    << setw(15) << FT_IC        << " "
                     << setw(15) << FT_LO        << " "
                     << setw(15) << FT_dip       << " "
                     << setw(15) << FT_qg        << " "
@@ -483,9 +404,6 @@ This needs to go as well.
                   }
         }
     }
-    // }
-    // cout << endl << "# Calculated chi^2/N = " << chisqr/points << " (N=" << points << "), parameters (" << PrintVector(par) << ")" << endl<<endl;
-
 
     return 0;
 }
