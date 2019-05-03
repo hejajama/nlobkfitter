@@ -210,7 +210,7 @@ int main( int argc, char* argv[] )
     BKSolver solver(&dipole);
     // double maxy = std::log(initialconditionX0/(1e-5)) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
     double maxy = 10; // from the paper, fcBK_MV.dat, 15=10+5 extra for z2improved extended evolution
-    if (useImprovedZ2Bound){ maxy += 5; }
+    if (useImprovedZ2Bound){maxy += 5;}
 
     double eta0 = 0;
     solver.SetAlphasScaling(alphas_scaling);
