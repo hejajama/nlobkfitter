@@ -14,8 +14,8 @@ namespace nlodis_config
     bool VERBOSE = false;
     bool PRINTDATA = false;
 
-    double MAXR;
-    double MINR;
+    double MAXR=50;
+    double MINR=1e-6;
 
     RunningCouplingDIS RC_DIS;
 }
