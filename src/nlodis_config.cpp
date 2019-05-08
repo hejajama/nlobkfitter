@@ -9,8 +9,8 @@
 // Default configs
 namespace nlodis_config
 {
-    int CUBA_MAXEVAL;
-    double CUBA_EPSREL;
+    int CUBA_MAXEVAL=1e6;
+    double CUBA_EPSREL=0.01;
     bool VERBOSE = false;
     bool PRINTDATA = false;
 

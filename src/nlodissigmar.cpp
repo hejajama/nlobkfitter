@@ -436,7 +436,9 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
             {
                 theory=0;
                 if (datasets[dataset]->OnlyCharm(i)==false)
+                {
                     theory = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj , y, false );
+                }
                 if (xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) < 0.01 and useCharm)
                 {
                     theory_charm = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj*(1.0 + 4.0*1.35*1.35/(Q*Q)) , y, true ); // charm
@@ -512,13 +514,14 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
                 << setw(10) << sigma02*theory_charm <<*/ 
                 << endl;
             }
+    }
     cout << endl 
          << "# Calculated chi^2/N = " << chisqr 
          << " (N=" << points 
          << "), parameters (" << PrintVector(par) 
          << ", sigma02=" << sigma02 
          << ")" << endl<<endl;
-    }
+    
 
     // delete DipolePointer;
     return chisqr*points;
@@ -532,6 +535,8 @@ void NLODISFitter::AddDataset(Data& d)
 NLODISFitter::NLODISFitter(MnUserParameters parameters_)
 {
     parameters = parameters_;
+    
+    cubaMethod = "suave";  // Default choise for Cuba
 }
 
 string PrintVector(vector<double> v)
