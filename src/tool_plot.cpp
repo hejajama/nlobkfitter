@@ -62,7 +62,7 @@ int main( int argc, char* argv[] )
     gsl_set_error_handler(&ErrHandlerCustom);
 
         // NLO DIS SIGMA_R COMPUTATION CONFIGS
-        nlodis_config::CUBA_EPSREL = 5e-3;
+        nlodis_config::CUBA_EPSREL = 10e-3;
         nlodis_config::CUBA_MAXEVAL= 1e7;
         nlodis_config::MINR = 1e-5;
         nlodis_config::MAXR = 50;
@@ -80,11 +80,11 @@ int main( int argc, char* argv[] )
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
 
         config::VERBOSE = true;
-        config::RINTPOINTS = 512;
-        config::THETAINTPOINTS = 512;
+        config::RINTPOINTS = 512/4;
+        config::THETAINTPOINTS = 512/4;
 
-        config::INTACCURACY = 10e-3;//0.02;
-        config::MCINTACCURACY = 10e-3;//0.02;
+        config::INTACCURACY = 50e-3;//0.02;
+        //config::MCINTACCURACY = 10e-3;//0.02;
         // config::MCINTPOINTS = 1e7;
         config::MINR = 1e-5;
         config::MAXR = 50;
@@ -300,7 +300,7 @@ int main( int argc, char* argv[] )
     double xbj = icx0;
 
     // #pragma omp parallel for collapse(2)
-    for (int i=0; i<=20; i++)
+    for (int i=0; i<=20; i+=17)
     // for (int i=0; i<=1; i++)
     {
         for (int j=0; j<=17; j++)
