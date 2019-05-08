@@ -1,6 +1,9 @@
 # Ignore custom makefiles
 Makefile.*
 
+# Ignore run files
+run*
+
 # Ignore build related files
 build/
 *.[oa]
