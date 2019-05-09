@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -146,11 +147,8 @@ int main( int argc, char* argv[] )
             config::RESUM_RC = config::RESUM_RC_GUILLAUME;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_GUILLAUME;
     } else if (string(argv [3]) == "fixedrc"){
-            if (config::LO_BK == false){
-                cout << "There is no fixed coupling option for RESUM BK" << endl;
-                exit(1); }
             config::RC_LO = config::FIXED_LO;
-            // config::RESUM_RC = config::RESUM_RC_FIXED; // no such option
+            config::RESUM_RC = config::RESUM_RC_FIXED;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_FIXED;
     } else {cout << helpstring << endl; return -1;}
 
@@ -300,10 +298,12 @@ int main( int argc, char* argv[] )
     double xbj = icx0;
 
     // #pragma omp parallel for collapse(2)
-    for (int i=0; i<=20; i+=17)
+    // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
+    for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
     // for (int i=0; i<=1; i++)
     {
-        for (int j=0; j<=17; j++)
+        // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
+        for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
         // for (int j=0; j<=1; j++)
         {
             if (j==0 and cubaMethod=="suave"){j++;}
