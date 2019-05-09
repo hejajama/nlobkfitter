@@ -99,6 +99,7 @@ namespace config
     
     enum SINGLELOG_RESUM_RC
     {
+		RESUM_RC_FIXED,
 		RESUM_RC_BALITSKY,
 		RESUM_RC_PARENT,
         RESUM_RC_SMALLEST,
