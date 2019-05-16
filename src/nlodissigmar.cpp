@@ -365,7 +365,16 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     if  (useImprovedZ2Bound == true) {z2bound_funptr = &ComputeSigmaR::z2bound_improved;}
     else                             {z2bound_funptr = &ComputeSigmaR::z2bound_simple;}
     SigmaComputer.SetImprovedZ2Bound(z2bound_funptr);
+    // Dipole evalution X, (y = log(x0/X))
+    // if using 'sub' scheme with z2imp one must use the extended evolution variable for sigma_LO as well.
+    ComputeSigmaR::xrapidity_funpointer x_fun_ptr;
+    if (UseSub) {x_fun_ptr = &ComputeSigmaR::Xrpdty_LO_improved;}
+    else        {x_fun_ptr = &ComputeSigmaR::Xrpdty_LO_simple;}
+    SigmaComputer.SetEvolutionX_LO(x_fun_ptr);
+    SigmaComputer.SetEvolutionX_DIP(x_fun_ptr);
+    // sigma_3 BK correction
     SigmaComputer.SetSigma3BKKernel(&ComputeSigmaR::K_resum);
+    // CUBA Monte Carlo integration library algorithm setter 
     SigmaComputer.SetCubaMethod(cubaMethod);
 
 
@@ -616,6 +625,7 @@ double ComputeSigmaR::Sr(double r, double x) {
     }else if(r>nlodis_config::MAXR-1e-7){
         Srx = 0.;
     }else{
+        // Srx = ClassScopeDipolePointer->S_y(r, log(1/x))
         Srx = ClassScopeDipolePointer->S(r, (x*std::exp(-icY0)) ) ; //1-Nrx;
     }
     return Srx;
@@ -798,8 +808,9 @@ int integrand_ILLOp(const int *ndim, const double x[], const int *ncomp,double *
     double z1=x[0];
     double x01=nlodis_config::MAXR*x[1];
     double x01sq=x01*x01;
+    double Xrpdty_lo = Optr->Xrpdty_LO(xbj, Sq(Q));
 
-    double res=(1.0-(Optr->Sr(x01,xbj)))*(Optr->ILLO(Q,z1,x01sq))*x01;
+    double res=(1.0-(Optr->Sr(x01,Xrpdty_lo)))*(Optr->ILLO(Q,z1,x01sq))*x01;
         *f=res;
     return 0;
 }
@@ -882,8 +893,9 @@ int integrand_ITLOp(const int *ndim, const double x[], const int *ncomp,double *
   double z1=x[0];
   double x01=nlodis_config::MAXR*x[1];
   double x01sq=x01*x01;
+  double Xrpdty_lo = Optr->Xrpdty_LO(xbj, Sq(Q));
 
-  double res=(1.0-(Optr->Sr(x01,xbj)))*(Optr->ITLO(Q,z1,x01sq))*x01;
+  double res=(1.0-(Optr->Sr(x01,Xrpdty_lo)))*(Optr->ITLO(Q,z1,x01sq))*x01;
   if(gsl_finite(res)==1){
     *f=res;
   }else{
@@ -971,7 +983,8 @@ int integrand_ILdip(const int *ndim, const double x[], const int *ncomp, double 
 
     double alphabar=Optr->Alphabar(x01sq); //2;
     double alphfac=alphabar*CF/Nc;
-    double SKernel = 1.0 - Optr->Sr(x01,xbj);
+    double Xrpdty_lo = Optr->Xrpdty_DIP(xbj, Sq(Q));
+    double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
     double regconst = 5.0/2.0 - Sq(M_PI)/6.0;
     double res;
 
@@ -1453,7 +1466,8 @@ int integrand_ITdip(const int *ndim, const double x[], const int *ncomp, double 
 
     double alphabar=Optr->Alphabar(x01sq);
     double alphfac=alphabar*CF/Nc;
-    double SKernel = 1.0 - Optr->Sr(x01,xbj);
+    double Xrpdty_lo = Optr->Xrpdty_DIP(xbj, Sq(Q));
+    double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
     double regconst = 5.0/2.0 - Sq(M_PI)/6.0;
     double res;
 

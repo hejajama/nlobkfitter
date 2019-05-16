@@ -244,9 +244,9 @@ int main( int argc, char* argv[] )
     cout    << "=== Perturbative settings ===" << endl
             << "Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
             << "Use ResumBK: " << !(config::LO_BK) << endl
-            << "KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << endl
+            << "KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
             << "Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
-            << "Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 balitsky, 1 parent, 3 guillaume)" << endl
+            << "Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
             << "Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
             << "Use NLOimpact: " << useNLO << endl
             << "Use SUBscheme: " << useSUB << endl

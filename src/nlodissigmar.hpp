@@ -65,6 +65,7 @@ public:
   typedef  double (ComputeSigmaR::*CmptrMemFn)(double x);
   typedef  double (ComputeSigmaR::*CmptrMemFn_void)(void *x);
   typedef  double (ComputeSigmaR::*z2funpointer)(double x, double q);
+  typedef  double (ComputeSigmaR::*xrapidity_funpointer)(double x, double q);
   typedef  double (ComputeSigmaR::*bkkernel_funpointer)(double x01sq, double x02sq, double x21sq);
 
     ComputeSigmaR(AmplitudeLib *ObjectPointer);
@@ -109,6 +110,8 @@ public:
     void SetRunningCoupling_QG(CmptrMemFn_void p){Alphabar_QG_PTR = p;} // function pointer setter
 
     void SetImprovedZ2Bound(z2funpointer p){z2limit_PTR = p;} // function pointer setter
+    void SetEvolutionX_LO(xrapidity_funpointer p){Xrpdty_LO_PTR = p;}
+    void SetEvolutionX_DIP(xrapidity_funpointer p){Xrpdty_DIP_PTR = p;}
     void SetSigma3BKKernel(bkkernel_funpointer p){K_kernel_PTR = p;} // function pointer setter
 
     void SetCubaMethod(string s){cubamethod = s;}
@@ -123,6 +126,7 @@ public:
     CmptrMemFn AlphabarPTR;
     CmptrMemFn_void Alphabar_QG_PTR;
     z2funpointer z2limit_PTR;
+    xrapidity_funpointer Xrpdty_LO_PTR, Xrpdty_DIP_PTR;
     bkkernel_funpointer K_kernel_PTR;
     // Cuba integrators
     // old int way: static const int vegas = 1, suave = 2, divonne = 3;
@@ -149,6 +153,11 @@ public:
     double z2lower_bound( double x, double qsq ) {return (this->*z2limit_PTR)(x,qsq); } // pointer shell function
     double z2bound_simple( double x , double qsq ) { return x/icX0 ; }
     double z2bound_improved( double x , double qsq ) { return (x/icX0)*(icQ0sqr/qsq)  ; }
+    // Evolution variables / rapidities
+    double Xrpdty_LO( double x, double qsq) {return (this->*Xrpdty_LO_PTR)(x,qsq);}
+    double Xrpdty_DIP( double x, double qsq) {return (this->*Xrpdty_DIP_PTR)(x,qsq);}
+    double Xrpdty_LO_simple( double x , double qsq ) { return x ; } // X = x0*z2min; z2min = xbj/x0
+    double Xrpdty_LO_improved( double x , double qsq ) { return x*icQ0sqr/qsq ; } // X = x0*z2min; z2min = xbj/x0*Q0²/Q²
     // BK kernels
     double K_kernel( double rsq, double x02sq, double x21sq ) {return (this->*K_kernel_PTR)(rsq,x02sq,x21sq); } // pointer shell function
     double K_resum (double rsq, double x02sq, double x21sq);

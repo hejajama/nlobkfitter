@@ -169,9 +169,9 @@ int main( int argc, char* argv[] )
     cout    << "# === Perturbative settings ===" << endl
             << "# Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
             << "# Use ResumBK: " << !(config::LO_BK) << endl
-            << "# KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << endl
+            << "# KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
             << "# Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
-            << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 balitsky, 1 parent, 3 guillaume)" << endl
+            << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
             << "# Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
             << "# Use NLOimpact: " << useNLO << endl
             << "# Use SUBscheme: " << useSUB << endl
@@ -217,6 +217,7 @@ int main( int argc, char* argv[] )
 
     // Give solution to the AmplitudeLib object
     AmplitudeLib DipoleAmplitude(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
+    DipoleAmplitude.SetInterpolationMethod(LINEAR_LINEAR);
     DipoleAmplitude.SetX0(initialconditionX0);
     DipoleAmplitude.SetOutOfRangeErrors(false);
     AmplitudeLib *DipolePointer = &DipoleAmplitude;
@@ -254,7 +255,16 @@ int main( int argc, char* argv[] )
     if  (useImprovedZ2Bound == true) {z2bound_funptr = &ComputeSigmaR::z2bound_improved;}
     else                             {z2bound_funptr = &ComputeSigmaR::z2bound_simple;}
     SigmaComputer.SetImprovedZ2Bound(z2bound_funptr);
+    // Dipole evalution X, (y = log(x0/X))
+    // if using 'sub' scheme with z2imp one must use the extended evolution variable for sigma_LO as well.
+    ComputeSigmaR::xrapidity_funpointer x_fun_ptr;
+    if (useSUB and useImprovedZ2Bound) {x_fun_ptr = &ComputeSigmaR::Xrpdty_LO_improved;}
+    else        {x_fun_ptr = &ComputeSigmaR::Xrpdty_LO_simple;}
+    SigmaComputer.SetEvolutionX_LO(x_fun_ptr);
+    SigmaComputer.SetEvolutionX_DIP(x_fun_ptr);
+    // sigma_3 BK correction
     SigmaComputer.SetSigma3BKKernel(&ComputeSigmaR::K_resum);
+    // CUBA Monte Carlo integration library algorithm setter 
     SigmaComputer.SetCubaMethod(cubaMethod);
 
 
