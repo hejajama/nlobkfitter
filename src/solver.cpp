@@ -71,6 +71,13 @@ int BKSolver::Solve(double maxy)
         exit(1);
     }
     
+    if (config::LO_BK and (config::RESUM_DLOG or config::RESUM_SINGLE_LOG or config::KINEMATICAL_CONSTRAINT != KC_NONE))
+    
+    {
+        cerr << "LO_BK and either resummation or kinematical constrained turned on simultaneously, this is not possible!" << endl;
+        exit(1);
+    }
+    
 
     size_t vecsize = dipole->RPoints();
     double *ampvec = new double [vecsize];
@@ -330,7 +337,7 @@ double Inthelperf_lo_z(double z, void* p)
     if (status == GSL_ESING)
     {
         #pragma omp critical
-        cerr << "RInt failed, z=" << z <<", r=" << helper->r <<": at " << LINEINFO << ", result " << result << ", relerr "
+        cerr << "thetaInt failed, z=" << z <<", r=" << helper->r <<": at " << LINEINFO << ", result " << result << ", relerr "
         << std::abs(abserr/result) << endl;
     }
 
@@ -541,7 +548,11 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
 
     // Fixed as or Balitsky
     // Note: in the limit alphas(r)=const Balitsky -> Fixed coupling as
-
+    if (RC_LO == FIXED_LO)
+    {
+        result =NC/(2.0*SQR(M_PI))*config::FIXED_AS;
+        alphas_scale=r;
+    }
     if (RC_LO == BALITSKY_LO or RC_LO == FIXED_LO)
     {
         double alphas_y = Alphas(Y);
@@ -580,7 +591,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
 	else if (RC_LO == GUILLAUME_LO)
 	{
 		// 1708.06557 Eq. 169
-		double r_eff_sqr = r*r * std::pow( Y*Y / (X*X), (X*X-Y*Y)/(r*r) );
+		double r_eff_sqr = r*r * std::pow( Y*Y / (X*X+eps), (X*X-Y*Y)/(r*r) );
 		result = NC*Alphas(std::sqrt(r_eff_sqr)) / (2.0*SQR(M_PI)) * SQR(r/(X*Y + eps));
 		alphas_scale = std::sqrt(r_eff_sqr);
 
@@ -704,7 +715,11 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
         return result * (resum*singlelog_resum - 1.0);
         //return (resum-1.0)*result;
 
-    
+    if (isnan(result) or isinf(result)) 
+    {
+		cerr << "Note: Kernel_lo()=" << result << ", with r=" << r <<", X=" << X << ", Y=" << Y << ", returning 0..." << endl;
+		return 0;
+	}
 
 
     if (EQUATION==QCD)
@@ -718,7 +733,7 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
             return resum*singlelog_resum*result;
         }
         
-        double lo_kernel = Alphas(alphas_scale)*NC/(2.0*M_PI*M_PI) * SQR( r / (X*Y)); // lo kernel with parent/smallest dipole
+        double lo_kernel = Alphas(alphas_scale)*NC/(2.0*M_PI*M_PI) * SQR( r / (X*Y+eps)); // lo kernel with parent/smallest dipole
         double subtract = 0;
         if (config::RESUM_RC != RESUM_RC_BALITSKY)
             subtract = lo_kernel * singlelog_resum_expansion;
