@@ -1,5 +1,9 @@
 # Ignore custom makefiles
 Makefile.*
+*.cstm
+
+# Ignore run files
+run*
 
 # Ignore build related files
 build/
@@ -8,6 +12,7 @@ fit
 swarmscan
 tool
 plottool
+lgcy-plottool
 
 
 # Editor and other files

@@ -622,6 +622,8 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
 			resummation_alphas = Alphas(alphas_scale);
     else if (config::RESUM_RC == config::RESUM_RC_BALITSKY)
         cerr << "Check balitsky prescription resummation code! " << LINEINFO << endl;
+    else if (config::RESUM_RC == config::RESUM_RC_FIXED)
+        resummation_alphas = Alphas(r);
     else
     {
         cerr << "Unknown resummation alphas scale! " << LINEINFO << endl;
@@ -1403,7 +1405,7 @@ double BKSolver::Kernel_nlo_n4_sym(double r, double X, double Y, double X2, doub
 // Running coupling
 double BKSolver::Alphas(double r)
 {
-    if (RC_LO == FIXED_LO or RC_NLO == FIXED_NLO)
+    if (RC_LO == FIXED_LO or RESUM_RC == RESUM_RC_FIXED or RC_NLO == FIXED_NLO)
         return config::FIXED_AS;
     
 	

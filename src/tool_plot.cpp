@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -62,7 +63,7 @@ int main( int argc, char* argv[] )
     gsl_set_error_handler(&ErrHandlerCustom);
 
         // NLO DIS SIGMA_R COMPUTATION CONFIGS
-        nlodis_config::CUBA_EPSREL = 5e-3;
+        nlodis_config::CUBA_EPSREL = 10e-3;
         nlodis_config::CUBA_MAXEVAL= 1e7;
         nlodis_config::MINR = 1e-5;
         nlodis_config::MAXR = 50;
@@ -80,11 +81,11 @@ int main( int argc, char* argv[] )
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
 
         config::VERBOSE = true;
-        config::RINTPOINTS = 512;
-        config::THETAINTPOINTS = 512;
+        config::RINTPOINTS = 512/4;
+        config::THETAINTPOINTS = 512/4;
 
-        config::INTACCURACY = 10e-3;//0.02;
-        config::MCINTACCURACY = 10e-3;//0.02;
+        config::INTACCURACY = 50e-3;//0.02;
+        //config::MCINTACCURACY = 10e-3;//0.02;
         // config::MCINTPOINTS = 1e7;
         config::MINR = 1e-5;
         config::MAXR = 50;
@@ -146,11 +147,8 @@ int main( int argc, char* argv[] )
             config::RESUM_RC = config::RESUM_RC_GUILLAUME;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_GUILLAUME;
     } else if (string(argv [3]) == "fixedrc"){
-            if (config::LO_BK == false){
-                cout << "There is no fixed coupling option for RESUM BK" << endl;
-                exit(1); }
             config::RC_LO = config::FIXED_LO;
-            // config::RESUM_RC = config::RESUM_RC_FIXED; // no such option
+            config::RESUM_RC = config::RESUM_RC_FIXED;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_FIXED;
     } else {cout << helpstring << endl; return -1;}
 
@@ -171,9 +169,9 @@ int main( int argc, char* argv[] )
     cout    << "# === Perturbative settings ===" << endl
             << "# Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
             << "# Use ResumBK: " << !(config::LO_BK) << endl
-            << "# KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << endl
+            << "# KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
             << "# Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
-            << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 balitsky, 1 parent, 3 guillaume)" << endl
+            << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
             << "# Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
             << "# Use NLOimpact: " << useNLO << endl
             << "# Use SUBscheme: " << useSUB << endl
@@ -219,6 +217,7 @@ int main( int argc, char* argv[] )
 
     // Give solution to the AmplitudeLib object
     AmplitudeLib DipoleAmplitude(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
+    DipoleAmplitude.SetInterpolationMethod(LINEAR_LINEAR);
     DipoleAmplitude.SetX0(initialconditionX0);
     DipoleAmplitude.SetOutOfRangeErrors(false);
     AmplitudeLib *DipolePointer = &DipoleAmplitude;
@@ -256,7 +255,16 @@ int main( int argc, char* argv[] )
     if  (useImprovedZ2Bound == true) {z2bound_funptr = &ComputeSigmaR::z2bound_improved;}
     else                             {z2bound_funptr = &ComputeSigmaR::z2bound_simple;}
     SigmaComputer.SetImprovedZ2Bound(z2bound_funptr);
+    // Dipole evalution X, (y = log(x0/X))
+    // if using 'sub' scheme with z2imp one must use the extended evolution variable for sigma_LO as well.
+    ComputeSigmaR::xrapidity_funpointer x_fun_ptr;
+    if (useSUB and useImprovedZ2Bound) {x_fun_ptr = &ComputeSigmaR::Xrpdty_LO_improved;}
+    else        {x_fun_ptr = &ComputeSigmaR::Xrpdty_LO_simple;}
+    SigmaComputer.SetEvolutionX_LO(x_fun_ptr);
+    SigmaComputer.SetEvolutionX_DIP(x_fun_ptr);
+    // sigma_3 BK correction
     SigmaComputer.SetSigma3BKKernel(&ComputeSigmaR::K_resum);
+    // CUBA Monte Carlo integration library algorithm setter 
     SigmaComputer.SetCubaMethod(cubaMethod);
 
 
@@ -300,10 +308,12 @@ int main( int argc, char* argv[] )
     double xbj = icx0;
 
     // #pragma omp parallel for collapse(2)
-    for (int i=0; i<=20; i++)
+    // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
+    for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
     // for (int i=0; i<=1; i++)
     {
-        for (int j=0; j<=17; j++)
+        // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
+        for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
         // for (int j=0; j<=1; j++)
         {
             if (j==0 and cubaMethod=="suave"){j++;}

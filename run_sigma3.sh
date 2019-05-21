@@ -10,9 +10,9 @@ echo "\n\n\n\n"
 echo "#############################################"
 #
 #
-./plottool sub resumbk parentrc z2simple unboundloop | tee -a out/sigma3_comparison/sub_resumbk_pdrc_z2sim_ubloop.dat
-./plottool unsub resumbk parentrc z2simple unboundloop | tee -a out/sigma3_comparison/unsub_resumbk_pdrc_z2sim_ubloop.dat
-./plottool unsub+ resumbk parentrc z2simple unboundloop | tee -a out/sigma3_comparison/unsub+_resumbk_pdrc_z2sim_ubloop.dat
+./plottool sub resumbk fixedrc z2simple unboundloop | tee -a out/sigma3_comparison/sub_resumbk_fc_z2sim_ubloop.dat
+./plottool unsub resumbk fixedrc z2simple unboundloop | tee -a out/sigma3_comparison/unsub_resumbk_fc_z2sim_ubloop.dat
+./plottool unsub+ resumbk fixedrc z2simple unboundloop | tee -a out/sigma3_comparison/unsub+_resumbk_fc_z2sim_ubloop.dat
 #
 #
 #./plottool unsub+ lobk fixedrc z2simple unboundloop | tee -a out/unsub+_lobk_fc_z2sim_ubloop.dat
