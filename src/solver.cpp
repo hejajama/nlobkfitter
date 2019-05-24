@@ -550,10 +550,10 @@ double BKSolver::Kernel_lo(double r, double z, double theta)
     // Note: in the limit alphas(r)=const Balitsky -> Fixed coupling as
     if (RC_LO == FIXED_LO)
     {
-        result =NC/(2.0*SQR(M_PI))*config::FIXED_AS;
+        result =NC/(2.0*SQR(M_PI))*config::FIXED_AS * SQR(r / (X*Y+eps) );
         alphas_scale=r;
     }
-    if (RC_LO == BALITSKY_LO or RC_LO == FIXED_LO)
+    else if (RC_LO == BALITSKY_LO )
     {
         double alphas_y = Alphas(Y);
         double alphas_x = Alphas(X);
