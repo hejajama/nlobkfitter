@@ -64,14 +64,14 @@ int main( int argc, char* argv[] )
 
         // NLO DIS SIGMA_R COMPUTATION CONFIGS
         nlodis_config::CUBA_EPSREL = 10e-3;
-        nlodis_config::CUBA_MAXEVAL= 1e7;
-        nlodis_config::MINR = 1e-5;
+        nlodis_config::CUBA_MAXEVAL= 5e7;
+        nlodis_config::MINR = 1e-6;
         nlodis_config::MAXR = 50;
         nlodis_config::PRINTDATA = true;
         bool useNLO = true;
         bool computeNLO = useNLO;
-        string cubaMethod = "vegas";
-        //string cubaMethod = "suave";
+        // string cubaMethod = "vegas";
+        string cubaMethod = "suave";
 
         // Oliko paperissa LO + fc BK? Taisi olla ja resummaukset vasta olivat kiinnostuksen alla sen jälkeen?
         config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
@@ -79,18 +79,19 @@ int main( int argc, char* argv[] )
         config::RESUM_SINGLE_LOG = false; // Resum single logs
         config::KSUB = 0.65;  // Optimal value for K_sub
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
+        config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
 
         config::VERBOSE = true;
-        config::RINTPOINTS = 512/4;
-        config::THETAINTPOINTS = 512/4;
+        config::RINTPOINTS = 512/2;
+        config::THETAINTPOINTS = 512/2;
 
-        config::INTACCURACY = 50e-3;//0.02;
+        config::INTACCURACY = 10e-3;//0.02;
         //config::MCINTACCURACY = 10e-3;//0.02;
         // config::MCINTPOINTS = 1e7;
-        config::MINR = 1e-5;
+        config::MINR = 1e-6;
         config::MAXR = 50;
-        config::RPOINTS = 100;
-        config::DE_SOLVER_STEP = 0.4; // Rungekutta step
+        config::RPOINTS = 400;
+        config::DE_SOLVER_STEP = 0.2; // Rungekutta step
 
         // Constants
         config::NF=3;   // Only light quarks
@@ -168,7 +169,7 @@ int main( int argc, char* argv[] )
     cout << std::boolalpha;
     cout    << "# === Perturbative settings ===" << endl
             << "# Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
-            << "# Use ResumBK: " << !(config::LO_BK) << endl
+            << "# Use ResumBK (==!LO_BK): " << !(config::LO_BK) << endl
             << "# KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
             << "# Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
             << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
@@ -199,6 +200,8 @@ int main( int argc, char* argv[] )
     /*
     // ***Solve resummed BK***
     */
+
+    /*
     MV ic;                                            // Initial condition
     ic.SetQsqr(qs0sqr);
     ic.SetAnomalousDimension(anomalous_dimension);
@@ -215,8 +218,16 @@ int main( int argc, char* argv[] )
     solver.SetEta0(eta0);
     solver.Solve(maxy);                                // Solve up to maxy
 
+    solver.GetDipole()->Save("./out/dipoles/dipole_lobk_fc_step0.2_rpoints400_rmin1e-6rmax50_INTACC2e-3.dat");
+    cout << "Saved dipole to file, exiting." << endl;
+    exit(0);
+    */
+
     // Give solution to the AmplitudeLib object
-    AmplitudeLib DipoleAmplitude(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
+    // AmplitudeLib DipoleAmplitude(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
+    // AmplitudeLib DipoleAmplitude("./data/paper1dipole/pap1_fcBK_MV.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
+    // AmplitudeLib DipoleAmplitude("./out/dipoles/dipole_lobk_fc_step0.2_rpoints400-2.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
+    AmplitudeLib DipoleAmplitude("./out/dipoles/dipole_lobk_fc_step0.2_rpoints400_rmin1e-6rmax50_INTACC2e-3.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
     DipoleAmplitude.SetInterpolationMethod(LINEAR_LINEAR);
     DipoleAmplitude.SetX0(initialconditionX0);
     DipoleAmplitude.SetOutOfRangeErrors(false);
