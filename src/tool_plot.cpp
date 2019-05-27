@@ -82,15 +82,15 @@ int main( int argc, char* argv[] )
         config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
 
         config::VERBOSE = true;
-        config::RINTPOINTS = 512/2;
-        config::THETAINTPOINTS = 512/2;
+        config::RINTPOINTS = 512/4;
+        config::THETAINTPOINTS = 512/4;
 
         config::INTACCURACY = 10e-3;//0.02;
         //config::MCINTACCURACY = 10e-3;//0.02;
         // config::MCINTPOINTS = 1e7;
         config::MINR = 1e-6;
         config::MAXR = 50;
-        config::RPOINTS = 400;
+        config::RPOINTS = 100;
         config::DE_SOLVER_STEP = 0.2; // Rungekutta step
 
         // Constants
@@ -108,33 +108,35 @@ int main( int argc, char* argv[] )
 
     string_sub = string(argv [1]);
     if (string(argv [1]) == "sub"){
-      useSUB = true;
+        useSUB = true;
     } else if (string(argv [1]) == "unsub"){
-      useSUB = false;
-      useSigma3 = false;
+        useSUB = false;
+        useSigma3 = false;
     } else if (string(argv [1]) == "unsub+"){
-      useSUB = false;
-      useSigma3 = true;
+        useSUB = false;
+        useSigma3 = true;
     } else {cout << helpstring << endl; return -1;}
 
     string_bk = string(argv [2]);
     if (string(argv [2]) == "resumbk"){
-            config::LO_BK = false;  // Solve LO BK with running coupling, overrides RESUM settings
-            config::RESUM_DLOG = true; // Resum doulbe logs
+            config::EULER_METHOD = false;    // Use Runge-Kutta since no kin. constraint
+            config::LO_BK = false;           // Solve LO BK with running coupling, overrides RESUM settings
+            config::RESUM_DLOG = true;       // Resum doulbe logs
             config::RESUM_SINGLE_LOG = true; // Resum single logs
-            config::KSUB = 0.65;  // Optimal value for K_sub
-            config::NO_K2 = true;  // Do not include numerically demanding full NLO part
+            config::KSUB = 0.65;             // Optimal value for K_sub
+            config::NO_K2 = true;            // Do not include numerically demanding full NLO part
     }else if (string(argv [2]) == "kcbk"){
-            config::LO_BK = true;  // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
-            config::EULER_METHOD            = true;        // Kinematical constraint requires this
-            config::KINEMATICAL_CONSTRAINT  = config::KC_BEUF_K_PLUS;
-            config::DE_SOLVER_STEP = 0.05; //0.02; // Euler method requires smaller step than RungeKutta!
+            config::LO_BK = true;            // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
+            config::EULER_METHOD = true;     // Kinematical constraint requires this
+            config::KINEMATICAL_CONSTRAINT = config::KC_BEUF_K_PLUS;
+            config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
     }else if (string(argv [2]) == "trbk"){  // Target Rapidity BK
-            config::LO_BK = true;  // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
-            config::EULER_METHOD            = true;        // Kinematical constraint requires this
-            config::KINEMATICAL_CONSTRAINT  = config::KC_EDMOND_K_MINUS;
-            config::DE_SOLVER_STEP = 0.05; //0.02; // Euler method requires smaller step than RungeKutta!
+            config::LO_BK = true;           // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
+            config::EULER_METHOD = true;        // Kinematical constraint requires this
+            config::KINEMATICAL_CONSTRAINT = config::KC_EDMOND_K_MINUS;
+            config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
     }else if (string(argv [2]) == "lobk"){
+            config::EULER_METHOD = false;   // Use Runge-Kutta since no kin. constraint
             config::LO_BK = true;
     } else {cout << helpstring << endl; return -1;}
 
@@ -154,15 +156,15 @@ int main( int argc, char* argv[] )
     } else {cout << helpstring << endl; return -1;}
 
     if (string(argv [4]) == "z2improved"){
-      useImprovedZ2Bound = true;
+        useImprovedZ2Bound = true;
     } else if (string(argv [4]) == "z2simple"){
-      useImprovedZ2Bound = false;
+        useImprovedZ2Bound = false;
     } else {cout << helpstring << endl; return -1;}
 
     if (string(argv [5]) == "z2boundloop"){
-      useBoundLoop = true;
+        useBoundLoop = true;
     } else if (string(argv [5]) == "unboundloop"){
-      useBoundLoop = false;
+        useBoundLoop = false;
     } else {cout << helpstring << endl; return -1;}
 
 
@@ -201,7 +203,7 @@ int main( int argc, char* argv[] )
     // ***Solve resummed BK***
     */
 
-    /*
+    // /*
     MV ic;                                            // Initial condition
     ic.SetQsqr(qs0sqr);
     ic.SetAnomalousDimension(anomalous_dimension);
@@ -218,16 +220,16 @@ int main( int argc, char* argv[] )
     solver.SetEta0(eta0);
     solver.Solve(maxy);                                // Solve up to maxy
 
-    solver.GetDipole()->Save("./out/dipoles/dipole_lobk_fc_step0.2_rpoints400_rmin1e-6rmax50_INTACC2e-3.dat");
-    cout << "Saved dipole to file, exiting." << endl;
-    exit(0);
-    */
+    // solver.GetDipole()->Save("./out/dipoles/dipole_lobk_fc_RK_step0.2_rpoints100_rmin1e-6rmax50_INTACC10e-3.dat");
+    // cout << "Saved dipole to file, exiting." << endl;
+    // exit(0);
+    // */
 
     // Give solution to the AmplitudeLib object
-    // AmplitudeLib DipoleAmplitude(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
+    AmplitudeLib DipoleAmplitude(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
     // AmplitudeLib DipoleAmplitude("./data/paper1dipole/pap1_fcBK_MV.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
     // AmplitudeLib DipoleAmplitude("./out/dipoles/dipole_lobk_fc_step0.2_rpoints400-2.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
-    AmplitudeLib DipoleAmplitude("./out/dipoles/dipole_lobk_fc_step0.2_rpoints400_rmin1e-6rmax50_INTACC2e-3.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
+    // AmplitudeLib DipoleAmplitude("./out/dipoles/dipole_lobk_fc_step0.2_rpoints400_rmin1e-6rmax50_INTACC2e-3.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
     DipoleAmplitude.SetInterpolationMethod(LINEAR_LINEAR);
     DipoleAmplitude.SetX0(initialconditionX0);
     DipoleAmplitude.SetOutOfRangeErrors(false);
@@ -297,7 +299,7 @@ int main( int argc, char* argv[] )
                     << setw(15) << "FT_qg"        << " "
                     << setw(15) << "FT_sigma3"    << " "
                     << endl;
-                  }
+                    }
 
 
 
@@ -402,8 +404,8 @@ int main( int argc, char* argv[] )
 
             if (calccount>1)
             {
-              cerr << "ERROR: Multiple computations. abort." << "count="<< calccount << endl;
-              exit(1);
+                cerr << "ERROR: Multiple computations. abort." << "count="<< calccount << endl;
+                exit(1);
             }
 
             // Output for plotting
@@ -422,7 +424,7 @@ int main( int argc, char* argv[] )
                     << setw(15) << FT_qg        << " "
                     << setw(15) << FT_sigma3    << " "
                     << endl;
-                  }
+                    }
         }
     }
 
