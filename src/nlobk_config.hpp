@@ -106,6 +106,8 @@ namespace config
         KC_NONE
     };
     
+    extern bool TARGET_KINEMATICAL_CONSTRAINT; // gluon k- < target P-
+    
     extern KINEMATICAL_CONSTRAINTS KINEMATICAL_CONSTRAINT; // Solve nonlocal kinematically constrained BK (LO part)
     
     extern bool EULER_METHOD;    // Use Euler method instead of Runge Kutta, must be true if KINEMATICA_CONSTRAINT is used

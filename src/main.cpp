@@ -54,25 +54,24 @@ int main()
     gsl_set_error_handler(&ErrHandlerCustom);
     //gsl_set_error_handler_off();
 
-        config::RC_LO = config::GUILLAUME_LO;// FIXED_,PARENT_,PARENT_BETA_,SMALLEST_,BALITSKY_,FRAC_,GUILLAUME_,
+    config::RC_LO = config::FIXED_LO;// FIXED_,PARENT_,PARENT_BETA_,SMALLEST_,BALITSKY_,FRAC_,GUILLAUME_,
         config::RESUM_RC = config::RESUM_RC_GUILLAUME; // _BALITSKY,_PARENT,_SMALLEST,_GUILLAUME,
         config::RESUM_DLOG = false;; // Resum doulbe logs
         config::RESUM_SINGLE_LOG = false; // Resum single logs
-        config::LO_BK = false; // Solve LO BK with running coupling, overrides RESUM settings
         config::KSUB = 0.65;  // Optimal value for K_sub
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
         config::INTACCURACY = 0.015;//0.02;
         config::MINR = 1e-5;
         config::MAXR = 50;
         config::RPOINTS = 100;
-        config::DE_SOLVER_STEP = 0.050;// Euler method probably requires smaller step!
+        config::DE_SOLVER_STEP = 0.2;// Euler method probably requires smaller step!
 		config::DNDY=false;
         //sigmar_config::maxy = 5.2;
 
         // If want to use kinematical constraint in the LO equation
-        config::EULER_METHOD = true;;    // Kinematical constraint requires this
+        config::EULER_METHOD = false;;    // Kinematical constraint requires this
         config::KINEMATICAL_CONSTRAINT = config::KC_NONE;;
-
+        config::TARGET_KINEMATICAL_CONSTRAINT=false;
         // Constants
         config::NF=3;   // Only light quarks
         config::LAMBDAQCD = 0.241;
@@ -94,16 +93,16 @@ int main()
 	 //parameters.SetPrecision(0.001); 
       // Constants
     
-    parameters.Add("qs0sqr", 0.0484000000000, 0.4);
+    parameters.Add("qs0sqr", 0.2, 0.4);
     parameters.Add("alphascalingC2", 14.4      , 0.70);
-    parameters.Add("e_c", 21.5, 1.0);
+    parameters.Add("e_c", 1, 1.0);
     parameters.Add("anomalous_dimension", 1.0 );
 	
     // eta_0 starint value for the k^- evolution
 	parameters.Add("eta0", std::log(1/0.01));
     
     // Constants
-    parameters.Add("initialconditionX0", 1 );
+    parameters.Add("initialconditionX0", 0.01 );
     parameters.Add("initialconditionY0", 0 ); // What rapidity is our IC
     parameters.Add("icTypicalPartonVirtualityQ0sqr", 1.0);
     

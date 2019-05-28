@@ -63,6 +63,8 @@ namespace config
     
      KINEMATICAL_CONSTRAINTS KINEMATICAL_CONSTRAINT = KC_NONE;
     
+    bool TARGET_KINEMATICAL_CONSTRAINT=false;
+    
     bool EULER_METHOD = false;
 }
 

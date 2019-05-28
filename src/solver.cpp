@@ -384,8 +384,21 @@ double Inthelperf_lo_theta(double theta, void* p)
     // Y = y - z = z
     double Y = z;
     
-    if (X < config::MINR or Y < config::MINR or r < config::MINR)
-        return 0;
+    // Target kinematical constraint
+    // Note: if initial condition does not refer to x=1 but some smaller x, this needs to be
+    // corrected here when considering the actual gluon p^-
+    // This shift we call Y0
+    // But right now we ues eta0 here, to avoid possible configts with Y0 in the impact factor,
+    // one should eventually make sure that Y0 is consistent here and in the impact factor
+    if (config::TARGET_KINEMATICAL_CONSTRAINT)
+    {
+        const double q0sqr =1; // Should be parameter icTypicalPartonVirtualityQ0sqr
+        double Delta = std::log(1.0/(q0sqr * std::min(X*X, Y*Y) + eps));
+        
+        double yshifted = helper->rapidity + helper->solver->GetEta0();
+        if (yshifted - Delta < 0) return 0;
+    }
+    
     
     
     if (std::isnan(X) or std::isnan(Y))
