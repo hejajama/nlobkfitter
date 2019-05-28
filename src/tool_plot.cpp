@@ -74,7 +74,6 @@ int main( int argc, char* argv[] )
         string cubaMethod = "suave";
 
         // Oliko paperissa LO + fc BK? Taisi olla ja resummaukset vasta olivat kiinnostuksen alla sen jälkeen?
-        config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
         config::RESUM_DLOG = false; // Resum doulbe logs
         config::RESUM_SINGLE_LOG = false; // Resum single logs
         config::KSUB = 0.65;  // Optimal value for K_sub
@@ -120,24 +119,27 @@ int main( int argc, char* argv[] )
     string_bk = string(argv [2]);
     if (string(argv [2]) == "resumbk"){
             config::EULER_METHOD = false;    // Use Runge-Kutta since no kin. constraint
-            config::LO_BK = false;           // Solve LO BK with running coupling, overrides RESUM settings
             config::RESUM_DLOG = true;       // Resum doulbe logs
             config::RESUM_SINGLE_LOG = true; // Resum single logs
             config::KSUB = 0.65;             // Optimal value for K_sub
             config::NO_K2 = true;            // Do not include numerically demanding full NLO part
     }else if (string(argv [2]) == "kcbk"){
-            config::LO_BK = true;            // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
             config::EULER_METHOD = true;     // Kinematical constraint requires this
+            config::RESUM_DLOG = false;
+            config::RESUM_SINGLE_LOG = false;
             config::KINEMATICAL_CONSTRAINT = config::KC_BEUF_K_PLUS;
             config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
     }else if (string(argv [2]) == "trbk"){  // Target Rapidity BK
-            config::LO_BK = true;           // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
-            config::EULER_METHOD = true;        // Kinematical constraint requires this
+            config::EULER_METHOD = true;     // Kinematical constraint requires this
+            config::RESUM_DLOG = false;
+            config::RESUM_SINGLE_LOG = false;
             config::KINEMATICAL_CONSTRAINT = config::KC_EDMOND_K_MINUS;
             config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
     }else if (string(argv [2]) == "lobk"){
             config::EULER_METHOD = false;   // Use Runge-Kutta since no kin. constraint
-            config::LO_BK = true;
+            config::RESUM_DLOG = false;
+            config::RESUM_SINGLE_LOG = false;
+            config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
     } else {cout << helpstring << endl; return -1;}
 
     string_rc = string(argv [3]);
@@ -171,7 +173,11 @@ int main( int argc, char* argv[] )
     cout << std::boolalpha;
     cout    << "# === Perturbative settings ===" << endl
             << "# Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
-            << "# Use ResumBK (==!LO_BK): " << !(config::LO_BK) << endl
+            << "# Use LOBK (DL,SL==false): " << (!(config::RESUM_DLOG) 
+                                    and !(config::RESUM_SINGLE_LOG)) << endl
+            << "# Use ResumBK (DL,SL==true,KC_NONE): " << ((config::RESUM_DLOG) 
+                                    and (config::RESUM_SINGLE_LOG)
+                                    and (config::KINEMATICAL_CONSTRAINT == config::KC_NONE)) << endl
             << "# KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
             << "# Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
             << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl

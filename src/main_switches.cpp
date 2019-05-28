@@ -83,20 +83,20 @@ int main( int argc, char* argv[] )
         config::LAMBDAQCD = 0.241;
         
         config::VERBOSE = true;
-        config::RINTPOINTS = 512;
-        config::THETAINTPOINTS = 512;
+        config::RINTPOINTS = 512/4;
+        config::THETAINTPOINTS = 512/4;
 
         nlodis_config::RC_DIS = nlodis_config::DIS_RC_GUILLAUME;
         config::RC_LO = config::GUILLAUME_LO;// FIXED_,PARENT_,PARENT_BETA_,SMALLEST_,BALITSKY_,FRAC_,GUILLAUME_,
         config::RESUM_RC = config::RESUM_RC_GUILLAUME; // _BALITSKY,_PARENT,_SMALLEST,_GUILLAUME,
         config::RESUM_DLOG = true; // Resum doulbe logs
         config::RESUM_SINGLE_LOG = true; // Resum single logs
-        config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
         config::KSUB = 0.65;  // Optimal value for K_sub
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
+
         config::INTACCURACY = 10e-3;//0.02;
-        config::MCINTACCURACY = 10e-3;//0.02;
-        config::MCINTPOINTS = 1e7;
+        // config::MCINTACCURACY = 10e-3;//0.02;
+        // config::MCINTPOINTS = 1e7;
         config::MINR = 1e-5;
         config::MAXR = 50;
         config::RPOINTS = 100;
@@ -124,23 +124,28 @@ int main( int argc, char* argv[] )
 
     string_bk = string(argv [2]);
     if (string(argv [2]) == "resumbk"){
-            config::LO_BK = false;  // Solve LO BK with running coupling, overrides RESUM settings
-            config::RESUM_DLOG = true; // Resum doulbe logs
+            config::EULER_METHOD = false;    // Use Runge-Kutta since no kin. constraint
+            config::RESUM_DLOG = true;       // Resum doulbe logs
             config::RESUM_SINGLE_LOG = true; // Resum single logs
-            config::KSUB = 0.65;  // Optimal value for K_sub
-            config::NO_K2 = true;  // Do not include numerically demanding full NLO part
+            config::KSUB = 0.65;             // Optimal value for K_sub
+            config::NO_K2 = true;            // Do not include numerically demanding full NLO part
     }else if (string(argv [2]) == "kcbk"){
-            config::LO_BK = true;  // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
-            config::EULER_METHOD            = true;        // Kinematical constraint requires this
-            config::KINEMATICAL_CONSTRAINT  = config::KC_BEUF_K_PLUS;
-            config::DE_SOLVER_STEP = 0.05; //0.02; // Euler method requires smaller step than RungeKutta!
+            config::EULER_METHOD = true;     // Kinematical constraint requires this
+            config::RESUM_DLOG = false;
+            config::RESUM_SINGLE_LOG = false;
+            config::KINEMATICAL_CONSTRAINT = config::KC_BEUF_K_PLUS;
+            config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
     }else if (string(argv [2]) == "trbk"){  // Target Rapidity BK
-            config::LO_BK = true;  // Solve (kinematic / delay) LO BK with running coupling, overrides RESUM settings
-            config::EULER_METHOD            = true;        // Kinematical constraint requires this
-            config::KINEMATICAL_CONSTRAINT  = config::KC_EDMOND_K_MINUS;
-            config::DE_SOLVER_STEP = 0.05; //0.02; // Euler method requires smaller step than RungeKutta!
+            config::EULER_METHOD = true;     // Kinematical constraint requires this
+            config::RESUM_DLOG = false;
+            config::RESUM_SINGLE_LOG = false;
+            config::KINEMATICAL_CONSTRAINT = config::KC_EDMOND_K_MINUS;
+            config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
     }else if (string(argv [2]) == "lobk"){
-            config::LO_BK = true;
+            config::EULER_METHOD = false;   // Use Runge-Kutta since no kin. constraint
+            config::RESUM_DLOG = false;
+            config::RESUM_SINGLE_LOG = false;
+            config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
     } else {cout << helpstring << endl; return -1;}
 
     string_rc = string(argv [3]);
@@ -243,7 +248,11 @@ int main( int argc, char* argv[] )
     cout << std::boolalpha;
     cout    << "=== Perturbative settings ===" << endl
             << "Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
-            << "Use ResumBK: " << !(config::LO_BK) << endl
+            << "# Use LOBK (DL,SL==false): " << (!(config::RESUM_DLOG) 
+                                    and !(config::RESUM_SINGLE_LOG)) << endl
+            << "# Use ResumBK (DL,SL==true,KC_NONE): " << ((config::RESUM_DLOG) 
+                                    and (config::RESUM_SINGLE_LOG)
+                                    and (config::KINEMATICAL_CONSTRAINT == config::KC_NONE)) << endl
             << "KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
             << "Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
             << "Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
@@ -275,9 +284,17 @@ int main( int argc, char* argv[] )
 
     cout << "=== Perturbative settings were ===" << endl;
     cout << std::boolalpha;
-    cout    << "Use ResumBK: " << !(config::LO_BK) << endl
-            << "KinematicalConstraint BK: " << config::KINEMATICAL_CONSTRAINT << endl
-            << "Running Coupling: " << config::RC_LO << " (4 parent, 6 guillaume)" << endl
+    cout    << "=== Perturbative settings ===" << endl
+            << "Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
+            << "# Use LOBK (DL,SL==false): " << (!(config::RESUM_DLOG) 
+                                    and !(config::RESUM_SINGLE_LOG)) << endl
+            << "# Use ResumBK (DL,SL==true,KC_NONE): " << ((config::RESUM_DLOG) 
+                                    and (config::RESUM_SINGLE_LOG)
+                                    and (config::KINEMATICAL_CONSTRAINT == config::KC_NONE)) << endl
+            << "KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
+            << "Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
+            << "Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
+            << "Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
             << "Use NLOimpact: " << useNLO << endl
             << "Use SUBscheme: " << useSUB << endl
             << "Use Sigma3: " << useSigma3 << endl
