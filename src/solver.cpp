@@ -100,7 +100,11 @@ int BKSolver::Solve(double maxy)
                     << " y=" << y << ", h=" << h << endl;
                 }
                 //if (std::abs(y - (int)(y+0.5))<0.01)
-                if(VERBOSE)    cout << "# Evolved up to " << y << "/" << nexty << ", h=" << h << endl;
+                if(VERBOSE)
+                {
+                    cout << "\r                                                   " << std::flush;
+                    cout << "\r" << "# Evolved up to " << y << "/" << maxy << ", h=" << h << std::flush;
+                }
             }
             
             // Check ampvec
