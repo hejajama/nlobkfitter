@@ -37,15 +37,6 @@ namespace config
 
     extern size_t MCINTPOINTS;
 
-    // Select what to solve
-    enum Equation
-    {
-        QCD,            // QCD NLO BK
-        CONFORMAL_QCD,  // Confromal NLO BK in QCD
-        CONFORMAL_N4    // Conformal NLO BK in N=4 SYM
-    };
-    extern Equation EQUATION;  
-
     extern double DE_SOLVER_STEP;
 
     // Alpha_s in LO part
@@ -82,17 +73,12 @@ namespace config
     };
     extern INTEGRATION_METHOD INTMETHOD_NLO;
 
-    extern bool LO_BK ;    // solve only LO BK
-
     extern bool ONLY_NLO;   // do not keep as^1 terms
 
     extern bool FORCE_POSITIVE_N;   // Force N(r)>=0
 
 
     extern bool DNDY;   // Print only dn/dy and exit
-
-    extern bool ONLY_LNR;   // Keep only ln r^2 terms from nlo conformal dipole
-    extern bool NO_LNR;     // Do not include ln r^2
 
     extern bool RESUM_DLOG; // Resum double log
     extern bool RESUM_SINGLE_LOG;
@@ -110,13 +96,8 @@ namespace config
 
     extern bool NO_K2;      // Do not include K_2
 
-    extern bool ONLY_RESUM_DLOG; // Calculate contribution from resummation
     
     extern double KSUB;	// Constant factor in the sigle log resummation log
-    
-    extern bool ONLY_SUBTRACTION;	// Calculate only effect from subtraction
-
-    extern bool ONLY_K1FIN; // Only K1fin contribution from K_1
     
     enum KINEMATICAL_CONSTRAINTS
     {

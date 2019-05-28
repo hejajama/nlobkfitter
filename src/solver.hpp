@@ -25,13 +25,6 @@ class BKSolver
         double Kernel_nlo(double r, double X, double Y, double X2, double Y2, double z_m_z2);
         double Kernel_nlo_fermion(double r, double X, double Y, double X2, double Y2, double z_m_z2);
 
-        
-        double Kernel_nlo_conformal_1(double r, double X, double Y, double X2, double Y2, double z_m_z2);
-        double Kernel_nlo_conformal_2(double r, double X, double Y, double X2, double Y2, double z_m_z2);
-        double Kernel_nlo_conformal_fermion(double r, double X, double Y, double X2, double Y2, double z_m_z2);
-        double Kernel_nlo_n4_sym(double r, double X, double Y, double X2, double Y2, double z_m_z2);
-
-        
 
         double RapidityDerivative_lo(double r, Interpolator* dipole_interp, double rapidity=-1);
         double RapidityDerivative_nlo(double r, Interpolator* dipole_interp, Interpolator* dipole_interp_s);

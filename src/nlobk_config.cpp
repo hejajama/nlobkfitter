@@ -32,9 +32,6 @@ namespace config
 
      size_t MCINTPOINTS = 1e7;
 
-
-     Equation EQUATION = QCD;  
-
      double DE_SOLVER_STEP = 0.2; // 0.05 paperissa
 
 
@@ -49,35 +46,24 @@ namespace config
 
      INTEGRATION_METHOD INTMETHOD_NLO = MISER;
 
-     bool LO_BK = false;    // solve only LO BK
-
      bool FORCE_POSITIVE_N = true;
 
      bool DNDY=false;
 
      bool ONLY_NLO = false;
 
-     bool ONLY_LNR = false;
-     bool NO_LNR = false;
-
      bool RESUM_DLOG = false;
      bool RESUM_SINGLE_LOG = false;
 
      bool NO_K2 = false;
-
-     bool ONLY_RESUM_DLOG = false;
-     
-     bool ONLY_SUBTRACTION = false;
      
      double KSUB = 1.0;
      
      SINGLELOG_RESUM_RC RESUM_RC = RESUM_RC_PARENT;
-
-     bool ONLY_K1FIN = false;
     
      KINEMATICAL_CONSTRAINTS KINEMATICAL_CONSTRAINT = KC_NONE;
     
-    bool EULER_METHOD = true;
+    bool EULER_METHOD = false;
 }
 
 
@@ -99,7 +85,7 @@ std::string NLOBK_CONFIG_STRING()
     ss << endl;
     
     ss<< "# LO Kernel RC: ";
-    if (RC_LO == FIXED_LO or EQUATION==CONFORMAL_N4)
+    if (RC_LO == FIXED_LO )
     ss << " fixed as=" << FIXED_AS;
     else if (RC_LO == SMALLEST_LO)
     ss << " smallest dipole";
@@ -116,7 +102,7 @@ std::string NLOBK_CONFIG_STRING()
     
     
     ss<< ". NLO Kernel RC: ";
-    if (RC_NLO == FIXED_NLO or EQUATION==CONFORMAL_N4)
+    if (RC_NLO == FIXED_NLO)
     ss << " fixed as=" << FIXED_AS;
     else if (RC_NLO == SMALLEST_NLO)
     ss << " smallest dipole";
@@ -125,16 +111,8 @@ std::string NLOBK_CONFIG_STRING()
     else
     ss << " NO STRING IMPLEMENTED!";
     ss << endl;
-    ss <<"# Nc=" << NC << ", Nf=" << NF;
+    ss <<"# Nc=" << NC << ", Nf=" << NF << endl;
     
-    if (EQUATION == QCD )
-    {
-        if (DOUBLELOG_LO_KERNEL) ss << "# Double log term in LO kernel included" << endl;
-    }
-    else if (EQUATION == CONFORMAL_QCD) ss << "# Solving for CONFORMAL dipole";
-    else if (EQUATION == CONFORMAL_N4) ss << "# Solving in N=4 for CONFORMAL dipole";
-    else ss << ". UNKNOWN EQUATION!!";
-    ss << endl;
     
     //if (FORCE_POSITIVE_N)
     //ss << "# Amplitude is limited to [0,1]" << endl;
@@ -157,11 +135,6 @@ std::string NLOBK_CONFIG_STRING()
         ss << endl;
     }
     
-    if (config::ONLY_SUBTRACTION)
-    ss <<  "# Only including the subtraction term" << endl;
-    
-    if (config::ONLY_K1FIN)
-    ss <<  "# Only including K1fin part of K1" << endl;
     
     if (config::NO_K2)
     {
