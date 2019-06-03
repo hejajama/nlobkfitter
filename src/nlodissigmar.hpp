@@ -133,37 +133,74 @@ public:
     // int cubamethod;
     string cubamethod;// Currently integrates everything with this. ->? Integrate cumbersome QG AND Bound Dipole Loop contrb. separate one?
 
-    // helpers
+
+    /*
+    **  HELPERS & POINTERS
+    */
     double Sr(double r, double x);
     double SrTripole(double x01, double x02, double x21, double x);
     double P(double z);
     double heaviside_theta(double x);
+
     // running couplings
     double Alphabar(double rsq){ return (this->*AlphabarPTR)(rsq); } // pointer shell function
     double Alphabar_QG(void *userdata){ return (this->*Alphabar_QG_PTR)(userdata); } // pointer shell function
     double alpha_bar_running_pd( double rsq );
     double alpha_bar_running_pd_sharpcutoff( double rsq );
     double alpha_bar_fixed( double rsq );
+
     // QG term specific couplings
     double alpha_bar_QG_running_pd( void *userdata );
     double alpha_bar_QG_fixed( void *userdata );
     double alpha_bar_QG_running_guillaume( void *userdata );
+
     // z2 lower bounds
     // pointer, only one since lower bound is set consistently in all terms
     double z2lower_bound( double x, double qsq ) {return (this->*z2limit_PTR)(x,qsq); } // pointer shell function
     double z2bound_simple( double x , double qsq ) { return x/icX0 ; }
     double z2bound_improved( double x , double qsq ) { return (x/icX0)*(icQ0sqr/qsq)  ; }
+
     // Evolution variables / rapidities
     double Xrpdty_LO( double x, double qsq) {return (this->*Xrpdty_LO_PTR)(x,qsq);}
     double Xrpdty_DIP( double x, double qsq) {return (this->*Xrpdty_DIP_PTR)(x,qsq);}
     double Xrpdty_LO_simple( double x , double qsq ) { return x ; } // X = x0*z2min; z2min = xbj/x0
     double Xrpdty_LO_improved( double x , double qsq ) { return x*icQ0sqr/qsq ; } // X = x0*z2min; z2min = xbj/x0*Q0²/Q²
+
     // BK kernels
     double K_kernel( double rsq, double x02sq, double x21sq ) {return (this->*K_kernel_PTR)(rsq,x02sq,x21sq); } // pointer shell function
     double K_resum (double rsq, double x02sq, double x21sq);
     double K_lobk (double rsq, double x02sq, double x21sq);
 
+    // Sub scheme subtraction term pointer and its targets
+    double ILNLOqg_subterm(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102){
+        return (this->*ILNLOqg_subterm_PTR)(Q,x,z1,z2,x01sq,x02sq,phix0102);
+    }
+    double ILNLOqg_subterm_lobk_z2limit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
+    double ILNLOqg_subterm_lobk_explicit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
+    double ILNLOqg_subterm_resumbk(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
+    double ILNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
+    
+    double ITNLOqg_subterm(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102){
+        return (this->*ITNLOqg_subterm_PTR)(Q,x,z1,z2,x01sq,x02sq,phix0102);
+    }
+    double ITNLOqg_subterm_lobk_z2limit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
+    double ITNLOqg_subterm_lobk_explicit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
+    double ITNLOqg_subterm_resumbk(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
+    double ITNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
 
+    // Sub scheme subtraction term z2 upper bound pointer and targets
+    double z2upper_qg_subterm( double z1 ){ return (this->*z2upper_qg_PTR)(z1); }   // pointer method
+    double z2upper_unity(double z1){ return 1.0; }
+    double z2upper_min_z_qqbar(double z1){
+        // set z2 integration upper bound to min(z1, 1 - z1)
+        double min_momentum;
+        if (z1 < 0.5){
+            min_momentum = z1;
+        } else {
+            min_momentum = 1 - z1;
+        }
+        return min_momentum;
+    }
 
 
     // cross section integrators
