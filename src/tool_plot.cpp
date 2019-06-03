@@ -81,8 +81,8 @@ int main( int argc, char* argv[] )
         config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
 
         config::VERBOSE = true;
-        config::RINTPOINTS = 512/4;
-        config::THETAINTPOINTS = 512/4;
+        //config::RINTPOINTS = 512/4;
+        //config::THETAINTPOINTS = 512/4;
 
         config::INTACCURACY = 10e-3;//0.02;
         //config::MCINTACCURACY = 10e-3;//0.02;
@@ -327,12 +327,12 @@ int main( int argc, char* argv[] )
     double xbj = icx0;
 
     // #pragma omp parallel for collapse(2)
-    // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
-    for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
+    for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
+    //for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
     // for (int i=0; i<=1; i++)
     {
-        // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
-        for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
+        for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
+        // for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
         // for (int j=0; j<=1; j++)
         {
             if (j==0 and cubaMethod=="suave"){j++;}
