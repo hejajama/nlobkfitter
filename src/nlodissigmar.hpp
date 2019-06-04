@@ -65,8 +65,12 @@ public:
   typedef  double (ComputeSigmaR::*CmptrMemFn)(double x);
   typedef  double (ComputeSigmaR::*CmptrMemFn_void)(void *x);
   typedef  double (ComputeSigmaR::*z2funpointer)(double x, double q);
+  typedef  double (ComputeSigmaR::*subterm_z2upper_fp)(double z);
   typedef  double (ComputeSigmaR::*xrapidity_funpointer)(double x, double q);
   typedef  double (ComputeSigmaR::*bkkernel_funpointer)(double x01sq, double x02sq, double x21sq);
+  typedef  double (ComputeSigmaR::*INLOqg_subterm_fp)(double Q, double x, double z1, double z2,
+                                                      double x01sq, double x02sq, double phix0102);
+
 
     ComputeSigmaR(AmplitudeLib *ObjectPointer);
 
@@ -123,11 +127,15 @@ public:
     AmplitudeLib *ClassScopeDipolePointer;
     double qMass_light, alpha_scaling_C2_, icX0, icY0, icQ0sqr;
 	double qMass_charm;
+    
+    // Method and function pointers
     CmptrMemFn AlphabarPTR;
     CmptrMemFn_void Alphabar_QG_PTR;
     z2funpointer z2limit_PTR;
+    subterm_z2upper_fp z2upper_qg_PTR;
     xrapidity_funpointer Xrpdty_LO_PTR, Xrpdty_DIP_PTR;
     bkkernel_funpointer K_kernel_PTR;
+    INLOqg_subterm_fp ILNLOqg_subterm_PTR, ITNLOqg_subterm_PTR;
     // Cuba integrators
     // old int way: static const int vegas = 1, suave = 2, divonne = 3;
     // int cubamethod;
@@ -156,40 +164,40 @@ public:
 
     // z2 lower bounds
     // pointer, only one since lower bound is set consistently in all terms
-    double z2lower_bound( double x, double qsq ) {return (this->*z2limit_PTR)(x,qsq); } // pointer shell function
+    double z2lower_bound( double x, double qsq ) { return (this->*z2limit_PTR)(x,qsq); } // pointer shell function
     double z2bound_simple( double x , double qsq ) { return x/icX0 ; }
     double z2bound_improved( double x , double qsq ) { return (x/icX0)*(icQ0sqr/qsq)  ; }
 
     // Evolution variables / rapidities
-    double Xrpdty_LO( double x, double qsq) {return (this->*Xrpdty_LO_PTR)(x,qsq);}
-    double Xrpdty_DIP( double x, double qsq) {return (this->*Xrpdty_DIP_PTR)(x,qsq);}
+    double Xrpdty_LO( double x, double qsq) { return (this->*Xrpdty_LO_PTR)(x,qsq);}
+    double Xrpdty_DIP( double x, double qsq) { return (this->*Xrpdty_DIP_PTR)(x,qsq);}
     double Xrpdty_LO_simple( double x , double qsq ) { return x ; } // X = x0*z2min; z2min = xbj/x0
     double Xrpdty_LO_improved( double x , double qsq ) { return x*icQ0sqr/qsq ; } // X = x0*z2min; z2min = xbj/x0*Q0²/Q²
 
     // BK kernels
-    double K_kernel( double rsq, double x02sq, double x21sq ) {return (this->*K_kernel_PTR)(rsq,x02sq,x21sq); } // pointer shell function
-    double K_resum (double rsq, double x02sq, double x21sq);
-    double K_lobk (double rsq, double x02sq, double x21sq);
+    double K_kernel( double rsq, double x02sq, double x21sq ) { return (this->*K_kernel_PTR)(rsq,x02sq,x21sq); } // pointer shell function
+    double K_resum(double rsq, double x02sq, double x21sq);
+    double K_lobk(double rsq, double x02sq, double x21sq);
 
     // Sub scheme subtraction term pointer and its targets
-    double ILNLOqg_subterm(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102){
-        return (this->*ILNLOqg_subterm_PTR)(Q,x,z1,z2,x01sq,x02sq,phix0102);
+    double ILNLOqg_subterm(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
+        return (this->*ILNLOqg_subterm_PTR)(Q,x,z1,z2,x01sq,x02sq,x21sq);
     }
-    double ILNLOqg_subterm_lobk_z2limit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
-    double ILNLOqg_subterm_lobk_explicit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
-    double ILNLOqg_subterm_resumbk(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
-    double ILNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
+    double ILNLOqg_subterm_lobk_z2tozero(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
+    double ILNLOqg_subterm_lobk_explicit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
+    double ILNLOqg_subterm_resumbk(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
+    double ILNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
     
-    double ITNLOqg_subterm(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102){
-        return (this->*ITNLOqg_subterm_PTR)(Q,x,z1,z2,x01sq,x02sq,phix0102);
+    double ITNLOqg_subterm(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
+        return (this->*ITNLOqg_subterm_PTR)(Q,x,z1,z2,x01sq,x02sq,x21sq);
     }
-    double ITNLOqg_subterm_lobk_z2limit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
-    double ITNLOqg_subterm_lobk_explicit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
-    double ITNLOqg_subterm_resumbk(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
-    double ITNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
+    double ITNLOqg_subterm_lobk_z2tozero(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
+    double ITNLOqg_subterm_lobk_explicit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
+    double ITNLOqg_subterm_resumbk(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
+    double ITNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
 
     // Sub scheme subtraction term z2 upper bound pointer and targets
-    double z2upper_qg_subterm( double z1 ){ return (this->*z2upper_qg_PTR)(z1); }   // pointer method
+    double z2upper_qg_subterm(double z1){ return (this->*z2upper_qg_PTR)(z1); }   // pointer method
     double z2upper_unity(double z1){ return 1.0; }
     double z2upper_min_z_qqbar(double z1){
         // set z2 integration upper bound to min(z1, 1 - z1)
@@ -208,9 +216,9 @@ public:
     double ILLO(double Q, double z1, double x01sq) ;
     double ILdip(double Q, double z1, double x01sq) ;
     double Bessel0Tripole(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) ;
-    double ILNLOqg(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) ;
-    double ILNLOqgRisto(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) ;
-    double ILNLOsigma3(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) ;
+    double ILNLOqg(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) ;
+    double ILNLOqgRisto(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) ;
+    double ILNLOsigma3(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) ;
 
     double LLOp(double Q, double x) ;
     double LLOpMass(double Q, double x, bool charm) ;
@@ -227,9 +235,9 @@ public:
     double ITLO(double Q, double z1, double x01sq) ;
     double ITdip(double Q, double z1, double x01sq) ;
     double Bessel1Tripole(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) ;
-    double ITNLOqg(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) ;
-    double ITNLOqgRisto(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) ;
-    double ITNLOsigma3(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) ;
+    double ITNLOqg(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) ;
+    double ITNLOqgRisto(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) ;
+    double ITNLOsigma3(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) ;
 
 
     double TLOp(double Q, double x) ;

@@ -720,6 +720,7 @@ double ComputeSigmaR::alpha_bar_QG_running_guillaume( void *userdata ) { // alph
 
 // resum bk
 double ComputeSigmaR::K_resum (double rsq, double x20sq, double x21sq) {
+    // returns K_DLA * K_STL
     // double log resummations r = x01 , X = x02 , Y = x21
     double xsq =  std::log(x20sq/rsq) * std::log(x21sq/rsq) ;
     double K_DLA;
@@ -769,10 +770,58 @@ double ComputeSigmaR::K_lobk (double rsq, double x20sq, double x21sq) {
 
 ///===========================================================================================
 // NLO sub scheme qg subtraction terms for different evolution equations.
-    double ILNLOqg_subterm_lobk_z2tozero(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
-    double ILNLOqg_subterm_lobk_explicit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
-    double ILNLOqg_subterm_resumbk(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
-    double ILNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102);
+double ComputeSigmaR::ILNLOqg_subterm_lobk_z2tozero(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
+    // z2 -> 0 limit of the full NLO impact factors numerically
+    double subterm;
+    subterm = ILNLOqg(Q,x,z1, 0,x01sq,x02sq,x21sq);
+    return subterm;
+}
+double ComputeSigmaR::ILNLOqg_subterm_lobk_explicit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
+    // z2 -> 0 limit of the full NLO impact factors explicitly by hand
+    double subterm;
+    subterm = ;
+    return subterm;
+}
+double ComputeSigmaR::ILNLOqg_subterm_resumbk(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
+    // z2 -> 0 limit LOBK kernel complemented with the RESUM kernel
+    double subterm;
+    double K_res = K_resum(x01sq, x02sq, x21sq);
+    subterm = ;
+    return subterm;
+}
+double ComputeSigmaR::ILNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
+    // z2 -> 0 limit LOBK kernel complemented with the KCBK kernel
+    double subterm;
+    cout << "subterm_kcbk_beuf needs to be implemented!" << endl;
+    subterm = 0;
+    return subterm;
+}
+double ComputeSigmaR::ITNLOqg_subterm_lobk_z2tozero(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
+    // z2 -> 0 limit of the full NLO impact factors numerically
+    double subterm;
+    subterm = ITNLOqg(Q,x,z1,0,x01sq,x02sq,x21sq);
+    return subterm;
+}
+double ComputeSigmaR::ITNLOqg_subterm_lobk_explicit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
+    // z2 -> 0 limit of the full NLO impact factors explicitly by hand
+    double subterm;
+    subterm = ;
+    return subterm;
+}
+double ComputeSigmaR::ITNLOqg_subterm_resumbk(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
+    // z2 -> 0 limit LOBK kernel complemented with the RESUM kernel
+    double subterm;
+    double K_res = K_resum(x01sq, x02sq, x21sq);
+    subterm = ;
+    return subterm;
+}
+double ComputeSigmaR::ITNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
+    // z2 -> 0 limit LOBK kernel complemented with the KCBK kernel
+    double subterm;
+    cout << "subterm_kcbk_beuf needs to be implemented!" << endl;
+    subterm = 0;
+    return subterm;
+}
 
 
 ///===========================================================================================
@@ -1060,8 +1109,7 @@ double ComputeSigmaR::Bessel0Tripole(double Q, double x, double z1, double z2, d
     return facNLO*(1-SrTripole(x01,x02,x21,x));
 }
 
-double ComputeSigmaR::ILNLOqg(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) { // old ILNLObeufQG
-    double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
+double ComputeSigmaR::ILNLOqg(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) { // old ILNLObeufQG
     double x20x21 = -0.5*(x01sq - x21sq - x02sq);
 
     double fac1 = Sq(z1)*Sq(1.0 - z1);
@@ -1083,9 +1131,7 @@ double ComputeSigmaR::ILNLOqg(double Q, double x, double z1, double z2, double x
     return res;
 }
 
-double ComputeSigmaR::ILNLOsigma3(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) {
-    double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
-
+double ComputeSigmaR::ILNLOsigma3(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) {
     double impactfac_lo = ILLO(Q,z1,x01sq);
     double BKkernel = (K_kernel(x01sq,x02sq,x21sq) - 1.0)*2*K_lobk(x01sq,x02sq,x21sq);
     double S012 = SrTripole(sqrt(x01sq),sqrt(x02sq),sqrt(x21sq),x);
@@ -1095,8 +1141,7 @@ double ComputeSigmaR::ILNLOsigma3(double Q, double x, double z1, double z2, doub
     return res;
 }
 
-double ComputeSigmaR::ILNLOqgRisto(double Q, double x, double z0, double z2, double x01sq, double x02sq, double phix0102){ // old ILNLOristo2QG
-    double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
+double ComputeSigmaR::ILNLOqgRisto(double Q, double x, double z0, double z2, double x01sq, double x02sq, double x21sq){ // old ILNLOristo2QG
     double x20x21 = -0.5*(x01sq - x21sq - x02sq);
     double z3 = 1 - z0 - z2;
     double X3sq = z0*z3*x01sq + z0*z2*x02sq + z2*z3*x21sq;
@@ -1193,7 +1238,7 @@ int integrand_ILqgunsub(const int *ndim, const double x[], const int *ncomp,doub
     double alphabar=Optr->Alphabar_QG( &alphasdata );
     double alphfac=alphabar*CF/Nc;
 
-    double res =   jac*alphfac*( Optr->ILNLOqg(Q,Xrpdt,z1,z2,x01sq,x02sq,phix0102) )/z2*x01*x02;
+    double res =   jac*alphfac*( Optr->ILNLOqg(Q,Xrpdt,z1,z2,x01sq,x02sq,x21sq) )/z2*x01*x02;
 
     if(gsl_finite(res)==1){
         *f=res;
@@ -1232,7 +1277,7 @@ int integrand_ILsigma3(const int *ndim, const double x[], const int *ncomp,doubl
     double alphabar=Optr->Alphabar_QG( &alphasdata );
     double alphfac=alphabar*CF/Nc;
 
-    double res = jac*alphfac*( Optr->ILNLOsigma3(Q,Xrpdt,z1,0,x01sq,x02sq,phix0102) )/z2*x01*x02; // K_NLO(z_2 = 0)
+    double res = jac*alphfac*( Optr->ILNLOsigma3(Q,Xrpdt,z1,0,x01sq,x02sq,x21sq) )/z2*x01*x02; // K_NLO(z_2 = 0)
 
     if(gsl_finite(res)==1){
         *f=res;
@@ -1273,9 +1318,9 @@ int integrand_ILqgsub(const int *ndim, const double x[], const int *ncomp,double
 
     double ILNLOqg_z2 = 0;
     if (1-z1-z2 > 0){ // heaviside theta front factor on the full NLO term
-        ILNLOqg_z2 = (Optr->ILNLOqg(Q,Xrpdt,z1,z2,x01sq,x02sq,phix0102));
+        ILNLOqg_z2 = (Optr->ILNLOqg(Q,Xrpdt,z1,z2,x01sq,x02sq,x21sq));
     }
-    double ILNLOqg_z2_to_0 = Optr->ILNLOqg(Q,Xrpdt,z1, 0,x01sq,x02sq,phix0102);
+    double ILNLOqg_z2_to_0 = Optr->ILNLOqg_subterm(Q,Xrpdt,z1, 0,x01sq,x02sq,x21sq);
 
     double res = jac*alphfac*(
                     ILNLOqg_z2
@@ -1305,6 +1350,7 @@ int integrand_ILqgunsubRisto(const int *ndim, const double x[], const int *ncomp
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
+    double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
     double jac=(1.0-x0lim)*(1.0-z0-x0lim);
     double Xrpdt=xbj/z2;
 
@@ -1313,7 +1359,7 @@ int integrand_ILqgunsubRisto(const int *ndim, const double x[], const int *ncomp
 
     double res;
 
-    res =   jac*alphfac*( Optr->ILNLOqgRisto(Q,Xrpdt,z0,z2,x01sq,x02sq,phix0102) )/z2*x01*x02;
+    res =   jac*alphfac*( Optr->ILNLOqgRisto(Q,Xrpdt,z0,z2,x01sq,x02sq,x21sq) )/z2*x01*x02;
 
     if(gsl_finite(res)==1){
         *f=res;
@@ -1337,6 +1383,7 @@ int integrand_ILqgsubRisto(const int *ndim, const double x[], const int *ncomp, 
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
+    double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
     double jac=(1.0-x0lim);
     double Xrpdt=xbj/z2;
 
@@ -1346,8 +1393,8 @@ int integrand_ILqgsubRisto(const int *ndim, const double x[], const int *ncomp, 
     double res;
 
     res =   jac*alphfac*(
-                    (Optr->ILNLOqgRisto(Q,Xrpdt,z0,z2,x01sq,x02sq,phix0102))*(Optr->heaviside_theta(1-z0-z2))
-                    -Optr->ILNLOqgRisto(Q,Xrpdt,z0, 0,x01sq,x02sq,phix0102)
+                    (Optr->ILNLOqgRisto(Q,Xrpdt,z0,z2,x01sq,x02sq,x21sq))*(Optr->heaviside_theta(1-z0-z2))
+                    -Optr->ILNLOqgRisto(Q,Xrpdt,z0, 0,x01sq,x02sq,x21sq)
                     )/z2*x01*x02;
 
         if(gsl_finite(res)==1){
@@ -1545,8 +1592,7 @@ double ComputeSigmaR::Bessel1Tripole(double Q, double x, double z1, double z2, d
     return res;
 }
 
-double ComputeSigmaR::ITNLOqg(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) { // old ITNLObeufQG
-    double x21sq 	= x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
+double ComputeSigmaR::ITNLOqg(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) { // old ITNLObeufQG
     double x20x21 = -0.5*(x01sq - x21sq - x02sq);
     double X3sq 	= z1*(1.0 - z1 - z2)*x01sq + z2*(1.0 - z1 - z2)*x02sq + z2*z1*x21sq;
 
@@ -1565,9 +1611,7 @@ double ComputeSigmaR::ITNLOqg(double Q, double x, double z1, double z2, double x
     return res;
 }
 
-double ComputeSigmaR::ITNLOsigma3(double Q, double x, double z1, double z2, double x01sq, double x02sq, double phix0102) {
-    double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
-
+double ComputeSigmaR::ITNLOsigma3(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) {
     double impactfac_lo = ITLO(Q,z1,x01sq);
     double BKkernel = (K_kernel(x01sq,x02sq,x21sq) - 1.0)*2*K_lobk(x01sq,x02sq,x21sq);
     double S012 = SrTripole(sqrt(x01sq),sqrt(x02sq),sqrt(x21sq),x);
@@ -1577,8 +1621,7 @@ double ComputeSigmaR::ITNLOsigma3(double Q, double x, double z1, double z2, doub
     return res;
 }
 
-double ComputeSigmaR::ITNLOqgRisto(double Q, double x, double z0, double z2, double x01sq, double x02sq, double phix0102){
-    double x21sq = x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
+double ComputeSigmaR::ITNLOqgRisto(double Q, double x, double z0, double z2, double x01sq, double x02sq, double x21sq){
     double x20x21 = -0.5*(x01sq - x21sq - x02sq);
     double z3 = 1 - z0 - z2;
     double X3sq = z0*z3*x01sq + z0*z2*x02sq + z2*z3*x21sq;
@@ -1668,7 +1711,7 @@ int integrand_ITqgunsub(const int *ndim, const double x[], const int *ncomp, dou
     double alphabar=Optr->Alphabar_QG( &alphasdata );
     double alphfac=alphabar*CF/Nc;
 
-    double res = jac*alphfac*( Optr->ITNLOqg(Q,Xrpdt,z1,z2,x01sq,x02sq,phix0102) )/z2*x01*x02;
+    double res = jac*alphfac*( Optr->ITNLOqg(Q,Xrpdt,z1,z2,x01sq,x02sq,x21sq) )/z2*x01*x02;
 
     if(gsl_finite(res)==1){
         *f=res;
@@ -1707,7 +1750,7 @@ int integrand_ITsigma3(const int *ndim, const double x[], const int *ncomp,doubl
     double alphabar=Optr->Alphabar_QG( &alphasdata );
     double alphfac=alphabar*CF/Nc;
 
-    double res =   jac*alphfac*( Optr->ITNLOsigma3(Q,Xrpdt,z1,0,x01sq,x02sq,phix0102) )/z2*x01*x02; // K_NLO(z_2 = 0) kirjoitettu explisiittisesti
+    double res =   jac*alphfac*( Optr->ITNLOsigma3(Q,Xrpdt,z1,0,x01sq,x02sq,x21sq) )/z2*x01*x02; // K_NLO(z_2 = 0) kirjoitettu explisiittisesti
 
     if(gsl_finite(res)==1){
         *f=res;
@@ -1748,9 +1791,9 @@ int integrand_ITqgsub(const int *ndim, const double x[], const int *ncomp, doubl
 
     double ITNLOqg_z2 = 0;
     if (1-z1-z2 > 0){ // heaviside theta front factor on the full NLO term
-        ITNLOqg_z2 = (Optr->ITNLOqg(Q,Xrpdt,z1,z2,x01sq,x02sq,phix0102));
+        ITNLOqg_z2 = (Optr->ITNLOqg(Q,Xrpdt,z1,z2,x01sq,x02sq,x21sq));
     }
-    double ITNLOqg_z2_to_0 = Optr->ITNLOqg(Q,Xrpdt,z1,0,x01sq,x02sq,phix0102);
+    double ITNLOqg_z2_to_0 = Optr->ITNLOqg_subterm(Q,Xrpdt,z1,0,x01sq,x02sq,x21sq);
 
     double res = jac*alphfac*(
                     ITNLOqg_z2
@@ -1780,6 +1823,7 @@ int integrand_ITqgunsubRisto(const int *ndim, const double x[], const int *ncomp
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
+    double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
     double jac=(1.0-x0lim)*(1.0-z0-x0lim);
     double Xrpdt=xbj/z2;
 
@@ -1787,7 +1831,7 @@ int integrand_ITqgunsubRisto(const int *ndim, const double x[], const int *ncomp
     double alphfac=alphabar*CF/Nc;
 
     double res;
-    res = jac*alphfac*( Optr->ITNLOqgRisto(Q,Xrpdt,z0,z2,x01sq,x02sq,phix0102) )/z2*x01*x02;
+    res = jac*alphfac*( Optr->ITNLOqgRisto(Q,Xrpdt,z0,z2,x01sq,x02sq,x21sq) )/z2*x01*x02;
 
     if(gsl_finite(res)==1){
         *f=res;
@@ -1811,6 +1855,7 @@ int integrand_ITqgsubRisto(const int *ndim, const double x[], const int *ncomp, 
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
+    double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
     double jac=(1.0-x0lim);
     double Xrpdt=xbj/z2;
 
@@ -1819,8 +1864,8 @@ int integrand_ITqgsubRisto(const int *ndim, const double x[], const int *ncomp, 
 
     double res;
     res =   jac*alphfac*(
-                    (Optr->ITNLOqgRisto(Q,Xrpdt,z0,z2,x01sq,x02sq,phix0102))*(Optr->heaviside_theta(1-z0-z2))
-                    -Optr->ITNLOqgRisto(Q,Xrpdt,z0,0,x01sq,x02sq,phix0102)
+                    (Optr->ITNLOqgRisto(Q,Xrpdt,z0,z2,x01sq,x02sq,x21sq))*(Optr->heaviside_theta(1-z0-z2))
+                    -Optr->ITNLOqgRisto(Q,Xrpdt,z0,0,x01sq,x02sq,x21sq)
                 )/z2*x01*x02;
 
     if(gsl_finite(res)==1){
