@@ -117,6 +117,21 @@ public:
     void SetEvolutionX_LO(xrapidity_funpointer p){Xrpdty_LO_PTR = p;}
     void SetEvolutionX_DIP(xrapidity_funpointer p){Xrpdty_DIP_PTR = p;}
     void SetSigma3BKKernel(bkkernel_funpointer p){K_kernel_PTR = p;} // function pointer setter
+    void SetSubTermKernel(nlodis_config::SubSchemeTermKernel sstk){
+        if (sstk == nlodis_config::SUBTERM_Z2TOZERO){
+            ILNLOqg_subterm_PTR = &ComputeSigmaR::ILNLOqg_subterm_lobk_z2tozero;
+            ITNLOqg_subterm_PTR = &ComputeSigmaR::ITNLOqg_subterm_lobk_z2tozero;
+        }else if (sstk == nlodis_config::SUBTERM_EXPLICIT){
+            ILNLOqg_subterm_PTR = &ComputeSigmaR::ILNLOqg_subterm_lobk_explicit;
+            ITNLOqg_subterm_PTR = &ComputeSigmaR::ITNLOqg_subterm_lobk_explicit;
+        }else if (sstk == nlodis_config::SUBTERM_RESUM){
+            ILNLOqg_subterm_PTR = &ComputeSigmaR::ILNLOqg_subterm_resumbk;
+            ITNLOqg_subterm_PTR = &ComputeSigmaR::ITNLOqg_subterm_resumbk;
+        }else if (sstk == nlodis_config::SUBTERM_KCBK){
+            ILNLOqg_subterm_PTR = &ComputeSigmaR::ILNLOqg_subterm_kcbk_beuf;
+            ITNLOqg_subterm_PTR = &ComputeSigmaR::ITNLOqg_subterm_kcbk_beuf;
+        }
+    }
 
     void SetCubaMethod(string s){cubamethod = s;}
 

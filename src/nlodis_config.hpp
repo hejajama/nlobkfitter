@@ -27,6 +27,15 @@ namespace nlodis_config
     };
     extern RunningCouplingDIS RC_DIS;
 
+    enum SubSchemeTermKernel
+    {
+        SUBTERM_Z2TOZERO,
+        SUBTERM_EXPLICIT,
+        SUBTERM_RESUM,
+        SUBTERM_KCBK
+    };
+    extern SubSchemeTermKernel SUB_TERM_KERNEL;
+
 }
 
 #endif
