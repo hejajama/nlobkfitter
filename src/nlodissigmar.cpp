@@ -779,14 +779,21 @@ double ComputeSigmaR::ILNLOqg_subterm_lobk_z2tozero(double Q, double x, double z
 double ComputeSigmaR::ILNLOqg_subterm_lobk_explicit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
     // z2 -> 0 limit of the full NLO impact factors explicitly by hand
     double subterm;
-    subterm = ;
+    double impact_factor_lo = ILLO(Q,z1,x01sq);
+    double nlo_if_kernel = 0.5 * (x01sq + x21sq - x02sq) / (x02sq * x21sq);
+    double x01 = sqrt(x01sq);
+    double x02 = sqrt(x02sq);
+    double x21 = sqrt(x21sq);
+    double nlo_if_bk_evol_dipoles = Sr(x01, x) - SrTripole(x01, x02, x21, x);
+    subterm = impact_factor_lo * nlo_if_kernel * nlo_if_bk_evol_dipoles;
     return subterm;
 }
 double ComputeSigmaR::ILNLOqg_subterm_resumbk(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
     // z2 -> 0 limit LOBK kernel complemented with the RESUM kernel
     double subterm;
     double K_res = K_resum(x01sq, x02sq, x21sq);
-    subterm = ;
+    double lobk_subterm = ILNLOqg_subterm_lobk_explicit(Q,x,z1,z2,x01sq,x02sq,x21sq);
+    subterm = K_res * lobk_subterm;
     return subterm;
 }
 double ComputeSigmaR::ILNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
@@ -805,14 +812,21 @@ double ComputeSigmaR::ITNLOqg_subterm_lobk_z2tozero(double Q, double x, double z
 double ComputeSigmaR::ITNLOqg_subterm_lobk_explicit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
     // z2 -> 0 limit of the full NLO impact factors explicitly by hand
     double subterm;
-    subterm = ;
+    double impact_factor_lo = ITLO(Q,z1,x01sq);
+    double nlo_if_kernel = 0.5 * (x01sq + x21sq - x02sq) / (x02sq * x21sq);
+    double x01 = sqrt(x01sq);
+    double x02 = sqrt(x02sq);
+    double x21 = sqrt(x21sq);
+    double nlo_if_bk_evol_dipoles = Sr(x01, x) - SrTripole(x01, x02, x21, x);
+    subterm = impact_factor_lo * nlo_if_kernel * nlo_if_bk_evol_dipoles;
     return subterm;
 }
 double ComputeSigmaR::ITNLOqg_subterm_resumbk(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
     // z2 -> 0 limit LOBK kernel complemented with the RESUM kernel
     double subterm;
     double K_res = K_resum(x01sq, x02sq, x21sq);
-    subterm = ;
+    double lobk_subterm = ITNLOqg_subterm_lobk_explicit(Q,x,z1,z2,x01sq,x02sq,x21sq);
+    subterm = K_res * lobk_subterm;
     return subterm;
 }
 double ComputeSigmaR::ITNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
@@ -931,15 +945,15 @@ double ComputeSigmaR::LLOpMass(double Q, double x, bool charm) {
 */
 
 double ComputeSigmaR::ITLO(double Q, double z1, double x01sq) {
-  double bessel_inner_fun = Q*sqrt(z1*(1.0-z1)*x01sq);
-  double res = 0;
-  if (bessel_inner_fun < 1e-7){
+    double bessel_inner_fun = Q*sqrt(z1*(1.0-z1)*x01sq);
+    double res = 0;
+    if (bessel_inner_fun < 1e-7){
         // cout << bessel_inner_fun << " " << Q << " " << z1 << " " << x01sq << endl;
         res = 0;
     }else{
         res = Sq(Q)*z1*(1.0-z1)*(1.0-2.0*z1+2.0*Sq(z1))*Sq(gsl_sf_bessel_K1(bessel_inner_fun));
     }
-  return res;
+    return res;
 }
 
 // MASSLESS
