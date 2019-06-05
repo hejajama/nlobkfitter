@@ -129,23 +129,27 @@ int main( int argc, char* argv[] )
             config::RESUM_SINGLE_LOG = true; // Resum single logs
             config::KSUB = 0.65;             // Optimal value for K_sub
             config::NO_K2 = true;            // Do not include numerically demanding full NLO part
+            nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_RESUM;
     }else if (string(argv [2]) == "kcbk"){
             config::EULER_METHOD = true;     // Kinematical constraint requires this
             config::RESUM_DLOG = false;
             config::RESUM_SINGLE_LOG = false;
             config::KINEMATICAL_CONSTRAINT = config::KC_BEUF_K_PLUS;
             config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
+            nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_KCBK_BEUF;
     }else if (string(argv [2]) == "trbk"){  // Target Rapidity BK
             config::EULER_METHOD = true;     // Kinematical constraint requires this
             config::RESUM_DLOG = false;
             config::RESUM_SINGLE_LOG = false;
             config::KINEMATICAL_CONSTRAINT = config::KC_EDMOND_K_MINUS;
             config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
+            nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_TRBK_EDMOND;
     }else if (string(argv [2]) == "lobk"){
             config::EULER_METHOD = false;   // Use Runge-Kutta since no kin. constraint
             config::RESUM_DLOG = false;
             config::RESUM_SINGLE_LOG = false;
             config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
+            nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_LOBK_EXPLICIT;
     } else {cout << helpstring << endl; return -1;}
 
     string_rc = string(argv [3]);
@@ -197,7 +201,8 @@ int main( int argc, char* argv[] )
         // parameters.Add("alphascalingC2",        iccsq);
         parameters.Add("e_c", 1.0 );
         parameters.Add("anomalous_dimension",   icgamma);
-        parameters.Add("initialconditionX0",    icx0 );
+        parameters.Add("icx0_nlo_impfac",       icx0 );
+        parameters.Add("icx0_bk",               0.01 );
         parameters.Add("initialconditionY0",    icY0 );
         parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
         parameters.Add("eta0", icEta0 );
@@ -243,6 +248,9 @@ int main( int argc, char* argv[] )
     fitter.SetSUB(useSUB);
     fitter.UseImprovedZ2Bound(useImprovedZ2Bound);
     fitter.UseConsistentlyBoundLoopTerm(useBoundLoop);
+    //SigmaComputer.SetSubTermKernel(nlodis_config::SUB_TERM_KERNEL);
+    cout << "sub term choice not implemented here yet! exiting." << endl;
+    exit(1);
     fitter.SetCubaMethod(cubaMethod);
 
     cout << std::boolalpha;

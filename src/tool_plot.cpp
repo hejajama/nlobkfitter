@@ -123,23 +123,33 @@ int main( int argc, char* argv[] )
             config::RESUM_SINGLE_LOG = true; // Resum single logs
             config::KSUB = 0.65;             // Optimal value for K_sub
             config::NO_K2 = true;            // Do not include numerically demanding full NLO part
+            nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_RESUM;
     }else if (string(argv [2]) == "kcbk"){
             config::EULER_METHOD = true;     // Kinematical constraint requires this
             config::RESUM_DLOG = false;
             config::RESUM_SINGLE_LOG = false;
             config::KINEMATICAL_CONSTRAINT = config::KC_BEUF_K_PLUS;
             config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
+            nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_KCBK_BEUF;
     }else if (string(argv [2]) == "trbk"){  // Target Rapidity BK
             config::EULER_METHOD = true;     // Kinematical constraint requires this
             config::RESUM_DLOG = false;
             config::RESUM_SINGLE_LOG = false;
             config::KINEMATICAL_CONSTRAINT = config::KC_EDMOND_K_MINUS;
             config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
+            nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_TRBK_EDMOND;
     }else if (string(argv [2]) == "lobk"){
             config::EULER_METHOD = false;   // Use Runge-Kutta since no kin. constraint
             config::RESUM_DLOG = false;
             config::RESUM_SINGLE_LOG = false;
             config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
+            nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_LOBK_EXPLICIT;
+    }else if (string(argv [2]) == "lobkold"){
+            config::EULER_METHOD = false;   // Use Runge-Kutta since no kin. constraint
+            config::RESUM_DLOG = false;
+            config::RESUM_SINGLE_LOG = false;
+            config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
+            nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_LOBK_Z2TOZERO;
     } else {cout << helpstring << endl; return -1;}
 
     string_rc = string(argv [3]);
@@ -197,7 +207,8 @@ int main( int argc, char* argv[] )
     //double fitsigma0    = 2.568*par[ parameters.Index("fitsigma0")];  // 1mb = 2.568 GeV² -- unit change into GeV
     double alphas_scaling     = 1.0; //par[ parameters.Index("alphascalingC2")]; // MATCH THIS IN IMPACTFACTOR ALPHA_S WHEN NLO
     double anomalous_dimension = 1.0; //par[ parameters.Index("anomalous_dimension")];
-    double initialconditionX0  = 0.01; //par[ parameters.Index("initialconditionX0")];
+    double icx0_nlo_impfac = 1.0; //par[ parameters.Index("initialconditionX0")];
+    double icx0_bk = 0.01; //par[ parameters.Index("initialconditionX0")];
     double initialconditionY0  = 0; //par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = 1.0; //par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
@@ -237,12 +248,12 @@ int main( int argc, char* argv[] )
     // AmplitudeLib DipoleAmplitude("./out/dipoles/dipole_lobk_fc_step0.2_rpoints400-2.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
     // AmplitudeLib DipoleAmplitude("./out/dipoles/dipole_lobk_fc_step0.2_rpoints400_rmin1e-6rmax50_INTACC2e-3.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
     DipoleAmplitude.SetInterpolationMethod(LINEAR_LINEAR);
-    DipoleAmplitude.SetX0(initialconditionX0);
+    DipoleAmplitude.SetX0(icx0_bk);
     DipoleAmplitude.SetOutOfRangeErrors(false);
     AmplitudeLib *DipolePointer = &DipoleAmplitude;
 
     ComputeSigmaR SigmaComputer(DipolePointer);
-    SigmaComputer.SetX0(initialconditionX0);
+    SigmaComputer.SetX0(icx0_nlo_impfac);
     SigmaComputer.SetY0(initialconditionY0);
     SigmaComputer.SetQ0Sqr(icTypicalPartonVirtualityQ0sqr);
     SigmaComputer.SetQuarkMassLight(qMass_light);
@@ -283,7 +294,9 @@ int main( int argc, char* argv[] )
     SigmaComputer.SetEvolutionX_DIP(x_fun_ptr);
     // sigma_3 BK correction
     SigmaComputer.SetSigma3BKKernel(&ComputeSigmaR::K_resum);
-    // CUBA Monte Carlo integration library algorithm setter 
+    // sub scheme subtraction term choice
+    SigmaComputer.SetSubTermKernel(nlodis_config::SUB_TERM_KERNEL);
+    // CUBA Monte Carlo integration library algorithm setter
     SigmaComputer.SetCubaMethod(cubaMethod);
 
 
@@ -323,7 +336,7 @@ int main( int argc, char* argv[] )
  * 
  */
     double Q = 1.0;
-    double icx0 = initialconditionX0;
+    double icx0 = icx0_bk;
     double xbj = icx0;
 
     // #pragma omp parallel for collapse(2)
@@ -363,8 +376,8 @@ int main( int argc, char* argv[] )
             if (computeNLO && !useSUB) // UNSUB SCHEME Full NLO impact factors for reduced cross section
             {
                 if (useBoundLoop){
-                    FL_IC = SigmaComputer.Structf_LLO(Q,initialconditionX0);
-                    FT_IC = SigmaComputer.Structf_TLO(Q,initialconditionX0);
+                    FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
+                    FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
                     FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
                     FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
                     FL_dip = SigmaComputer.Structf_LNLOdip_z2(Q,xbj);
@@ -373,8 +386,8 @@ int main( int argc, char* argv[] )
                     FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
                     ++calccount;}
                 if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
-                    FL_IC = SigmaComputer.Structf_LLO(Q,initialconditionX0);
-                    FT_IC = SigmaComputer.Structf_TLO(Q,initialconditionX0);
+                    FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
+                    FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
                     FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
                     FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
                     FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);

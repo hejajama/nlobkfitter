@@ -29,10 +29,11 @@ namespace nlodis_config
 
     enum SubSchemeTermKernel
     {
-        SUBTERM_Z2TOZERO,
-        SUBTERM_EXPLICIT,
+        SUBTERM_LOBK_Z2TOZERO,
+        SUBTERM_LOBK_EXPLICIT,
         SUBTERM_RESUM,
-        SUBTERM_KCBK
+        SUBTERM_KCBK_BEUF,
+        SUBTERM_TRBK_EDMOND
     };
     extern SubSchemeTermKernel SUB_TERM_KERNEL;
 

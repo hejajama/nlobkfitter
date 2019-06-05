@@ -780,7 +780,8 @@ double ComputeSigmaR::ILNLOqg_subterm_lobk_explicit(double Q, double x, double z
     // z2 -> 0 limit of the full NLO impact factors explicitly by hand
     double subterm;
     double impact_factor_lo = ILLO(Q,z1,x01sq);
-    double nlo_if_kernel = 0.5 * (x01sq + x21sq - x02sq) / (x02sq * x21sq);
+    double P_at_zero = 2;
+    double nlo_if_kernel = P_at_zero * 0.5 * (x01sq + x21sq - x02sq) / (x02sq * x21sq);
     double x01 = sqrt(x01sq);
     double x02 = sqrt(x02sq);
     double x21 = sqrt(x21sq);
@@ -813,7 +814,8 @@ double ComputeSigmaR::ITNLOqg_subterm_lobk_explicit(double Q, double x, double z
     // z2 -> 0 limit of the full NLO impact factors explicitly by hand
     double subterm;
     double impact_factor_lo = ITLO(Q,z1,x01sq);
-    double nlo_if_kernel = 0.5 * (x01sq + x21sq - x02sq) / (x02sq * x21sq);
+    double P_at_zero = 2;
+    double nlo_if_kernel = P_at_zero * 0.5 * (x01sq + x21sq - x02sq) / (x02sq * x21sq);
     double x01 = sqrt(x01sq);
     double x02 = sqrt(x02sq);
     double x21 = sqrt(x21sq);

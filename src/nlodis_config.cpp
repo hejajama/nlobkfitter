@@ -18,4 +18,5 @@ namespace nlodis_config
     double MINR=1e-6;
 
     RunningCouplingDIS RC_DIS;
+    SubSchemeTermKernel SUB_TERM_KERNEL;
 }
