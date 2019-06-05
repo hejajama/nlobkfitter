@@ -15,6 +15,7 @@
 #include "ic_datafile.hpp"
 #include "dipole.hpp"
 #include "solver.hpp"
+#include "nlodis_config.hpp"
 
 #include "cuba-4.2.h"
 #include "data.hpp"
