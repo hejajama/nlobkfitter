@@ -626,7 +626,11 @@ double ComputeSigmaR::Sr(double r, double x) {
         Srx = 0.;
     }else{
         // Srx = ClassScopeDipolePointer->S_y(r, log(1/x))
-        Srx = ClassScopeDipolePointer->S(r, (x*std::exp(-icY0)) ) ; //1-Nrx;
+        if (x > icX0_bk){
+            Srx = ClassScopeDipolePointer->S(r, (icX0_bk*std::exp(-icY0)) ) ; //1-Nrx;
+        } else {
+            Srx = ClassScopeDipolePointer->S(r, (x*std::exp(-icY0)) ) ; //1-Nrx;
+        }
     }
     return Srx;
 }

@@ -254,6 +254,7 @@ int main( int argc, char* argv[] )
 
     ComputeSigmaR SigmaComputer(DipolePointer);
     SigmaComputer.SetX0(icx0_nlo_impfac);
+    SigmaComputer.SetX0_BK(icx0_bk);
     SigmaComputer.SetY0(initialconditionY0);
     SigmaComputer.SetQ0Sqr(icTypicalPartonVirtualityQ0sqr);
     SigmaComputer.SetQuarkMassLight(qMass_light);
@@ -348,7 +349,7 @@ int main( int argc, char* argv[] )
         // for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
         // for (int j=0; j<=1; j++)
         {
-            if (j==0 and cubaMethod=="suave"){j++;}
+            // if (j==0 and cubaMethod=="suave"){j++;}
             Q = 1.0*pow(10,(double)i/20.0);
             xbj = icx0/pow(10,(double)j/4.0);
             // #pragma omp critical

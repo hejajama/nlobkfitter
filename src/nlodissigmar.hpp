@@ -108,6 +108,7 @@ public:
 	void SetQuarkMassCharm(double m) { qMass_charm = m; }
     void SetAlphasScalingC2(double c2_){ alpha_scaling_C2_ = c2_; }
     void SetX0(double x0_){ icX0 = x0_; }
+    void SetX0_BK(double x0_){ icX0_bk = x0_; }
     void SetQ0Sqr(double q0_){ icQ0sqr = q0_; }
     void SetY0(double y0_){ icY0 = y0_; }
 
@@ -141,7 +142,7 @@ public:
 //private:
     //variables
     AmplitudeLib *ClassScopeDipolePointer;
-    double qMass_light, alpha_scaling_C2_, icX0, icY0, icQ0sqr;
+    double qMass_light, alpha_scaling_C2_, icX0, icX0_bk, icY0, icQ0sqr;
 	double qMass_charm;
     
     // Method and function pointers
