@@ -84,13 +84,13 @@ int main( int argc, char* argv[] )
         //config::RINTPOINTS = 512/4;
         //config::THETAINTPOINTS = 512/4;
 
-        config::INTACCURACY = 10e-3;//0.02;
+        config::INTACCURACY = 20e-3;//0.02;
         //config::MCINTACCURACY = 10e-3;//0.02;
         // config::MCINTPOINTS = 1e7;
         config::MINR = 1e-6;
         config::MAXR = 50;
         config::RPOINTS = 100;
-        config::DE_SOLVER_STEP = 0.2; // Rungekutta step
+        config::DE_SOLVER_STEP = 0.4; // Rungekutta step
 
         // Constants
         config::NF=3;   // Only light quarks
@@ -99,7 +99,8 @@ int main( int argc, char* argv[] )
 
     MnUserParameters parameters;
 
-    bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop, useSigma3;
+    bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop;
+    bool useSigma3 = false;
     string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q C^2 X0 gamma Q0sq Y0 eta0\nsub/unsub/unsub+ resumbk/trbk/lobk parentrc/guillaumerc/fixedrc z2improved/z2simple z2boundloop/unboundloop";
     string string_sub, string_bk, string_rc;
     if (argc<2){ cout << helpstring << endl; return 0;}
@@ -340,15 +341,16 @@ int main( int argc, char* argv[] )
     double icx0 = icx0_bk;
     double xbj = icx0;
 
-    // #pragma omp parallel for collapse(2)
-    for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
-    //for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
+    #pragma omp parallel for collapse(2)
+    // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
+    for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
     // for (int i=0; i<=1; i++)
     {
         for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
-        // for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
+        //for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
         // for (int j=0; j<=1; j++)
         {
+            if (!((i == 0 or i == 17) or (j == 4 or j == 12))) { continue; }
             // if (j==0 and cubaMethod=="suave"){j++;}
             Q = 1.0*pow(10,(double)i/20.0);
             xbj = icx0/pow(10,(double)j/4.0);
