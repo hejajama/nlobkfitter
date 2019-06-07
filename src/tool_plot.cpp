@@ -324,24 +324,25 @@ int main( int argc, char* argv[] )
 
 
 
-// #ifdef PARALLEL_CHISQR
-//     #pragma omp parallel for schedule(dynamic) reduction(+:Q) reduction(+:xbj)
-// #endif
+    // #ifdef PARALLEL_CHISQR
+    //     #pragma omp parallel for schedule(dynamic) reduction(+:Q) reduction(+:xbj)
+    // #endif
 
-        // for (int i=0; i<datasets[dataset]->NumOfPoints(); i++)
+            // for (int i=0; i<datasets[dataset]->NumOfPoints(); i++)
 
 
-/*
- *  In the paper we used the following grids for the plots   
- *  	- Q[0] = 1.0, Q*=10^(1/20), while Q <= 10
- *		- xbj[0] = 1e-3, xbj*=10^(1/4), while xbj >= 5e-7
- * 
- */
-    double Q = 1.0;
+    /*
+    *  In the paper we used the following grids for the plots   
+    *  	- Q[0] = 1.0, Q*=10^(1/20), while Q <= 10
+    *		- xbj[0] = 1e-3, xbj*=10^(1/4), while xbj >= 5e-7
+    * 
+    */
+    double icQ = 1.0;
     double icx0 = icx0_bk;
-    double xbj = icx0;
 
-    #pragma omp parallel for collapse(2)
+    std::vector< std::tuple<int, int> > coordinates;
+
+    // #pragma omp parallel for collapse(2)
     // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
     for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
     // for (int i=0; i<=1; i++)
@@ -351,103 +352,114 @@ int main( int argc, char* argv[] )
         // for (int j=0; j<=1; j++)
         {
             if (!((i == 0 or i == 17) or (j == 4 or j == 12))) { continue; }
-            // if (j==0 and cubaMethod=="suave"){j++;}
-            Q = 1.0*pow(10,(double)i/20.0);
-            xbj = icx0/pow(10,(double)j/4.0);
-            // #pragma omp critical
-            // cout << "Q=" << Q << ", xbj=" << xbj << endl;
-            
-            double FL_IC=0, FL_LO=0, FL_dip=0, FL_qg=0, FL_sigma3=0;
-            double FT_IC=0, FT_LO=0, FT_dip=0, FT_qg=0, FT_sigma3=0;
-            int calccount=0;
-            if (!computeNLO && !useMasses) // Compute reduced cross section using leading order impact factors
-            {
+            coordinates.emplace_back(i,j);
+        }
+    }
+
+    #pragma omp parallel for
+    for (size_t k=0; k< coordinates.size(); k++)
+    //for (auto co : coordinates)
+    // for (auto co = coordinates.begin(); co != coordinates.end(); ++co)
+        {
+        int i,j;
+        std::tie(i,j) = coordinates[k];
+
+        // if (j==0 and cubaMethod=="suave"){j++;}
+        double Q = 1.0*pow(10,(double)i/20.0);
+        double xbj = icx0/pow(10,(double)j/4.0);
+        // #pragma omp critical
+        // cout << "Q=" << Q << ", xbj=" << xbj << endl;
+        
+        double FL_IC=0, FL_LO=0, FL_dip=0, FL_qg=0, FL_sigma3=0;
+        double FT_IC=0, FT_LO=0, FT_dip=0, FT_qg=0, FT_sigma3=0;
+        int calccount=0;
+        if (!computeNLO && !useMasses) // Compute reduced cross section using leading order impact factors
+        {
+            FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+            FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
+            ++calccount;
+        }
+        if (!computeNLO && useMasses)
+        {
+            double alphaem=1.0/137.0;
+            double structurefunfac=1./(Sq(2*M_PI)*alphaem);
+            double fac = structurefunfac*Sq(Q);
+            FL_LO = fac*SigmaComputer.LLOpMass(Q,xbj,useCharm);
+            FT_LO = fac*SigmaComputer.TLOpMass(Q,xbj,useCharm);
+            ++calccount;
+        }
+
+        if (computeNLO && !useSUB) // UNSUB SCHEME Full NLO impact factors for reduced cross section
+        {
+            if (useBoundLoop){
+                FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
+                FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
                 FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
                 FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
-                ++calccount;
-            }
-            if (!computeNLO && useMasses)
-            {
-                double alphaem=1.0/137.0;
-                double structurefunfac=1./(Sq(2*M_PI)*alphaem);
-                double fac = structurefunfac*Sq(Q);
-                FL_LO = fac*SigmaComputer.LLOpMass(Q,xbj,useCharm);
-                FT_LO = fac*SigmaComputer.TLOpMass(Q,xbj,useCharm);
-                ++calccount;
-            }
-
-            if (computeNLO && !useSUB) // UNSUB SCHEME Full NLO impact factors for reduced cross section
-            {
-                if (useBoundLoop){
-                    FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
-                    FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
-                    FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
-                    FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
-                    FL_dip = SigmaComputer.Structf_LNLOdip_z2(Q,xbj);
-                    FT_dip = SigmaComputer.Structf_TNLOdip_z2(Q,xbj);
-                    FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
-                    FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
-                    ++calccount;}
-                if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
-                    FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
-                    FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
-                    FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
-                    FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
-                    FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
-                    FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
-                    FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
-                    FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
-                    ++calccount;}
-                if (useSigma3){
-                    FL_sigma3 = SigmaComputer.Structf_LNLOsigma3(Q,xbj);
-                    FT_sigma3 = SigmaComputer.Structf_TNLOsigma3(Q,xbj);
-                    }
-            }
-
-            if (computeNLO && useSUB) // SUB SCHEME Full NLO impact factors for reduced cross section
-            {
-                if (useBoundLoop){
-                    FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
-                    FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
-                    FL_dip = SigmaComputer.Structf_LNLOdip_z2(Q,xbj);
-                    FT_dip = SigmaComputer.Structf_TNLOdip_z2(Q,xbj);
-                    FL_qg  = SigmaComputer.Structf_LNLOqg_sub(Q,xbj);
-                    FT_qg  = SigmaComputer.Structf_TNLOqg_sub(Q,xbj);
-                    ++calccount;}
-                if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
-                    FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
-                    FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
-                    FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
-                    FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
-                    FL_qg  = SigmaComputer.Structf_LNLOqg_sub(Q,xbj);
-                    FT_qg  = SigmaComputer.Structf_TNLOqg_sub(Q,xbj);
-                    ++calccount;}
-            }
-
-            if (calccount>1)
-            {
-                cerr << "ERROR: Multiple computations. abort." << "count="<< calccount << endl;
-                exit(1);
-            }
-
-            // Output for plotting
-            if(true){
-            #pragma omp critical
-            cout    << setw(15) << xbj          << " "
-                    << setw(15) << Q*Q          << " "
-                    << setw(15) << FL_IC        << " "
-                    << setw(15) << FL_LO        << " "
-                    << setw(15) << FL_dip       << " "
-                    << setw(15) << FL_qg        << " "
-                    << setw(15) << FL_sigma3    << " "
-                    << setw(15) << FT_IC        << " "
-                    << setw(15) << FT_LO        << " "
-                    << setw(15) << FT_dip       << " "
-                    << setw(15) << FT_qg        << " "
-                    << setw(15) << FT_sigma3    << " "
-                    << endl;
-                    }
+                FL_dip = SigmaComputer.Structf_LNLOdip_z2(Q,xbj);
+                FT_dip = SigmaComputer.Structf_TNLOdip_z2(Q,xbj);
+                FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
+                FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+                ++calccount;}
+            if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
+                FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
+                FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
+                FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+                FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
+                FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
+                FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
+                FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
+                FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+                ++calccount;}
+            if (useSigma3){
+                FL_sigma3 = SigmaComputer.Structf_LNLOsigma3(Q,xbj);
+                FT_sigma3 = SigmaComputer.Structf_TNLOsigma3(Q,xbj);
+                }
         }
+
+        if (computeNLO && useSUB) // SUB SCHEME Full NLO impact factors for reduced cross section
+        {
+            if (useBoundLoop){
+                FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+                FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
+                FL_dip = SigmaComputer.Structf_LNLOdip_z2(Q,xbj);
+                FT_dip = SigmaComputer.Structf_TNLOdip_z2(Q,xbj);
+                FL_qg  = SigmaComputer.Structf_LNLOqg_sub(Q,xbj);
+                FT_qg  = SigmaComputer.Structf_TNLOqg_sub(Q,xbj);
+                ++calccount;}
+            if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
+                FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+                FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
+                FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
+                FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
+                FL_qg  = SigmaComputer.Structf_LNLOqg_sub(Q,xbj);
+                FT_qg  = SigmaComputer.Structf_TNLOqg_sub(Q,xbj);
+                ++calccount;}
+        }
+
+        if (calccount>1)
+        {
+            cerr << "ERROR: Multiple computations. abort." << "count="<< calccount << endl;
+            exit(1);
+        }
+
+        // Output for plotting
+        if(true){
+        #pragma omp critical
+        cout    << setw(15) << xbj          << " "
+                << setw(15) << Q*Q          << " "
+                << setw(15) << FL_IC        << " "
+                << setw(15) << FL_LO        << " "
+                << setw(15) << FL_dip       << " "
+                << setw(15) << FL_qg        << " "
+                << setw(15) << FL_sigma3    << " "
+                << setw(15) << FT_IC        << " "
+                << setw(15) << FT_LO        << " "
+                << setw(15) << FT_dip       << " "
+                << setw(15) << FT_qg        << " "
+                << setw(15) << FT_sigma3    << " "
+                << endl;
+                }
     }
 
     return 0;
