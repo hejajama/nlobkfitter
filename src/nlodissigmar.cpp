@@ -780,12 +780,13 @@ double ComputeSigmaR::ILNLOqg_subterm_lobk_z2tozero(double Q, double x, double z
     subterm = ILNLOqg(Q,x,z1, 0,x01sq,x02sq,x21sq);
     return subterm;
 }
+
 double ComputeSigmaR::ILNLOqg_subterm_lobk_explicit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
     // z2 -> 0 limit of the full NLO impact factors explicitly by hand
     double subterm;
     double impact_factor_lo = ILLO(Q,z1,x01sq);
     double P_at_zero = 2;
-    double nlo_if_kernel = P_at_zero * 0.5 * (x01sq + x21sq - x02sq) / (x02sq * x21sq);
+    double nlo_if_kernel = P_at_zero * 0.5 * (x01sq + x21sq - x02sq) / (x02sq * x21sq); // this is the symmetric half of the LOBK kernel
     double x01 = sqrt(x01sq);
     double x02 = sqrt(x02sq);
     double x21 = sqrt(x21sq);
@@ -793,6 +794,7 @@ double ComputeSigmaR::ILNLOqg_subterm_lobk_explicit(double Q, double x, double z
     subterm = impact_factor_lo * nlo_if_kernel * nlo_if_bk_evol_dipoles;
     return subterm;
 }
+
 double ComputeSigmaR::ILNLOqg_subterm_resumbk(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
     // z2 -> 0 limit LOBK kernel complemented with the RESUM kernel
     double subterm;
@@ -801,19 +803,35 @@ double ComputeSigmaR::ILNLOqg_subterm_resumbk(double Q, double x, double z1, dou
     subterm = K_res * lobk_subterm;
     return subterm;
 }
+
 double ComputeSigmaR::ILNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
-    // z2 -> 0 limit LOBK kernel complemented with the KCBK kernel
+    // z2 -> 0 limit LOBK kernel complemented with the KCBK kernel from 1403.0313
+    double delta012 = std::max(0.0, std::log( std::min(x02sq, x21sq) / (x01sq) ) ); // (166)
+    // double shifted_rapidity = helper->rapidity - delta012;
+    double scaled_xbj = x * std::exp(delta012); // rapidity shift Y' = Y - Delta012 leads to a scaling of xbj
+    if (scaled_xbj > icX0_bk) // Heaviside step with Y_shift > 0 leads to xbj_scaled < 0 and so the cutoff inequality flips.
+        return 0;   // Step function in (165)
+    
+    // Dipoles at shifted rapidity / scaled xbj
+    double s02_shifted = Sr(sqrt(x02sq), scaled_xbj);
+    double s12_shifted = Sr(sqrt(x21sq), scaled_xbj);
+    double s01 = Sr(sqrt(x01sq), x);
+    
     double subterm;
-    cout << "subterm_kcbk_beuf needs to be implemented!" << endl;
-    subterm = 0;
+    double impact_factor_lo = ILLO(Q,z1,x01sq);
+    double P_at_zero = 2;
+    double nlo_if_kernel = P_at_zero * 0.5 * (x01sq + x21sq - x02sq) / (x02sq * x21sq); // this is the symmetric half of the LOBK kernel
+    subterm = impact_factor_lo * nlo_if_kernel * ( -s02_shifted * s12_shifted + s01);
     return subterm;
 }
+
 double ComputeSigmaR::ITNLOqg_subterm_lobk_z2tozero(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
     // z2 -> 0 limit of the full NLO impact factors numerically
     double subterm;
     subterm = ITNLOqg(Q,x,z1,0,x01sq,x02sq,x21sq);
     return subterm;
 }
+
 double ComputeSigmaR::ITNLOqg_subterm_lobk_explicit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
     // z2 -> 0 limit of the full NLO impact factors explicitly by hand
     double subterm;
@@ -827,6 +845,7 @@ double ComputeSigmaR::ITNLOqg_subterm_lobk_explicit(double Q, double x, double z
     subterm = impact_factor_lo * nlo_if_kernel * nlo_if_bk_evol_dipoles;
     return subterm;
 }
+
 double ComputeSigmaR::ITNLOqg_subterm_resumbk(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
     // z2 -> 0 limit LOBK kernel complemented with the RESUM kernel
     double subterm;
@@ -835,11 +854,25 @@ double ComputeSigmaR::ITNLOqg_subterm_resumbk(double Q, double x, double z1, dou
     subterm = K_res * lobk_subterm;
     return subterm;
 }
+
 double ComputeSigmaR::ITNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
-    // z2 -> 0 limit LOBK kernel complemented with the KCBK kernel
+    // z2 -> 0 limit LOBK kernel complemented with the KCBK kernel from 1403.0313
+    double delta012 = std::max(0.0, std::log( std::min(x02sq, x21sq) / (x01sq) ) ); // (166)
+    // double shifted_rapidity = helper->rapidity - delta012;
+    double scaled_xbj = x * std::exp(delta012); // rapidity shift Y' = Y - Delta012 leads to a scaling of xbj
+    if (scaled_xbj > icX0_bk) // Heaviside step with Y_shift > 0 leads to xbj_scaled < 0 and so the cutoff inequality flips.
+        return 0;   // Step function in (165)
+    
+    // Dipoles at shifted rapidity / scaled xbj
+    double s02_shifted = Sr(sqrt(x02sq), scaled_xbj);
+    double s12_shifted = Sr(sqrt(x21sq), scaled_xbj);
+    double s01 = Sr(sqrt(x01sq), x);
+    
     double subterm;
-    cout << "subterm_kcbk_beuf needs to be implemented!" << endl;
-    subterm = 0;
+    double impact_factor_lo = ITLO(Q,z1,x01sq);
+    double P_at_zero = 2;
+    double nlo_if_kernel = P_at_zero * 0.5 * (x01sq + x21sq - x02sq) / (x02sq * x21sq); // this is the symmetric half of the LOBK kernel
+    subterm = impact_factor_lo * nlo_if_kernel * ( -s02_shifted * s12_shifted + s01);
     return subterm;
 }
 
