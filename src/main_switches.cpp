@@ -65,8 +65,8 @@ int main( int argc, char* argv[] )
 
         // NLO DIS SIGMA_R COMPUTATION CONFIGS
         nlodis_config::CUBA_EPSREL = 10e-3;
-        nlodis_config::CUBA_MAXEVAL= 1e7;
-        nlodis_config::MINR = 1e-5;
+        nlodis_config::CUBA_MAXEVAL= 5e7;
+        nlodis_config::MINR = 1e-6;
         nlodis_config::MAXR = 50;
         nlodis_config::PRINTDATA = true;
         bool useNLO = true;
@@ -83,21 +83,17 @@ int main( int argc, char* argv[] )
         config::LAMBDAQCD = 0.241;
         
         config::VERBOSE = true;
-        config::RINTPOINTS = 512/4;
-        config::THETAINTPOINTS = 512/4;
+        // config::RINTPOINTS = 512/4;
+        // config::THETAINTPOINTS = 512/4;
 
-        nlodis_config::RC_DIS = nlodis_config::DIS_RC_GUILLAUME;
-        config::RC_LO = config::GUILLAUME_LO;// FIXED_,PARENT_,PARENT_BETA_,SMALLEST_,BALITSKY_,FRAC_,GUILLAUME_,
-        config::RESUM_RC = config::RESUM_RC_GUILLAUME; // _BALITSKY,_PARENT,_SMALLEST,_GUILLAUME,
-        config::RESUM_DLOG = true; // Resum doulbe logs
-        config::RESUM_SINGLE_LOG = true; // Resum single logs
         config::KSUB = 0.65;  // Optimal value for K_sub
         config::NO_K2 = true;  // Do not include numerically demanding full NLO part
+        config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
 
         config::INTACCURACY = 10e-3;//0.02;
         // config::MCINTACCURACY = 10e-3;//0.02;
         // config::MCINTPOINTS = 1e7;
-        config::MINR = 1e-5;
+        config::MINR = 1e-6;
         config::MAXR = 50;
         config::RPOINTS = 100;
         config::DE_SOLVER_STEP = 0.4; // Rungekutta step
@@ -179,27 +175,39 @@ int main( int argc, char* argv[] )
       useBoundLoop = false;
     } else {cout << helpstring << endl; return -1;}
 
-    int argi=5; argi++;
+    int argi=6;
+    double icqs0sq, iccsq, icx0, ic_ec, icgamma, icQ0sq, icY0, icEta0;
     // reading fit initial condition parameters:
-    double icqs0sq   = stod( argv [argi] ); argi++;
-    // double icsigma0  = stod( argv [argi] ); argi++;
-    double iccsq     = stod( argv [argi] ); argi++;
-    double icx0      = stod( argv [argi] ); argi++;
-    double icgamma   = stod( argv [argi] ); argi++;
-    double icQ0sq    = stod( argv [argi] ); argi++;
-    double icY0      = stod( argv [argi] ); argi++;
-    double icEta0    = stod( argv [argi] ); argi++;
+    if (argc > 6){
+        icqs0sq   = stod( argv [argi] ); argi++;
+        iccsq     = stod( argv [argi] ); argi++;
+        icx0      = stod( argv [argi] ); argi++;
+        ic_ec     = stod( argv [argi] ); argi++;
+        icgamma   = stod( argv [argi] ); argi++;
+        icQ0sq    = stod( argv [argi] ); argi++;
+        icY0      = stod( argv [argi] ); argi++;
+        icEta0    = stod( argv [argi] ); argi++;
+    } else {
+        // use LO fit as IC
+        icqs0sq   = 0.104;
+        iccsq     = 14.5;
+        icx0      = 1.0;
+        ic_ec     = 1.0;
+        icgamma   = 1.0;
+        icQ0sq    = 1.0;
+        icY0      = 0.0;
+        icEta0    = 1.0;
+    }
 
 
     MnUserParameters parameters;
     // Fit parameters, first value is starting value, second is uncertainty
         //if(argc = 13){
-        parameters.Add("qs0sqr",                icqs0sq , 0.2);
+        parameters.Add("qs0sqr",                icqs0sq, 0.2);
         // parameters.Add("qs0sqr",                icqs0sq);
-        // parameters.Add("fitsigma0",             icsigma0, 10.0); // 1mb = 2.568 GeV² // (2.568)*16.36
-        parameters.Add("alphascalingC2",        iccsq,    20.0);
+        parameters.Add("alphascalingC2",        iccsq, 10.0);
         // parameters.Add("alphascalingC2",        iccsq);
-        parameters.Add("e_c", 1.0 );
+        parameters.Add("e_c",                   ic_ec );
         parameters.Add("anomalous_dimension",   icgamma);
         parameters.Add("icx0_nlo_impfac",       icx0 );
         parameters.Add("icx0_bk",               0.01 );
@@ -248,9 +256,6 @@ int main( int argc, char* argv[] )
     fitter.SetSUB(useSUB);
     fitter.UseImprovedZ2Bound(useImprovedZ2Bound);
     fitter.UseConsistentlyBoundLoopTerm(useBoundLoop);
-    //SigmaComputer.SetSubTermKernel(nlodis_config::SUB_TERM_KERNEL);
-    cout << "sub term choice not implemented here yet! exiting." << endl;
-    exit(1);
     fitter.SetCubaMethod(cubaMethod);
 
     cout << std::boolalpha;

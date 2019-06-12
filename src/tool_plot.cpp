@@ -276,7 +276,7 @@ int main( int argc, char* argv[] )
         alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_guillaume;
         cout << "# Using Guillaume RC" << endl;}
     else {
-        cout << "ERROR: Problem with the choice of runnincoupling. Unkonwn config::RC_LO." << endl;
+        cout << "ERROR: Problem with the choice of runnincoupling. Unkonwn nlodis_config::RC_DIS." << endl;
         exit(1);
         }
     SigmaComputer.SetRunningCoupling(alphas_temppointer);

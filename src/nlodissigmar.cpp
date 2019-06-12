@@ -280,7 +280,8 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     //double fitsigma0    = 2.568*par[ parameters.Index("fitsigma0")];  // 1mb = 2.568 GeV² -- unit change into GeV
     double alphas_scaling       = par[ parameters.Index("alphascalingC2")]; // MATCH THIS IN IMPACTFACTOR ALPHA_S WHEN NLO
     double anomalous_dimension  = par[ parameters.Index("anomalous_dimension")];
-    double initialconditionX0  = par[ parameters.Index("initialconditionX0")];
+    double icx0_nlo_impfac  = par[ parameters.Index("icx0_nlo_impfac")];
+    double icx0_bk  = par[ parameters.Index("icx0_bk")];
     double initialconditionY0  = par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
@@ -317,13 +318,13 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
 
     Dipole dipole(&ic);
     BKSolver solver(&dipole);
-    double maxy = std::log(initialconditionX0/(1e-5)) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
+    double maxy = std::log(icx0_bk/(1e-5)) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
 
     // cout << "=== Solving BK ===" << endl;
 
     solver.SetAlphasScaling(alphas_scaling);
     solver.SetEta0(par[ parameters.Index("eta0")]);
-    solver.Solve(maxy);                                // Solve up to maxy
+    solver.Solve(maxy);
 
     //solver.GetDipole()->Save("output_dipole_lobk_x0=10_euler_DESTEP0.02.dat");
     //solver.GetDipole()->Save("output_dipole_lobk_x0=10_euler_KINCOST_DESTEP0.08.dat");
@@ -331,12 +332,14 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     
     // Give solution to the AmplitudeLib object
     AmplitudeLib DipoleAmplitude(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
-    DipoleAmplitude.SetX0(initialconditionX0);
+    DipoleAmplitude.SetInterpolationMethod(LINEAR_LINEAR);
+    DipoleAmplitude.SetX0(icx0_bk);
     DipoleAmplitude.SetOutOfRangeErrors(false);
     AmplitudeLib *DipolePointer = &DipoleAmplitude;
 
     ComputeSigmaR SigmaComputer(DipolePointer);
-    SigmaComputer.SetX0(initialconditionX0);
+    SigmaComputer.SetX0(icx0_nlo_impfac);
+    SigmaComputer.SetX0_BK(icx0_bk);
     SigmaComputer.SetY0(initialconditionY0);
     SigmaComputer.SetQ0Sqr(icTypicalPartonVirtualityQ0sqr);
     SigmaComputer.SetQuarkMassLight(qMass_light);
@@ -356,7 +359,10 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
         alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd;
         alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_guillaume;
         cout << "Using Guillaume RC" << endl;}
-    else {cout << "Problem with the choice of runnincoupling. Unkonwn config::RC_LO." << endl;}
+    else {
+        cout << "ERROR: Problem with the choice of runnincoupling. Unkonwn nlodis_config::RC_DIS." << endl;
+        exit(1);
+    }
     SigmaComputer.SetRunningCoupling(alphas_temppointer);
     SigmaComputer.SetRunningCoupling_QG(alphas_temppointer_QG);
     SigmaComputer.SetAlphasScalingC2(alphas_scaling);
@@ -368,15 +374,16 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     // Dipole evalution X, (y = log(x0/X))
     // if using 'sub' scheme with z2imp one must use the extended evolution variable for sigma_LO as well.
     ComputeSigmaR::xrapidity_funpointer x_fun_ptr;
-    if (UseSub) {x_fun_ptr = &ComputeSigmaR::Xrpdty_LO_improved;}
+    if (UseSub and useImprovedZ2Bound) {x_fun_ptr = &ComputeSigmaR::Xrpdty_LO_improved;}
     else        {x_fun_ptr = &ComputeSigmaR::Xrpdty_LO_simple;}
     SigmaComputer.SetEvolutionX_LO(x_fun_ptr);
     SigmaComputer.SetEvolutionX_DIP(x_fun_ptr);
     // sigma_3 BK correction
     SigmaComputer.SetSigma3BKKernel(&ComputeSigmaR::K_resum);
-    // CUBA Monte Carlo integration library algorithm setter 
+    // sub scheme subtraction term choice
+    SigmaComputer.SetSubTermKernel(nlodis_config::SUB_TERM_KERNEL);
+    // CUBA Monte Carlo integration library algorithm setter
     SigmaComputer.SetCubaMethod(cubaMethod);
-
 
     cout << "=== Computing Reduced Cross sections ===" << endl;
 
