@@ -515,7 +515,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     cout << endl;
     // Minimize sigma02
     std::vector<double> sigma02fit = FindOptimalSigma02(datavals,dataerrs, thdata);
-    chisqr = sigma02fit[1];
+    double chisqr_over_n = sigma02fit[1];
     double sigma02 = sigma02fit[0];    
     // Output for plotting
     if(nlodis_config::PRINTDATA){
@@ -532,15 +532,15 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
             }
     }
     cout    << endl 
-            << "# Calculated chi^2/N = " << chisqr 
-            << " (N=" << points 
-            << "), parameters (" << PrintVector(par) 
-            << ", sigma02=" << sigma02 
+            << "# Calculated chi^2/N = " << chisqr_over_n
+            << " (N=" << points
+            << "), parameters (" << PrintVector(par)
+            << ", sigma02=" << sigma02
             << ")" << endl<<endl;
     
 
     // delete DipolePointer;
-    return chisqr*points;
+    return chisqr_over_n * points;  // Return chisqr for Minuit error estimation.
 }
 
 void NLODISFitter::AddDataset(Data& d)
