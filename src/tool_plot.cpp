@@ -84,7 +84,7 @@ int main( int argc, char* argv[] )
         //config::RINTPOINTS = 512/4;
         //config::THETAINTPOINTS = 512/4;
 
-        config::INTACCURACY = 20e-3;//0.02;
+        config::INTACCURACY = 10e-3;//0.02;
         //config::MCINTACCURACY = 10e-3;//0.02;
         // config::MCINTPOINTS = 1e7;
         config::MINR = 1e-6;
