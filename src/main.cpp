@@ -66,6 +66,7 @@ int main()
         config::RPOINTS = 100;
         config::DE_SOLVER_STEP = 0.2;// Euler method probably requires smaller step!
 		config::DNDY=false;
+        config::VERBOSE=true;
         //sigmar_config::maxy = 5.2;
 
         // If want to use kinematical constraint in the LO equation
@@ -102,8 +103,9 @@ int main()
 	parameters.Add("eta0", std::log(1/0.01));
     
     // Constants
-    parameters.Add("initialconditionX0", 0.01 );
-    parameters.Add("initialconditionY0", 0 ); // What rapidity is our IC
+    parameters.Add("icx0_bk", 0.01 );
+    parameters.Add("icx0_nlo_impfac", 1.0);
+    parameters.Add("initialconditionY0", 0 );
     parameters.Add("icTypicalPartonVirtualityQ0sqr", 1.0);
     
       /*// Set limits
