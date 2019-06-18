@@ -223,6 +223,7 @@ int main( int argc, char* argv[] )
     parameters.Add("icx0_bk",               icx0_bk );
     parameters.Add("initialconditionY0",    icY0 );
     parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
+    parameters.Add("eta0", icEta0 );
 
     NLODISFitter fitter(parameters);
     fitter.AddDataset(data);

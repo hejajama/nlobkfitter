@@ -196,7 +196,7 @@ int main( int argc, char* argv[] )
         icgamma   = 1.0;
         icQ0sq    = 1.0;
         icY0      = 0.0;
-        icEta0    = 1.0;
+        icEta0    = 0.0;
     }
 
 
