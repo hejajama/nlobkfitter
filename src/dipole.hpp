@@ -50,6 +50,8 @@ class Dipole
         std::vector<double> &GetRvals() { return rvals; }
 
         InitialCondition *GetInitialCondition() { return ic; }
+        void SetX0(double x0) { X0 = x0; }
+        double GetX0() { return X0; }
 
     private:
         // amplitude[i][j] is vector of dipole amplitude values at rapidity yvals[i]
@@ -58,6 +60,7 @@ class Dipole
         std::vector< double > yvals; 
         std::vector< double > rvals;
         InitialCondition* ic;
+        double X0;  // Bjorken-x at the initial condition
 
         Interpolator* dipole_interp;        // Initialized interpolator to evaluate N(r)
         unsigned int interpolator_yind;     // Rapidity index at which the interpolator is initialized

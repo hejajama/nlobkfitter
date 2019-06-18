@@ -25,12 +25,14 @@ using namespace config;
 
 Dipole::Dipole(InitialCondition* ic_)
 {
+    X0=1;
     ic=ic_;
     // Initialize rvals
     double step = std::pow(MAXR/MINR, 1.0/RPOINTS);
     std::vector<double> initial_amplitude;
-    for (double r=MINR; r<=MAXR+1e-3; r*=step)
+    for (int i=0; i < RPOINTS; i++)
     {
+        double r = MINR * std::pow(step, i);
         rvals.push_back(r);
         initial_amplitude.push_back( ic->DipoleAmplitude(r) );
     }
@@ -120,7 +122,7 @@ double Dipole::InterpolateN(double r, double y)
     
     int yind = FindIndex(y, yvals);
     // FindIndex finds largest index such that yvals[yind] <= y
-    if (yind == yvals.size()-1)
+    if (yind == yvals.size()-1 and std::abs(y - yvals[yvals.size()-1]) < 0.0001)
     {
         // We are asking dipole at the current latest rapidity
         if (interpolator_yind == yind)
@@ -131,10 +133,15 @@ double Dipole::InterpolateN(double r, double y)
             exit(1);
         }
     }
+    
+    // Bilinear interpolation
+    int rind = FindIndex(r, rvals);
+    
+    if (y < 1e-8 and rind+1 < rvals.size())
+        return amplitude[0][rind] + (r - rvals[rind]) / (rvals[rind+1]-rvals[rind]) * (amplitude[0][rind+1] - amplitude[0][rind]);
    
-   // Bilinear interpolation
-	 int rind = FindIndex(r, rvals);
-	    // DEBUG no interpolation
+   
+    // DEBUG for fast testing: bilinear interpolation
 	   int rind2 = rind+1;
 	   int yind2 = yind+1;
 	   if (rind2 >= rvals.size()) return 1.0;
@@ -143,11 +150,11 @@ double Dipole::InterpolateN(double r, double y)
 
 	   if (yind2 >= yvals.size()) return amplitude[yind][rind] + (r - r1_) / (r2_ - r1_) * (amplitude[yind][rind2] - amplitude[yind][rind]);
 
-	   double y1_ = yvals[yind];
-	 double y2_ = yvals[yind2];
-	  double bilin =  (1.0/( (r2_ - r1_)*(y2_ - y1_) ))*( (amplitude[yind][rind])*(r2_ - r)*(y2_ - y) + (amplitude[yind][rind2])*(r - r1_)*(y2_ - y) + (amplitude[yind2][rind])*(r2_ - r)*(y - y1_) + (amplitude[yind2][rind2])*(r - r1_)*(y - y1_) );
-
-             return bilin; 
+        double y1_ = yvals[yind];
+        double y2_ = yvals[yind2];
+        double bilin =  (1.0/( (r2_ - r1_)*(y2_ - y1_) ))*( (amplitude[yind][rind])*(r2_ - r)*(y2_ - y) + (amplitude[yind][rind2])*(r - r1_)*(y2_ - y) + (amplitude[yind2][rind])*(r2_ - r)*(y - y1_) + (amplitude[yind2][rind2])*(r - r1_)*(y - y1_) );
+    
+    return bilin;
    
     
     // Now we know that yind and yind+1 are acceptable indeces, so we can interpolate in rapidity linearly
@@ -239,9 +246,9 @@ int Dipole::Save(std::string filename)
     out << "###" << std::scientific << std::setprecision(15) <<
         rvals[1]/rvals[0]  << endl;   // rmultiplier
     out << "###" << RPoints() << endl;
-    out << "###0.01" << endl;   // x0
+    out << "###" << X0 << endl;   // x0
 
-    for (int yind=0; yind<=YPoints(); yind++)
+    for (int yind=0; yind<=YPoints()-1; yind++)
     {
         out << "###" << std::scientific << std::setprecision(15)
             << yvals[yind] << endl;
@@ -267,12 +274,17 @@ double Dipole::MaxR()
 
 unsigned int Dipole::RPoints()
 {
-    return rvals.size()-1;
+    if (rvals.size() != RPOINTS)
+    {
+        cerr << "STOP! rvals.size() != RPOINTS" << endl;
+        exit(1);
+    }
+    return rvals.size();
 }
 
 unsigned int Dipole::YPoints()
 {
-    return yvals.size()-1;
+    return yvals.size();
 }
 
 double Dipole::RVal(unsigned int rind)
@@ -316,6 +328,6 @@ Dipole::Dipole(std::string filename)
         cerr<< "I got " << rvals.size() << " r values and " <<amplitude[0].size() << " dipoles at y=0!" << LINEINFO << endl;
         exit(1);
     }
-    
-    cout << "# Data read from file " << filename << " maxy " << yvals[yvals.size()-1] << " rpoints/rapidity " << amplitude[0].size() << endl;
+    X0=data.X0();
+    cout << "# Data read from file " << filename << " x0=" << data.X0() << "  maxy " << yvals[yvals.size()-1] << " rpoints/rapidity " << amplitude[0].size() << endl;
 }
