@@ -822,11 +822,11 @@ double ComputeSigmaR::ILNLOqg_subterm_resumbk(double Q, double x, double z1, dou
 }
 
 double ComputeSigmaR::ILNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
-    // z2 -> 0 limit LOBK kernel complemented with the KCBK kernel from 1403.0313
+    // z2 -> 0 limit LOBK kernel complemented with the KCBK kernel from 1401.0313
     double delta012 = std::max(0.0, std::log( std::min(x02sq, x21sq) / (x01sq) ) ); // (166)
     // double shifted_rapidity = helper->rapidity - delta012;
     double scaled_xbj = x * std::exp(delta012); // rapidity shift Y' = Y - Delta012 leads to a scaling of xbj
-    if (scaled_xbj > icX0_bk) // Heaviside step with Y_shift > 0 leads to xbj_scaled < 0 and so the cutoff inequality flips.
+    if (scaled_xbj > icX0) // Heaviside step with Y_shift > 0 leads to xbj_scaled < 0 and so the cutoff inequality flips.
         return 0;   // Step function in (165)
     
     // Dipoles at shifted rapidity / scaled xbj
@@ -873,11 +873,11 @@ double ComputeSigmaR::ITNLOqg_subterm_resumbk(double Q, double x, double z1, dou
 }
 
 double ComputeSigmaR::ITNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
-    // z2 -> 0 limit LOBK kernel complemented with the KCBK kernel from 1403.0313
+    // z2 -> 0 limit LOBK kernel complemented with the KCBK kernel from 1401.0313
     double delta012 = std::max(0.0, std::log( std::min(x02sq, x21sq) / (x01sq) ) ); // (166)
     // double shifted_rapidity = helper->rapidity - delta012;
     double scaled_xbj = x * std::exp(delta012); // rapidity shift Y' = Y - Delta012 leads to a scaling of xbj
-    if (scaled_xbj > icX0_bk) // Heaviside step with Y_shift > 0 leads to xbj_scaled < 0 and so the cutoff inequality flips.
+    if (scaled_xbj > icX0) // Heaviside step with Y_shift > 0 leads to xbj_scaled < 0 and so the cutoff inequality flips.
         return 0;   // Step function in (165)
     
     // Dipoles at shifted rapidity / scaled xbj

@@ -59,37 +59,33 @@ int main( int argc, char* argv[] )
 {
     gsl_set_error_handler(&ErrHandlerCustom);
 
-        // NLO DIS SIGMA_R COMPUTATION CONFIGS
-        nlodis_config::CUBA_EPSREL = 2e-2;
-        nlodis_config::CUBA_MAXEVAL= 1e8;
-        nlodis_config::PRINTDATA = true;
-        bool useNLO = true;
-        //bool useSUB = true;               // Set by a command line switch in swarmscan
-        //bool useImprovedZ2Bound = true;   // Set by a command line switch in swarmscan
-        //bool useBoundLoop = true;         // Set by a command line switch in swarmscan
-        string cubaMethod = "suave";
-        //bool useResumBK = true;
-        //bool useKCBK = false;
-        //if (useResumBK == true and useKCBK == true) {cout << "Both ResumBK and KCBK enabled, exitting." << endl; return -1;}
+    // NLO DIS SIGMA_R COMPUTATION CONFIGS
+    nlodis_config::CUBA_EPSREL = 10e-3;
+    nlodis_config::CUBA_MAXEVAL= 5e7;
+    nlodis_config::MINR = 1e-6;
+    nlodis_config::MAXR = 50;
+    nlodis_config::PRINTDATA = true;
+    bool useNLO = true;
+    bool computeNLO = useNLO;
+    // string cubaMethod = "vegas";
+    string cubaMethod = "suave";
 
-        //config::RC_LO = config::FIXED_LO;
-        config::RC_LO = config::BALITSKY_LO; // Balitsky running coupling for LO kernel
-        //config::RC_LO = config::GUILLAUME_LO;
-        config::RESUM_RC = config::RESUM_RC_PARENT; // Parent dipole in the resummation
-        config::RESUM_DLOG = true; // Resum doulbe logs
-        config::RESUM_SINGLE_LOG = true; // Resum single logs
-        config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
-        config::KSUB = 0.65;  // Optimal value for K_sub
-        config::NO_K2 = true;  // Do not include numerically demanding full NLO part
-        config::INTACCURACY = 1e-2;//0.02;
-        config::MINR = 1e-5;
-        config::MAXR = 30;
-        config::RPOINTS = 100;
-        config::DE_SOLVER_STEP = 0.4; // Rungekutta step
+    config::NO_K2 = true;  // Do not include numerically demanding full NLO part
+    config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
 
-        // Constants
-        config::NF=3;   // Only light quarks
-        config::LAMBDAQCD = 0.241;
+    config::VERBOSE = true;
+    //config::RINTPOINTS = 512/4;
+    //config::THETAINTPOINTS = 512/4;
+
+    config::INTACCURACY = 10e-3;//0.02;
+    config::MINR = 1e-6;
+    config::MAXR = 50;
+    config::RPOINTS = 100;
+    config::DE_SOLVER_STEP = 0.4; // Rungekutta step
+
+    // Constants
+    config::NF=3;   // Only light quarks
+    config::LAMBDAQCD = 0.241;
 
 
     Data data;
@@ -100,82 +96,134 @@ int main( int argc, char* argv[] )
 
     MnUserParameters parameters;
 
-    bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop, useSigma3;
-    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q C^2 X0 gamma Q0sq Y0";
+    bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop;
+    bool useSigma3 = false;
+    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q C^2 X0 gamma Q0sq Y0 eta0\nsub/unsub/unsub+ resumbk/trbk/lobk parentrc/guillaumerc/fixedrc z2improved/z2simple z2boundloop/unboundloop";
+    string string_sub, string_bk, string_rc;
     if (argc<2){ cout << helpstring << endl; return 0;}
     // Argv[0] is the name of the program
 
+    string_sub = string(argv [1]);
     if (string(argv [1]) == "sub"){
-      useSUB = true;
+        useSUB = true;
     } else if (string(argv [1]) == "unsub"){
-      useSUB = false;
-      useSigma3 = false;
+        useSUB = false;
+        useSigma3 = false;
     } else if (string(argv [1]) == "unsub+"){
-      useSUB = false;
-      useSigma3 = true;
+        useSUB = false;
+        useSigma3 = true;
     } else {cout << helpstring << endl; return -1;}
 
+    string_bk = string(argv [2]);
     if (string(argv [2]) == "resumbk"){
-            config::LO_BK = false;  // Solve LO BK with running coupling, overrides RESUM settings
-    } else if (string(argv [2]) == "kcbk"){
-            config::LO_BK = true;  // Solve LO BK with running coupling, overrides RESUM settings
-            config::EULER_METHOD            = true;        // Kinematical constraint requires this
-            config::KINEMATICAL_CONSTRAINT  = true;
-            config::DE_SOLVER_STEP = 0.08; //0.02; // Euler method requires smaller step than RungeKutta!
+            config::EULER_METHOD = false;    // Use Runge-Kutta since no kin. constraint
+            config::RESUM_DLOG = true;       // Resum doulbe logs
+            config::RESUM_SINGLE_LOG = true; // Resum single logs
+            config::KSUB = 0.65;             // Optimal value for K_sub
+            config::NO_K2 = true;            // Do not include numerically demanding full NLO part
+            nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_RESUM;
+    }else if (string(argv [2]) == "kcbk"){
+            config::EULER_METHOD = true;     // Kinematical constraint requires this
+            config::RESUM_DLOG = false;
+            config::RESUM_SINGLE_LOG = false;
+            config::KINEMATICAL_CONSTRAINT = config::KC_BEUF_K_PLUS;
+            config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
+            nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_KCBK_BEUF;
+    }else if (string(argv [2]) == "trbk"){  // Target Rapidity BK
+            config::EULER_METHOD = true;     // Kinematical constraint requires this
+            config::RESUM_DLOG = false;
+            config::RESUM_SINGLE_LOG = false;
+            config::KINEMATICAL_CONSTRAINT = config::KC_EDMOND_K_MINUS;
+            config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
+            nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_TRBK_EDMOND;
     }else if (string(argv [2]) == "lobk"){
-            config::LO_BK = true;
+            config::EULER_METHOD = false;   // Use Runge-Kutta since no kin. constraint
+            config::RESUM_DLOG = false;
+            config::RESUM_SINGLE_LOG = false;
+            config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
+            nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_LOBK_EXPLICIT;
+    }else if (string(argv [2]) == "lobkold"){
+            config::EULER_METHOD = false;   // Use Runge-Kutta since no kin. constraint
+            config::RESUM_DLOG = false;
+            config::RESUM_SINGLE_LOG = false;
+            config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
+            nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_LOBK_Z2TOZERO;
     } else {cout << helpstring << endl; return -1;}
 
+    string_rc = string(argv [3]);
     if (string(argv [3]) == "parentrc"){
-            config::RC_LO = config::BALITSKY_LO; 
+            config::RC_LO = config::PARENT_LO;
+            config::RESUM_RC = config::RESUM_RC_PARENT;
+            nlodis_config::RC_DIS = nlodis_config::DIS_RC_PARENT;
     } else if (string(argv [3]) == "guillaumerc"){
             config::RC_LO = config::GUILLAUME_LO;
+            config::RESUM_RC = config::RESUM_RC_GUILLAUME;
+            nlodis_config::RC_DIS = nlodis_config::DIS_RC_GUILLAUME;
+    } else if (string(argv [3]) == "fixedrc"){
+            config::RC_LO = config::FIXED_LO;
+            config::RESUM_RC = config::RESUM_RC_FIXED;
+            nlodis_config::RC_DIS = nlodis_config::DIS_RC_FIXED;
     } else {cout << helpstring << endl; return -1;}
 
     if (string(argv [4]) == "z2improved"){
-      useImprovedZ2Bound = true;
+        useImprovedZ2Bound = true;
     } else if (string(argv [4]) == "z2simple"){
-      useImprovedZ2Bound = false;
+        useImprovedZ2Bound = false;
     } else {cout << helpstring << endl; return -1;}
 
     if (string(argv [5]) == "z2boundloop"){
-      useBoundLoop = true;
+        useBoundLoop = true;
     } else if (string(argv [5]) == "unboundloop"){
-      useBoundLoop = false;
+        useBoundLoop = false;
     } else {cout << helpstring << endl; return -1;}
 
-    int argi=5; argi++;
-    double QAdditN   = stod( argv [argi] ); argi++;
-    double CPowerN   = stod( argv [argi] ); argi++;
-    double X0calc    = stod( argv [argi] ); argi++;
-    double gammacalc = stod( argv [argi] ); argi++;
-    double icQ0sq    = stod( argv [argi] ); argi++;
-    double icY0      = stod( argv [argi] );
-    icY0 *= std::log(10.0/X0calc);
+    int argi=6;
+    double icqs0sq, iccsq, icx0_if, icx0_bk, ic_ec, icgamma, icQ0sq, icY0, icEta0;
+    // reading fit initial condition parameters:
+    if (argc == argi+3){
+        icqs0sq   = stod( argv [argi] ); argi++;
+        iccsq     = stod( argv [argi] ); argi++;
+        icx0_if   = 1.0;
+        icx0_bk   = 0.01;
+        ic_ec     = 1.0;
+        icgamma   = stod( argv [argi] ); argi++;
+        icQ0sq    = 1.0;
+        icY0      = 0;
+        icEta0    = 0;
+    } else {
+        icqs0sq   = stod( argv [argi] ); argi++;
+        iccsq     = stod( argv [argi] ); argi++;
+        icx0_if   = stod( argv [argi] ); argi++;
+        icx0_bk   = stod( argv [argi] ); argi++;
+        ic_ec     = stod( argv [argi] ); argi++;
+        icgamma   = stod( argv [argi] ); argi++;
+        icQ0sq    = stod( argv [argi] ); argi++;
+        icY0      = stod( argv [argi] ); argi++;
+        icEta0    = stod( argv [argi] ); argi++;
+    }
 
 
     // Constructing Q and C^2 grids
-    double Qdown = 0;
-    double Qup = 0.2;
-    double QStep = (Qup-Qdown)/200.;
-    double Qcalc = Qdown + QAdditN * QStep;
+    double Qcalc = icqs0sq/1000.; // input in milli-GeV² integer strings
 
     double Cdown = 0.1;
     double Cup = 5.0;
-    double CStep = pow(Cup/Cdown , CPowerN/240.);
-    double Ccalc = Cdown * CStep;
+    double CStep = pow(Cup/Cdown , iccsq/240.);
+    double Ccalc = Cdown * CStep; // compute C² on a logarithmic grid
 
 
     cout << Qcalc << " " << Ccalc << endl;
 
 	parameters.Add("qs0sqr",		        Qcalc);
-        parameters.Add("fitsigma0",		        1.0); // 1mb = 2.568 GeV²
-        parameters.Add("alphascalingC2",	    Ccalc);
-        parameters.Add("e_c",                   1.0 );
-        parameters.Add("anomalous_dimension",   gammacalc );
-        parameters.Add("initialconditionX0",    X0calc ); // fixed initialx0 computations were done with 0.01
-        parameters.Add("initialconditionY0",    icY0 );
-        parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
+    // parameters.Add("fitsigma0",		        1.0); // 1mb = 2.568 GeV²
+    parameters.Add("alphascalingC2",	    Ccalc);
+    parameters.Add("e_c",                   ic_ec );
+    parameters.Add("anomalous_dimension",   icgamma );
+    parameters.Add("icx0_nlo_impfac",       icx0_if );
+    parameters.Add("icx0_bk",               icx0_bk );
+    parameters.Add("initialconditionY0",    icY0 );
+    parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
+    parameters.Add("eta0", icEta0 );
 
     NLODISFitter fitter(parameters);
     fitter.AddDataset(data);
@@ -188,15 +236,23 @@ int main( int argc, char* argv[] )
 
     cout << "=== Perturbative settings ===" << endl;
     cout << std::boolalpha;
-    cout    << "Use ResumBK: " << !(config::LO_BK) << endl
-            << "KinematicalConstraint BK: " << config::KINEMATICAL_CONSTRAINT << endl
-            << "Running Coupling: " << config::RC_LO << " (4 parent, 6 guillaume)" << endl
-            << "Use NLOimpact: " << useNLO << endl
-            << "Use SUBscheme: " << useSUB << endl
-            << "Use Sigma3: " << useSigma3 << endl
-            << "Use improved Z2 bound: " << useImprovedZ2Bound << endl
-            << "Use Z2 loop term: " << useBoundLoop << endl
-            << "Cuba MC algorithm: " << cubaMethod << endl;
+    cout    << "# === Perturbative settings ===" << endl
+            << "# Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
+            << "# Use LOBK (DL,SL==false): " << (!(config::RESUM_DLOG) 
+                                    and !(config::RESUM_SINGLE_LOG)) << endl
+            << "# Use ResumBK (DL,SL==true,KC_NONE): " << ((config::RESUM_DLOG) 
+                                    and (config::RESUM_SINGLE_LOG)
+                                    and (config::KINEMATICAL_CONSTRAINT == config::KC_NONE)) << endl
+            << "# KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
+            << "# Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
+            << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
+            << "# Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
+            << "# Use NLOimpact: " << useNLO << endl
+            << "# Use SUBscheme: " << useSUB << endl
+            << "# Use Sigma3: " << useSigma3 << endl
+            << "# Use improved Z2 bound: " << useImprovedZ2Bound << endl
+            << "# Use Z2 loop term: " << useBoundLoop << endl
+            << "# Cuba MC algorithm: " << cubaMethod << endl;
     cout << "=== Initial parameters ===" << endl;
     cout << parameters << endl;
     if(nlodis_config::VERBOSE) cout << "=== Starting fit ===" << endl;
@@ -207,15 +263,23 @@ int main( int argc, char* argv[] )
 
     cout << "=== Perturbative settings were ===" << endl;
     cout << std::boolalpha;
-    cout    << "Use ResumBK: " << !(config::LO_BK) << endl
-            << "KinematicalConstraint BK: " << config::KINEMATICAL_CONSTRAINT << endl
-            << "Running Coupling: " << config::RC_LO << " (4 parent, 6 guillaume)" << endl
-            << "Use NLOimpact: " << useNLO << endl
-            << "Use SUBscheme: " << useSUB << endl
-            << "Use Sigma3: " << useSigma3 << endl
-            << "Use improved Z2 bound: " << useImprovedZ2Bound << endl
-            << "Use Z2 loop term: " << useBoundLoop << endl
-            << "Cuba MC algorithm: " << cubaMethod << endl;
+    cout    << "# === Perturbative settings ===" << endl
+            << "# Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
+            << "# Use LOBK (DL,SL==false): " << (!(config::RESUM_DLOG) 
+                                    and !(config::RESUM_SINGLE_LOG)) << endl
+            << "# Use ResumBK (DL,SL==true,KC_NONE): " << ((config::RESUM_DLOG) 
+                                    and (config::RESUM_SINGLE_LOG)
+                                    and (config::KINEMATICAL_CONSTRAINT == config::KC_NONE)) << endl
+            << "# KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
+            << "# Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
+            << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
+            << "# Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
+            << "# Use NLOimpact: " << useNLO << endl
+            << "# Use SUBscheme: " << useSUB << endl
+            << "# Use Sigma3: " << useSigma3 << endl
+            << "# Use improved Z2 bound: " << useImprovedZ2Bound << endl
+            << "# Use Z2 loop term: " << useBoundLoop << endl
+            << "# Cuba MC algorithm: " << cubaMethod << endl;
 
 
     return 0;

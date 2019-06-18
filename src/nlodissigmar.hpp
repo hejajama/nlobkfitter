@@ -35,7 +35,7 @@ class NLODISFitter : public FCNBase
 public:
     // MINUIT functions
     double operator() (const vector<double>& par) const; // Calculate Chi^2
-    double Up() const {return 1.;} // MINUIT default possibly 1.0?
+    double Up() const {return 1.;} // one-standard-deviation errors for fit parameters.
 
     // Initialize based on MINUIT parameters
     NLODISFitter(MnUserParameters parameters_);
