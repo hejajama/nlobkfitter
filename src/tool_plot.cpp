@@ -62,39 +62,33 @@ int main( int argc, char* argv[] )
 {
     gsl_set_error_handler(&ErrHandlerCustom);
 
-        // NLO DIS SIGMA_R COMPUTATION CONFIGS
-        nlodis_config::CUBA_EPSREL = 10e-3;
-        nlodis_config::CUBA_MAXEVAL= 5e7;
-        nlodis_config::MINR = 1e-6;
-        nlodis_config::MAXR = 50;
-        nlodis_config::PRINTDATA = true;
-        bool useNLO = true;
-        bool computeNLO = useNLO;
-        // string cubaMethod = "vegas";
-        string cubaMethod = "suave";
+    // NLO DIS SIGMA_R COMPUTATION CONFIGS
+    nlodis_config::CUBA_EPSREL = 10e-3;
+    nlodis_config::CUBA_MAXEVAL= 5e7;
+    nlodis_config::MINR = 1e-6;
+    nlodis_config::MAXR = 50;
+    nlodis_config::PRINTDATA = true;
+    bool useNLO = true;
+    bool computeNLO = useNLO;
+    // string cubaMethod = "vegas";
+    string cubaMethod = "suave";
 
-        // Oliko paperissa LO + fc BK? Taisi olla ja resummaukset vasta olivat kiinnostuksen alla sen jälkeen?
-        config::RESUM_DLOG = false; // Resum doulbe logs
-        config::RESUM_SINGLE_LOG = false; // Resum single logs
-        config::KSUB = 0.65;  // Optimal value for K_sub
-        config::NO_K2 = true;  // Do not include numerically demanding full NLO part
-        config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
+    config::NO_K2 = true;  // Do not include numerically demanding full NLO part
+    config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
 
-        config::VERBOSE = true;
-        //config::RINTPOINTS = 512/4;
-        //config::THETAINTPOINTS = 512/4;
+    config::VERBOSE = true;
+    //config::RINTPOINTS = 512/4;
+    //config::THETAINTPOINTS = 512/4;
 
-        config::INTACCURACY = 10e-3;//0.02;
-        //config::MCINTACCURACY = 10e-3;//0.02;
-        // config::MCINTPOINTS = 1e7;
-        config::MINR = 1e-6;
-        config::MAXR = 50;
-        config::RPOINTS = 100;
-        config::DE_SOLVER_STEP = 0.4; // Rungekutta step
+    config::INTACCURACY = 10e-3;//0.02;
+    config::MINR = 1e-6;
+    config::MAXR = 50;
+    config::RPOINTS = 100;
+    config::DE_SOLVER_STEP = 0.4; // Rungekutta step
 
-        // Constants
-        config::NF=3;   // Only light quarks
-        config::LAMBDAQCD = 0.241;
+    // Constants
+    config::NF=3;   // Only light quarks
+    config::LAMBDAQCD = 0.241;
 
 
     MnUserParameters parameters;
