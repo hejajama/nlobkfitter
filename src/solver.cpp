@@ -32,6 +32,8 @@ BKSolver::BKSolver(Dipole* d)
 {
     dipole=d;
     tmp_output = "";
+    icx0_nlo_impfac=1;
+    icTypicalPartonVirtualityQ0sqr=1;
 }
 
 struct DEHelper{
@@ -41,6 +43,8 @@ struct DEHelper{
 BKSolver::BKSolver()
 {
     alphas_scaling=1.0;
+    icx0_nlo_impfac=1;
+    icTypicalPartonVirtualityQ0sqr=1;
 }
 
 
@@ -391,15 +395,12 @@ double Inthelperf_lo_theta(double theta, void* p)
     // Note: if initial condition does not refer to x=1 but some smaller x, this needs to be
     // corrected here when considering the actual gluon p^-
     // This shift we call Y0
-    // But right now we ues eta0 here, to avoid possible configts with Y0 in the impact factor,
-    // one should eventually make sure that Y0 is consistent here and in the impact factor
     if (config::TARGET_KINEMATICAL_CONSTRAINT)
     {
-        const double q0sqr =1; // Should be parameter icTypicalPartonVirtualityQ0sqr
-        double Delta = std::log(1.0/(q0sqr * std::min(X*X, Y*Y) + eps));
+        double Delta = std::log(1.0/(helper->solver->GetICTypicalPartonVirtualityQ0sqr() * std::min(X*X, Y*Y) + eps));
         
-        double yshifted = helper->rapidity + helper->solver->GetEta0();
-        if (yshifted - Delta < 0) return 0;
+        
+        if ( helper->solver->GetX0() * std::exp(-(helper->rapidity - Delta)) > helper->solver->GetICX0_nlo_impfac()) return 0;
     }
     
     
@@ -433,8 +434,15 @@ double Inthelperf_lo_theta(double theta, void* p)
         {
             double delta012 = std::max(0.0, std::log( std::min(X*X, Y*Y) / (r*r) ) ); // (166)
             double shifted_rapidity = helper->rapidity - delta012;
+            
+            // Step function should respect kinematical boundary x < 1
+            if (helper->solver->GetX0() * std::exp(-shifted_rapidity) > helper->solver->GetICX0_nlo_impfac())// Step function in (165)
+                return 0;
+      
+            // Now we are in rapidity "below" initial condition, but still in the kinematically allowed region
+            // As we freeze N(r, y < Y_0) = N(r, ic), we can just forget the rapidity shift here
             if (shifted_rapidity < 0)
-                return 0;   // Step function in (165)
+                shifted_rapidity = 0;
             
             double N_r = helper->dipole_interp->Evaluate(r);
             

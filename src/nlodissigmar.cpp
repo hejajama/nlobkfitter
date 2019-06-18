@@ -290,6 +290,10 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     bool useCharm = false;
 
 
+    if (std::abs(initialconditionY0) > 1e-4)
+    {
+        cerr << "WARNING! initialcconditionY0" << initialconditionY0 << ", but values != 0 are not guaranteed to work! Talk to Heikki before using this!" << endl;
+    }
     if (qs0sqr < 0.0001 or qs0sqr > 100 or alphas_scaling < 0.01 or alphas_scaling > 99999
         /*or fitsigma0 < 0.1 or fitsigma0 > 999 */
         or e_c < 1 or e_c > 9999)
@@ -317,6 +321,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     ic.SetE(e_c);                                     // e_c of MVe parametrization
 
     Dipole dipole(&ic);
+    dipole.SetX0(icx0_bk);
     BKSolver solver(&dipole);
     double maxy = std::log(icx0_bk/(1e-5)) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
 
@@ -324,6 +329,10 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
 
     solver.SetAlphasScaling(alphas_scaling);
     solver.SetEta0(par[ parameters.Index("eta0")]);
+    solver.SetX0(icx0_bk);
+    solver.SetICX0_nlo_impfac(icx0_nlo_impfac);
+    solver.SetICTypicalPartonVirtualityQ0sqr(icTypicalPartonVirtualityQ0sqr);
+    solver.SetTmpOutput("tmp_datafile_nokc.dat");
     solver.Solve(maxy);
 
     //solver.GetDipole()->Save("output_dipole_lobk_x0=10_euler_DESTEP0.02.dat");
@@ -633,6 +642,7 @@ double ComputeSigmaR::Sr(double r, double x) {
         Srx = 0.;
     }else{
         // Srx = ClassScopeDipolePointer->S_y(r, log(1/x))
+        // Note: icY0 controls how much evolution we have before we define that we have "initial condition"
         if (x > icX0_bk){
             Srx = ClassScopeDipolePointer->S(r, (icX0_bk*std::exp(-icY0)) ) ; //1-Nrx;
         } else {

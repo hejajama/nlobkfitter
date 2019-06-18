@@ -153,6 +153,12 @@ std::string NLOBK_CONFIG_STRING()
     else ss << "UNKNOWN!";
     ss << endl;
     
+    ss << "# Target kinematical constraint: ";
+    if (config::TARGET_KINEMATICAL_CONSTRAINT)
+        ss << "enabled" << endl;
+    else
+        ss << "disabled" << endl;
+    
     
     
     return ss.str();

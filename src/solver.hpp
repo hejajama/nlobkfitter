@@ -36,6 +36,15 @@ class BKSolver
         void SetAlphasScaling(double C2) { alphas_scaling = C2; }
 
         void SetTmpOutput(std::string fname);
+    
+        double GetX0() { return x0; }
+        void SetX0(double x_) { x0 = x_; }
+    
+        void SetICX0_nlo_impfac(double x) { icx0_nlo_impfac = x; }
+        double GetICX0_nlo_impfac() { return icx0_nlo_impfac; }
+    
+        void SetICTypicalPartonVirtualityQ0sqr(double x) { icTypicalPartonVirtualityQ0sqr = x; }
+        double GetICTypicalPartonVirtualityQ0sqr() { return icTypicalPartonVirtualityQ0sqr; }
 
 	double GetEta0() const { return eta_0; }
 	void SetEta0(double e0) { eta_0 = e0; }
@@ -44,7 +53,9 @@ class BKSolver
         Dipole* dipole;
         std::string tmp_output;         // File which is updated along with the evolution, if empty no temporary results are saved
 	double eta_0;	// New eta-BK, eta < eta_0 gives initial condition
-
+    double x0;  // Initial condition refers to xbj, usually=0.01
+    double icx0_nlo_impfac; // x0 in the energy conservation requirement, usually =1
+    double icTypicalPartonVirtualityQ0sqr;
 };
 
 
