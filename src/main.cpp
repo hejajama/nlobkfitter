@@ -53,6 +53,8 @@ int main()
 	cout << "# NLOBKDISFitter, git version " << g_GIT_SHA1 << " local repo " << g_GIT_LOCAL_CHANGES << " main build " << __DATE__  << " " << __TIME__     << endl;
     gsl_set_error_handler(&ErrHandlerCustom);
     //gsl_set_error_handler_off();
+    
+    double Q2depevol = true;
 
     config::RC_LO = config::FIXED_LO;// FIXED_,PARENT_,PARENT_BETA_,SMALLEST_,BALITSKY_,FRAC_,GUILLAUME_,
         config::RESUM_RC = config::RESUM_RC_GUILLAUME; // _BALITSKY,_PARENT,_SMALLEST,_GUILLAUME,
@@ -114,11 +116,14 @@ int main()
       */
 
     NLODISFitter fitter(parameters);
+    fitter.UseImprovedZ2Bound(Q2depevol);
     fitter.AddDataset(data);
     fitter.SetNLO(false);
+    fitter.SetSUB(true);
     
     cout <<"=== BK solver setup: ===" << endl;
     cout << NLOBK_CONFIG_STRING()<<endl;
+    cout <<"Use Q2 dependent evolution (useImprovedZ2Bound): "; if (Q2depevol) cout << "enabled"; else cout << "disabled"; cout << endl;
 
     cout << "=== Initial parameters ===" << endl;
     cout << parameters << endl;
