@@ -324,6 +324,10 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     dipole.SetX0(icx0_bk);
     BKSolver solver(&dipole);
     double maxy = std::log(icx0_bk/(1e-5)) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
+    
+    double maxq2=50;     // Todo, take from actual data!
+    if (useImprovedZ2Bound)
+        maxy += std::log(maxq2 / icTypicalPartonVirtualityQ0sqr);
 
     // cout << "=== Solving BK ===" << endl;
 
@@ -332,7 +336,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     solver.SetX0(icx0_bk);
     solver.SetICX0_nlo_impfac(icx0_nlo_impfac);
     solver.SetICTypicalPartonVirtualityQ0sqr(icTypicalPartonVirtualityQ0sqr);
-    solver.SetTmpOutput("tmp_datafile_nokc.dat");
+    //solver.SetTmpOutput("tmp_datafile.dat");
     solver.Solve(maxy);
 
     //solver.GetDipole()->Save("output_dipole_lobk_x0=10_euler_DESTEP0.02.dat");
@@ -1051,13 +1055,14 @@ int integrand_ITLOpMass(const int *ndim, const double x[], const int *ncomp,doub
     double xbj=dataptr->xbj;
     double qmass=dataptr->qMass_light;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
+    double Xrpdty_lo = Optr->Xrpdty_LO(xbj, Sq(Q));
     double z1=x[0];
     double x01=nlodis_config::MAXR*x[1];
     //double x01sq=x01*x01;
 
     double af = sqrt( Sq(Q)*z1*(1.0-z1) + Sq(qmass) );
     double impactfac = (1.0-2.0*z1+2.0*Sq(z1))*Sq(af*gsl_sf_bessel_K1(af*x01)) + Sq( qmass*gsl_sf_bessel_K0( af*x01 ) );
-    double res=(1.0-(Optr->Sr(x01,xbj)))*(impactfac)*x01;
+    double res=(1.0-(Optr->Sr(x01,Xrpdty_lo)))*(impactfac)*x01;
     if(gsl_finite(res)==1){
         *f=res;
     }else{
