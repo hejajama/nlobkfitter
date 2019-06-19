@@ -46,7 +46,9 @@ void ErrHandlerCustom(const char * reason,
     // 11 = maximum number of subdivisions reached
     // 15: underflows
 
-    if (gsl_errno == 15 or gsl_errno == 16) return;
+    if (gsl_errno == 11) return; // ignore max subdivision errors
+    if (gsl_errno == 18) return; // roundoff errors from small r?
+    // if (gsl_errno == 15 or gsl_errno == 16) return;
     // Ugly hack, comes from the edges of the z integral in virtual_photon.cpp
     // Overflows come from IPsat::bint when it is done analytically
     // Hope is that these errors are handled correctly everywhere

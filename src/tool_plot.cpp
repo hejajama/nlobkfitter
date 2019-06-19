@@ -46,7 +46,7 @@ void ErrHandlerCustom(const char * reason,
     // 18 = roundoff error prevents tolerance from being achieved
     // 11 = maximum number of subdivisions reached
     // 15: underflows
-    // if (gsl_errno == 1){std::cout << "Problem";}
+
     if (gsl_errno == 11) return; // ignore max subdivision errors
     if (gsl_errno == 18) return; // roundoff errors from small r?
     // if (gsl_errno == 15 or gsl_errno == 16) return;
