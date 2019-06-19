@@ -49,7 +49,7 @@ void ErrHandlerCustom(const char * reason,
             << " (code " << gsl_errno << ")." << std::endl;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
 	cout << "# NLOBKDISFitter, git version " << g_GIT_SHA1 << " local repo " << g_GIT_LOCAL_CHANGES << " main build " << __DATE__  << " " << __TIME__     << endl;
     gsl_set_error_handler(&ErrHandlerCustom);
@@ -97,10 +97,25 @@ int main()
 	 //parameters.SetPrecision(0.001); 
       // Constants
     
-    parameters.Add("qs0sqr", 0.2, 0.4);
-    parameters.Add("alphascalingC2", 14.4      , 0.70);
-    parameters.Add("e_c", 1, 1.0);
-    parameters.Add("anomalous_dimension", 1.0 );
+    if (argc > 1 and argc != 5)
+    {
+        cout << "Give parameters as: qs0sqr alphascalingC2 e_c anomalous_dimension" << endl;
+        exit(1);
+    }
+    if (argc > 1) // Use parameters from CLI
+    {
+        parameters.Add("qs0sqr", StrToReal(argv[1]));
+        parameters.Add("alphascalingC2", StrToReal(argv[2]));
+        parameters.Add("e_c", StrToReal(argv[3]));
+        parameters.Add("anomalous_dimension", StrToReal(argv[4]) );
+    }
+    else
+    {
+        parameters.Add("qs0sqr", 0.2, 0.4);
+        parameters.Add("alphascalingC2", 14.4      , 0.70);
+        parameters.Add("e_c", 1, 1.0);
+        parameters.Add("anomalous_dimension", 1.0 );
+    }
 	
     // eta_0 starint value for the k^- evolution
 	parameters.Add("eta0", std::log(1/0.01));
