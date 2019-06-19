@@ -44,6 +44,7 @@ void ErrHandlerCustom(const char * reason,
                         int gsl_errno)
 {
     errors_mmyiss++;
+    if (gsl_errno == 11 or gsl_errno == 18) return;
     std::cerr << file << ":"<< line <<": Error " << errors_mmyiss << ": " <<reason
             << " (code " << gsl_errno << ")." << std::endl;
 }
@@ -68,7 +69,7 @@ int main()
         config::RPOINTS = 100;
         config::DE_SOLVER_STEP = 0.2;// Euler method probably requires smaller step!
 		config::DNDY=false;
-        config::VERBOSE=true;
+        config::VERBOSE=false;
         //sigmar_config::maxy = 5.2;
 
         // If want to use kinematical constraint in the LO equation
@@ -121,9 +122,9 @@ int main()
     fitter.SetNLO(false);
     fitter.SetSUB(true);
     
-    cout <<"=== BK solver setup: ===" << endl;
-    cout << NLOBK_CONFIG_STRING()<<endl;
-    cout <<"Use Q2 dependent evolution (useImprovedZ2Bound): "; if (Q2depevol) cout << "enabled"; else cout << "disabled"; cout << endl;
+    cout <<"#=== BK solver setup: ===" << endl;
+    cout << NLOBK_CONFIG_STRING();
+    cout <<"# Use Q2 dependent evolution (useImprovedZ2Bound): "; if (Q2depevol) cout << "enabled"; else cout << "disabled"; cout << endl << endl;
 
     cout << "=== Initial parameters ===" << endl;
     cout << parameters << endl;

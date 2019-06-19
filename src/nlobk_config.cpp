@@ -74,17 +74,7 @@ std::string NLOBK_CONFIG_STRING()
     std::stringstream ss;
     
     
-    ss << "# MC integration method: ";
-    if (INTMETHOD_NLO == MISER)
-    ss <<"Miser, points=" << MCINTPOINTS;
-    else if (INTMETHOD_NLO == VEGAS)
-    ss <<"Vegas, points=" << MCINTPOINTS;
-    else if (INTMETHOD_NLO == MULTIPLE)
-    ss << "Multiple integrals (no montecarlo)";
-    else
-    ss <<"UNKNOWN!";
-    ss << ". K1 integration accuracy " << INTACCURACY ;
-    ss << endl;
+    
     
     ss<< "# LO Kernel RC: ";
     if (RC_LO == FIXED_LO )
@@ -115,6 +105,11 @@ std::string NLOBK_CONFIG_STRING()
     ss << endl;
     ss <<"# Nc=" << NC << ", Nf=" << NF << endl;
     
+    if (config::EULER_METHOD)
+        ss <<"# Using Euler method in K1" << endl;
+    else
+        ss << "# Using RungeKutta method in K1" << endl;
+    
     
     //if (FORCE_POSITIVE_N)
     //ss << "# Amplitude is limited to [0,1]" << endl;
@@ -137,10 +132,23 @@ std::string NLOBK_CONFIG_STRING()
         ss << endl;
     }
     
-    
+    ss << "# BK K1 integration relative accuracy: " << INTACCURACY ;
     if (config::NO_K2)
     {
         ss <<  "# Not including K2 and Kf" << endl;
+    }
+    else
+    {
+        ss << "# NLO BK as^2 terms: MC integration method: ";
+        if (INTMETHOD_NLO == MISER)
+            ss <<"Miser, points=" << MCINTPOINTS;
+        else if (INTMETHOD_NLO == VEGAS)
+            ss <<"Vegas, points=" << MCINTPOINTS;
+        else if (INTMETHOD_NLO == MULTIPLE)
+            ss << "Multiple integrals (no montecarlo)";
+        else
+            ss <<"UNKNOWN!";
+        ss << endl;
     }
     
     ss <<  "# Kinematical constraint: ";

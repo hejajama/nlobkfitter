@@ -57,7 +57,7 @@ int BKSolver::Solve(double maxy)
      * Array size is Dipole->RPoints()
      */
     
-    cout <<"#### Solving BK equation up to y=" << maxy <<", mcintpoints " << MCINTPOINTS << endl;
+    cout <<"#### Solving BK equation up to y=" << maxy << endl;
     //cout << "# Nc=" << NC << ", Nf=" << NF << " alphas(r=1) = " << Alphas(1) << endl;
     
     // First check that configs make sense
@@ -327,7 +327,7 @@ double Inthelperf_lo_z(double z, void* p)
                                GSL_INTEG_GAUSS21, workspace, &result, &abserr);
     gsl_integration_workspace_free(workspace);
     
-    if (status == GSL_ESING)
+    if (status == GSL_ESING and std::abs(result)>1e-7)
     {
 #pragma omp critical
         cerr << "thetaInt failed, z=" << z <<", r=" << helper->r <<": at " << LINEINFO << ", result " << result << ", relerr "

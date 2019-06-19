@@ -34,7 +34,7 @@ int Data::LoadData(string filename, DataType type)
     if (!file.is_open())
     {
         cerr << "ERROR! Coudn't read file " << filename << endl;
-        return -1;
+        exit(-1);
     }
     
     int points=0;
