@@ -192,7 +192,15 @@ int main( int argc, char* argv[] )
             << "# Use Sigma3: " << useSigma3 << endl
             << "# Use improved Z2 bound: " << useImprovedZ2Bound << endl
             << "# Use Z2 loop term: " << useBoundLoop << endl
-            << "# Cuba MC algorithm: " << cubaMethod << endl;
+            << "# Cuba MC: " << cubaMethod
+                << ", Cuba eps = " << nlodis_config::CUBA_EPSREL
+                << ", Cuba maxeval = " << (float)nlodis_config::CUBA_MAXEVAL
+                << endl
+            << "# config::INTACCURACY = " << config::INTACCURACY
+                << ", config::RPOINTS = " << config::RPOINTS
+                << ", config::DE_SOLVER_STEP = " << config::DE_SOLVER_STEP
+                << ", config::{MINR, MAXR}, nlodis_config::{MINR, MAXR} = " << config::MINR << " " << config::MAXR << " " << nlodis_config::MINR << " " << nlodis_config::MAXR
+                << endl;
 
     /*
     *   PARAMS TO IC
