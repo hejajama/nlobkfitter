@@ -3,7 +3,7 @@ Makefile.*
 *.cstm
 
 # Ignore run files
-run*
+*.sh
 
 # Ignore build related files
 build/
