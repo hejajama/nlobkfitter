@@ -63,59 +63,59 @@ int main( int argc, char* argv[] )
 {
     gsl_set_error_handler(&ErrHandlerCustom);
 
-        // NLO DIS SIGMA_R COMPUTATION CONFIGS
-        nlodis_config::CUBA_EPSREL = 10e-3;
-        nlodis_config::CUBA_MAXEVAL= 5e7;
-        nlodis_config::MINR = 1e-6;
-        nlodis_config::MAXR = 50;
-        nlodis_config::PRINTDATA = true;
-        bool useNLO = true;
-        //bool useSUB = true;               // Set by a command line switch in swarmscan
-        //bool useImprovedZ2Bound = true;   // Set by a command line switch in swarmscan
-        //bool useBoundLoop = true;         // Set by a command line switch in swarmscan
-        string cubaMethod = "suave";
-        //bool useResumBK = true;
-        //bool useKCBK = false;
-        //if (useResumBK == true and useKCBK == true) {cout << "Both ResumBK and KCBK enabled, exitting." << endl; return -1;}
+    // NLO DIS SIGMA_R COMPUTATION CONFIGS
+    nlodis_config::CUBA_EPSREL = 10e-3;
+    nlodis_config::CUBA_MAXEVAL= 5e7;
+    nlodis_config::MINR = 1e-6;
+    nlodis_config::MAXR = 50;
+    nlodis_config::PRINTDATA = true;
+    bool useNLO = true;
+    //bool useSUB = true;               // Set by a command line switch in swarmscan
+    //bool useImprovedZ2Bound = true;   // Set by a command line switch in swarmscan
+    //bool useBoundLoop = true;         // Set by a command line switch in swarmscan
+    string cubaMethod = "suave";
+    //bool useResumBK = true;
+    //bool useKCBK = false;
+    //if (useResumBK == true and useKCBK == true) {cout << "Both ResumBK and KCBK enabled, exitting." << endl; return -1;}
 
-        // Constants
-        config::NF=3;   // Only light quarks
-        config::LAMBDAQCD = 0.241;
-        
-        config::VERBOSE = true;
-        // config::RINTPOINTS = 512/4;
-        // config::THETAINTPOINTS = 512/4;
+    // Constants
+    config::NF=3;   // Only light quarks
+    config::LAMBDAQCD = 0.241;
+    
+    config::VERBOSE = true;
+    // config::RINTPOINTS = 512/4;
+    // config::THETAINTPOINTS = 512/4;
 
-        config::KSUB = 0.65;  // Optimal value for K_sub
-        config::NO_K2 = true;  // Do not include numerically demanding full NLO part
-        config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
+    config::KSUB = 0.65;  // Optimal value for K_sub
+    config::NO_K2 = true;  // Do not include numerically demanding full NLO part
+    config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
 
-        config::INTACCURACY = 10e-3;//0.02;
-        // config::MCINTACCURACY = 10e-3;//0.02;
-        // config::MCINTPOINTS = 1e7;
-        config::MINR = 1e-6;
-        config::MAXR = 50;
-        config::RPOINTS = 100;
-        config::DE_SOLVER_STEP = 0.4; // Rungekutta step
-        // config::DE_SOLVER_STEP = 0.05; // Euler step
+    config::INTACCURACY = 10e-3;//0.02;
+    // config::MCINTACCURACY = 10e-3;//0.02;
+    // config::MCINTPOINTS = 1e7;
+    config::MINR = 1e-6;
+    config::MAXR = 50;
+    config::RPOINTS = 100;
+    config::DE_SOLVER_STEP = 0.4; // Rungekutta step
+    // config::DE_SOLVER_STEP = 0.05; // Euler step
 
 
     // READING RUN CONFIGURATION FROM THE STDIN
     bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop, useSigma3;
-    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q C^2 X0 gamma Q0sq Y0 eta0\nsub/unsub/unsub+ resumbk/trbk/lobk parentrc/guillaumerc/fixedrc z2improved/z2simple z2boundloop/unboundloop";
+    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q0² C^2 X0 ec gamma Q0sq Y0 eta0\nsub/unsub/unsub+ resumbk/trbk/lobk parentrc/guillaumerc/fixedrc z2improved/z2simple z2boundloop/unboundloop";
     string string_sub, string_bk, string_rc;
     if (argc<2){ cout << helpstring << endl; return 0;}
     // Argv[0] is the name of the program
 
     string_sub = string(argv [1]);
     if (string(argv [1]) == "sub"){
-      useSUB = true;
+        useSUB = true;
     } else if (string(argv [1]) == "unsub"){
-      useSUB = false;
-      useSigma3 = false;
+        useSUB = false;
+        useSigma3 = false;
     } else if (string(argv [1]) == "unsub+"){
-      useSUB = false;
-      useSigma3 = true;
+        useSUB = false;
+        useSigma3 = true;
     } else {cout << helpstring << endl; return -1;}
 
     string_bk = string(argv [2]);
@@ -259,23 +259,31 @@ int main( int argc, char* argv[] )
     fitter.SetCubaMethod(cubaMethod);
 
     cout << std::boolalpha;
-    cout    << "=== Perturbative settings ===" << endl
-            << "Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
+    cout    << "# === Perturbative settings ===" << endl
+            << "# Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
             << "# Use LOBK (DL,SL==false): " << (!(config::RESUM_DLOG) 
                                     and !(config::RESUM_SINGLE_LOG)) << endl
             << "# Use ResumBK (DL,SL==true,KC_NONE): " << ((config::RESUM_DLOG) 
                                     and (config::RESUM_SINGLE_LOG)
                                     and (config::KINEMATICAL_CONSTRAINT == config::KC_NONE)) << endl
-            << "KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
-            << "Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
-            << "Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
-            << "Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
-            << "Use NLOimpact: " << useNLO << endl
-            << "Use SUBscheme: " << useSUB << endl
-            << "Use Sigma3: " << useSigma3 << endl
-            << "Use improved Z2 bound: " << useImprovedZ2Bound << endl
-            << "Use Z2 loop term: " << useBoundLoop << endl
-            << "Cuba MC algorithm: " << cubaMethod << endl;
+            << "# KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
+            << "# Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
+            << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
+            << "# Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
+            << "# Use NLOimpact: " << useNLO << endl
+            << "# Use SUBscheme: " << useSUB << endl
+            << "# Use Sigma3: " << useSigma3 << endl
+            << "# Use improved Z2 bound: " << useImprovedZ2Bound << endl
+            << "# Use Z2 loop term: " << useBoundLoop << endl
+            << "# Cuba MC: " << cubaMethod
+                << ", Cuba eps = " << nlodis_config::CUBA_EPSREL
+                << ", Cuba maxeval = " << (float)nlodis_config::CUBA_MAXEVAL
+                << endl
+            << "# config::INTACCURACY = " << config::INTACCURACY
+                << ", config::RPOINTS = " << config::RPOINTS
+                << ", config::DE_SOLVER_STEP = " << config::DE_SOLVER_STEP
+                << ", config::{MINR, MAXR}, nlodis_config::{MINR, MAXR} = " << config::MINR << " " << config::MAXR << " " << nlodis_config::MINR << " " << nlodis_config::MAXR
+                << endl;
     cout << "=== Initial parameters ===" << endl;
     cout << parameters << endl;
     if(nlodis_config::VERBOSE) cout << "=== Starting fit ===" << endl;
@@ -297,43 +305,31 @@ int main( int argc, char* argv[] )
 
     cout << "=== Perturbative settings were ===" << endl;
     cout << std::boolalpha;
-    cout    << "=== Perturbative settings ===" << endl
-            << "Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
+    cout    << "# === Perturbative settings ===" << endl
+            << "# Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
             << "# Use LOBK (DL,SL==false): " << (!(config::RESUM_DLOG) 
                                     and !(config::RESUM_SINGLE_LOG)) << endl
             << "# Use ResumBK (DL,SL==true,KC_NONE): " << ((config::RESUM_DLOG) 
                                     and (config::RESUM_SINGLE_LOG)
                                     and (config::KINEMATICAL_CONSTRAINT == config::KC_NONE)) << endl
-            << "KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
-            << "Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
-            << "Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
-            << "Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
-            << "Use NLOimpact: " << useNLO << endl
-            << "Use SUBscheme: " << useSUB << endl
-            << "Use Sigma3: " << useSigma3 << endl
-            << "Use improved Z2 bound: " << useImprovedZ2Bound << endl
-            << "Use Z2 loop term: " << useBoundLoop << endl
-            << "Cuba MC algorithm: " << cubaMethod << endl;
+            << "# KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
+            << "# Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
+            << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
+            << "# Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
+            << "# Use NLOimpact: " << useNLO << endl
+            << "# Use SUBscheme: " << useSUB << endl
+            << "# Use Sigma3: " << useSigma3 << endl
+            << "# Use improved Z2 bound: " << useImprovedZ2Bound << endl
+            << "# Use Z2 loop term: " << useBoundLoop << endl
+            << "# Cuba MC: " << cubaMethod
+                << ", Cuba eps = " << nlodis_config::CUBA_EPSREL
+                << ", Cuba maxeval = " << (float)nlodis_config::CUBA_MAXEVAL
+                << endl
+            << "# config::INTACCURACY = " << config::INTACCURACY
+                << ", config::RPOINTS = " << config::RPOINTS
+                << ", config::DE_SOLVER_STEP = " << config::DE_SOLVER_STEP
+                << ", config::{MINR, MAXR}, nlodis_config::{MINR, MAXR} = " << config::MINR << " " << config::MAXR << " " << nlodis_config::MINR << " " << nlodis_config::MAXR
+                << endl;
 
     return 0;
 }
-
-//int errorscounter;
-/*void ErrHandler(const char * reason,
-                const char * file,
-                int line,
-                int gsl_errno)
-{    // 14 = failed to reach tolerance
-    // 18 = roundoff error prevents tolerance from being achieved
-    // 11 = maximum number of subdivisions reached
-    // 15: underflows
-
-    if (gsl_errno == 15 or gsl_errno == 16) return;
-    // Ugly hack, comes from the edges of the z integral in virtual_photon.cpp
-    // Overflows come from IPsat::bint when it is done analytically
-    // Hope is that these errors are handled correctly everywhere
-    errorscounter++;
-    std::cerr << file << ":"<< line <<": Error " << errorscounter << ": " <<reason
-    << " (code " << gsl_errno << ")." << std::endl;
-}
-*/
