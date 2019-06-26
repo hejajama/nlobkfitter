@@ -332,7 +332,6 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     // cout << "=== Solving BK ===" << endl;
 
     solver.SetAlphasScaling(alphas_scaling);
-    solver.SetEta0(par[ parameters.Index("eta0")]);
     solver.SetX0(icx0_bk);
     solver.SetICX0_nlo_impfac(icx0_nlo_impfac);
     solver.SetICTypicalPartonVirtualityQ0sqr(icTypicalPartonVirtualityQ0sqr);
@@ -972,6 +971,16 @@ int integrand_ILLOpMass(const int *ndim, const double x[], const int *ncomp,doub
 
     double af = sqrt( Sq(Q)*z1*(1-z1) + Sq(qmass) );
     double impactfac = 4.0*Sq(Q*(z1)*(1.0-z1)*gsl_sf_bessel_K0(af*x01));
+    
+    if (config::KINEMATICAL_CONSTRAINT ==  config::KC_EDMOND_K_MINUS)
+    {
+        // Shift from 1902.06637 eq. (4.3)
+        double q0sqrs = 1;
+        double rho = std::log(1.0 / (x01*q0sqrs));
+        // eta = y - rho
+        Xrpdty_lo*=std::exp(rho);
+    }
+    
     double res=(1.0-(Optr->Sr(x01,Xrpdty_lo)))*(impactfac)*x01;
     if(gsl_finite(res)==1){
         *f=res;
@@ -1058,6 +1067,15 @@ int integrand_ITLOpMass(const int *ndim, const double x[], const int *ncomp,doub
     double z1=x[0];
     double x01=nlodis_config::MAXR*x[1];
     double Xrpdty_lo = Optr->Xrpdty_LO(xbj, Sq(Q));
+    
+    if (config::KINEMATICAL_CONSTRAINT ==  config::KC_EDMOND_K_MINUS)
+    {
+        // Shift from 1902.06637 eq. (4.3)
+        double q0sqrs = 1;
+        double rho = std::log(1.0 / (x01*q0sqrs));
+        // eta = y - rho
+        Xrpdty_lo*=std::exp(rho);
+    }
 
     double af = sqrt( Sq(Q)*z1*(1.0-z1) + Sq(qmass) );
     double impactfac = (1.0-2.0*z1+2.0*Sq(z1))*Sq(af*gsl_sf_bessel_K1(af*x01)) + Sq( qmass*gsl_sf_bessel_K0( af*x01 ) );

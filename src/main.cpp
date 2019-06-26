@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
     
     double Q2depevol = true;
 
-    config::RC_LO = config::FIXED_LO;// FIXED_,PARENT_,PARENT_BETA_,SMALLEST_,BALITSKY_,FRAC_,GUILLAUME_,
+    config::RC_LO = config::PARENT_LO;// FIXED_,PARENT_,PARENT_BETA_,SMALLEST_,BALITSKY_,FRAC_,GUILLAUME_,
         config::RESUM_RC = config::RESUM_RC_GUILLAUME; // _BALITSKY,_PARENT,_SMALLEST,_GUILLAUME,
         config::RESUM_DLOG = false;; // Resum doulbe logs
         config::RESUM_SINGLE_LOG = false; // Resum single logs
@@ -67,14 +67,14 @@ int main(int argc, char* argv[])
         config::MINR = 1e-5;
         config::MAXR = 50;
         config::RPOINTS = 100;
-        config::DE_SOLVER_STEP = 0.2;// Euler method probably requires smaller step!
+        config::DE_SOLVER_STEP = 0.1;// Euler method probably requires smaller step!
 		config::DNDY=false;
-        config::VERBOSE=false;
+        config::VERBOSE=true;
         //sigmar_config::maxy = 5.2;
 
         // If want to use kinematical constraint in the LO equation
-        config::EULER_METHOD = false;;    // Kinematical constraint requires this
-        config::KINEMATICAL_CONSTRAINT = config::KC_NONE;;
+        config::EULER_METHOD = true;;    // Kinematical constraint requires this
+    config::KINEMATICAL_CONSTRAINT =config::KC_EDMOND_K_MINUS;;
         config::TARGET_KINEMATICAL_CONSTRAINT=false;
         // Constants
         config::NF=3;   // Only light quarks
@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
     }
 	
     // eta_0 starint value for the k^- evolution
-	parameters.Add("eta0", std::log(1/0.01));
+	//arameters.Add("eta0", std::log(1/0.01));
     
     // Constants
     parameters.Add("icx0_bk", 0.01 );
