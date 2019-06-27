@@ -62,10 +62,10 @@ int main( int argc, char* argv[] )
     gsl_set_error_handler(&ErrHandlerCustom);
 
     // NLO DIS SIGMA_R COMPUTATION CONFIGS
-    nlodis_config::CUBA_EPSREL = 10e-3;
-    nlodis_config::CUBA_MAXEVAL= 5e7;
+    nlodis_config::CUBA_EPSREL = 5e-3;
+    nlodis_config::CUBA_MAXEVAL= 1e8;
     nlodis_config::MINR = 1e-6;
-    nlodis_config::MAXR = 50;
+    nlodis_config::MAXR = 30;
     nlodis_config::PRINTDATA = true;
     bool useNLO = true;
     bool computeNLO = useNLO;
@@ -76,12 +76,12 @@ int main( int argc, char* argv[] )
     config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
 
     config::VERBOSE = true;
-    //config::RINTPOINTS = 512/4;
-    //config::THETAINTPOINTS = 512/4;
+    config::RINTPOINTS = 512/4;
+    config::THETAINTPOINTS = 512/4;
 
-    config::INTACCURACY = 10e-3;//0.02;
+    config::INTACCURACY = 5e-3;//0.02;
     config::MINR = 1e-6;
-    config::MAXR = 50;
+    config::MAXR = 30;
     config::RPOINTS = 100;
     config::DE_SOLVER_STEP = 0.4; // Rungekutta step
 
