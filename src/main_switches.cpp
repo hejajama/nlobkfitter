@@ -63,7 +63,6 @@ int main( int argc, char* argv[] )
 {
     gsl_set_error_handler(&ErrHandlerCustom);
 
-
     // NLO DIS SIGMA_R COMPUTATION CONFIGS
     nlodis_config::CUBA_EPSREL = 10e-3;
     nlodis_config::CUBA_MAXEVAL= 5e7;
@@ -191,7 +190,7 @@ int main( int argc, char* argv[] )
     } else {
         // use LO fit as IC
         icqs0sq   = 0.104;
-        iccsq     = 10.0;
+        iccsq     = 14.5;
         icx0      = 1.0;
         ic_ec     = 1.0;
         icgamma   = 1.0;
@@ -238,7 +237,7 @@ int main( int argc, char* argv[] )
         //
         parameters.SetLimits("qs0sqr",              0.001 , 0.7);
         // parameters.SetLimits("fitsigma0",           1.0   , 40.0);
-        parameters.SetLimits("alphascalingC2",      0.1  ,	900.0);
+        parameters.SetLimits("alphascalingC2",      0.1  ,	30.0);
         //parameters.SetLimits("e_c",                 0.4   , 10.0);
         //parameters.SetLimits("anomalous_dimension", 0.1   ,	2.0);
         //parameters.SetLimits("initialconditionX0",  0.01  ,	10.0);
@@ -290,7 +289,7 @@ int main( int argc, char* argv[] )
     if(nlodis_config::VERBOSE) cout << "=== Starting fit ===" << endl;
 
     //MnMachinePrecision precc();
-    //precc.SetPrecision(1e-3);
+    //precc.SetPrecision(1e-2);
     // MnMinimize: use MIGRAD, if it fails, fall back to SIMPLEX
     // Optional 3rd argument, an unsigned int, set algorithm strategy: 0 = low (fast) , 1 = medium (def) , 2 = high (taxing)
     //MnMigrad fit(fitter, parameters, 0);
@@ -298,7 +297,7 @@ int main( int argc, char* argv[] )
     //MnSimplex fit(fitter,parameters);
     //MnScan fit(fitter, parameters);
 
-    fit.SetPrecision(15e-2); // TODO Should this match BK solver acc?
+    //fit.SetPrecision(0.01); // TODO Should this match BK solver acc?
     // minimize
     FunctionMinimum min = fit();
     // output
