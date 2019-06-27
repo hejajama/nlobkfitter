@@ -332,7 +332,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     // cout << "=== Solving BK ===" << endl;
 
     solver.SetAlphasScaling(alphas_scaling);
-    solver.SetEta0(par[ parameters.Index("eta0")]);
+    // solver.SetEta0(par[ parameters.Index("eta0")]);
     solver.SetX0(icx0_bk);
     solver.SetICX0_nlo_impfac(icx0_nlo_impfac);
     solver.SetICTypicalPartonVirtualityQ0sqr(icTypicalPartonVirtualityQ0sqr);

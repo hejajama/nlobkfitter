@@ -206,10 +206,9 @@ int main( int argc, char* argv[] )
     *   PARAMS TO IC
     */
     double qs0sqr       = 0.2; //par[ parameters.Index("qs0sqr")];
-    double e_c          = 1.0; //par[ parameters.Index("e_c")];
-    //double fitsigma0    = 2.568*par[ parameters.Index("fitsigma0")];  // 1mb = 2.568 GeV² -- unit change into GeV
     double alphas_scaling     = 1.0; //par[ parameters.Index("alphascalingC2")]; // MATCH THIS IN IMPACTFACTOR ALPHA_S WHEN NLO
     double anomalous_dimension = 1.0; //par[ parameters.Index("anomalous_dimension")];
+    double e_c          = 1.0; //par[ parameters.Index("e_c")];
     double icx0_nlo_impfac = 1.0; //par[ parameters.Index("initialconditionX0")];
     double icx0_bk = 0.01; //par[ parameters.Index("initialconditionX0")];
     double initialconditionY0  = 0; //par[ parameters.Index("initialconditionY0")];
@@ -218,6 +217,18 @@ int main( int argc, char* argv[] )
     double qMass_charm = 1.35;
     bool useMasses = true;
     bool useCharm = false;
+
+    cout << "# === Initial parameters ===" << endl;
+    cout << "# "
+         << "qs0sqr=" << qs0sqr
+         << ", alphas_scaling=" << alphas_scaling
+         << ", gamma=" << anomalous_dimension
+         << ", e_c=" << e_c
+         << ", icx0_nlo_impfac=" << icx0_nlo_impfac
+         << ", icx0_bk=" << icx0_bk
+         << ", icY0=" << initialconditionY0
+         << ", icTypPartonVirtQ0sqr=" << icTypicalPartonVirtualityQ0sqr
+         << endl;
 
     /*
     // ***Solve resummed BK***
@@ -237,7 +248,7 @@ int main( int argc, char* argv[] )
 
     double eta0 = 0;
     solver.SetAlphasScaling(alphas_scaling);
-    solver.SetEta0(eta0);
+    // solver.SetEta0(eta0);
     solver.Solve(maxy);                                // Solve up to maxy
 
     // solver.GetDipole()->Save("./out/dipoles/dipole_lobk_fc_RK_step0.2_rpoints100_rmin1e-6rmax50_INTACC10e-3.dat");
