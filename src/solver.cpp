@@ -462,24 +462,31 @@ double Inthelperf_lo_theta(double theta, void* p)
             double shifted_1 = helper->rapidity - RapidityShift(r,X);
             double shifted_2 = helper->rapidity - RapidityShift(r,Y);
             
-            double eta0 = helper->solver->GetEta0();
+            double icx0 = helper->solver->GetX0();
+            double x0 = helper->solver->GetICX0_nlo_impfac();
+            double eta0 = std::log(x0/icx0);
             
             // Step function
             // not in (9.3)
-            // double xyzshift = std::max(0.0, std::log(r*r / std::min( X*X, Y*Y ) ) );
-            // if (heper->rapidity - par->eta0 - xyzshift < 0) return 0;
+            // Note that our evolution starts at eta=0, and eta=0 corresponds to helper->solver->GetX0();
+            // So the kinematical requirement for the step function is that xbj < 1, meaning that
+            // helper->rapidity - rpaidity_shift > -eta0
+            // or helper->rapidity + eta0 - rapidity_shift > 0
+            // So note that notation is different than in 1902.06637
+            double xyzshift = std::max(0.0, std::log(r*r / std::min( X*X+eps, Y*Y+eps ) ) );
+            if (helper->rapidity - xyzshift < 0) return 0;
             
             // (9.3)
-            // If shifted rapidity < eta0, use initial condition
+            // If shifted rapidity < 0, use initial condition
             double shifted_S_X = 0;
-            if (helper->rapidity - RapidityShift(r,X) > eta0)
+            if (helper->rapidity - RapidityShift(r,X) > 0)
                 shifted_S_X = 1.0 - helper->solver->GetDipole()->InterpolateN(X, helper->rapidity - RapidityShift(r,X));
             else
                 shifted_S_X = 1.0 - helper->solver->GetDipole()->GetInitialCondition()->DipoleAmplitude(X);
             //shifted_S_X =  1.0 - helper->solver->GetDipole()->InterpolateN(X, helper->rapidity - RapidityShift(r,X));
             
             double shifted_S_Y = 0;
-            if (helper->rapidity - RapidityShift(r,Y) > eta0)
+            if (helper->rapidity - RapidityShift(r,Y) > 0)
                 shifted_S_Y = 1.0 - helper->solver->GetDipole()->InterpolateN(Y, helper->rapidity - RapidityShift(r,Y));
             else
                 shifted_S_Y = 1.0 - helper->solver->GetDipole()->GetInitialCondition()->DipoleAmplitude(Y);
@@ -487,7 +494,7 @@ double Inthelperf_lo_theta(double theta, void* p)
             
             
             double S_r = 0;
-            if (helper->rapidity > eta0)
+            if (helper->rapidity > 0)
                 S_r = 1.0 - helper->dipole_interp->Evaluate(r);
             else
                 S_r = 1.0 - helper->solver->GetDipole()->GetInitialCondition()->DipoleAmplitude(r);
