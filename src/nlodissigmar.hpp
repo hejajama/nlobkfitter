@@ -163,6 +163,9 @@ public:
     **  HELPERS & POINTERS
     */
     double Sr(double r, double x);
+    double Sr(double r, double x02sq, double x21sq, double xbj);
+    double SrY(double r, double y);
+    double SrY(double r, double x02sq, double x21sq, double y);
     double SrTripole(double x01, double x02, double x21, double x);
     double P(double z);
     double heaviside_theta(double x);
@@ -204,6 +207,7 @@ public:
     double ILNLOqg_subterm_lobk_explicit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
     double ILNLOqg_subterm_resumbk(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
     double ILNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
+    double ILNLOqg_subterm_trbk_edmond(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
     
     double ITNLOqg_subterm(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
         return (this->*ITNLOqg_subterm_PTR)(Q,x,z1,z2,x01sq,x02sq,x21sq);
@@ -212,6 +216,7 @@ public:
     double ITNLOqg_subterm_lobk_explicit(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
     double ITNLOqg_subterm_resumbk(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
     double ITNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
+    double ITNLOqg_subterm_trbk_edmond(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq);
 
     // Sub scheme subtraction term z2 upper bound pointer and targets
     double z2upper_qg_subterm(double z1){ return (this->*z2upper_qg_PTR)(z1); }   // pointer method

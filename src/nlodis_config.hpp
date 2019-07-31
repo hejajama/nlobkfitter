@@ -37,6 +37,12 @@ namespace nlodis_config
     };
     extern SubSchemeTermKernel SUB_TERM_KERNEL;
 
+    enum TargetRapidityBKRhoPresc
+    {
+        TRBK_RHO_X_R,
+        TRBK_RHO_MAX_X_Y_R
+    };
+    extern TargetRapidityBKRhoPresc TRBK_RHO_PRESC;
 }
 
 #endif

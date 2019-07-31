@@ -133,6 +133,7 @@ int main( int argc, char* argv[] )
             config::KINEMATICAL_CONSTRAINT = config::KC_EDMOND_K_MINUS;
             config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
             nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_TRBK_EDMOND;
+            nlodis_config::TRBK_RHO_PRESC = nlodis_config::TRBK_RHO_MAX_X_Y_R;
     }else if (string(argv [2]) == "lobk"){
             config::EULER_METHOD = false;   // Use Runge-Kutta since no kin. constraint
             config::RESUM_DLOG = false;
@@ -377,7 +378,7 @@ int main( int argc, char* argv[] )
         int i,j;
         std::tie(i,j) = coordinates[k];
 
-        // if (j==0 and cubaMethod=="suave"){j++;}
+        if (j==0 and cubaMethod=="suave"){continue;}
         double Q = 1.0*pow(10,(double)i/20.0);
         double xbj = icx0/pow(10,(double)j/4.0);
         // #pragma omp critical

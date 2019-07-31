@@ -656,6 +656,23 @@ double ComputeSigmaR::Sr(double r, double x) {
     return Srx;
 }
 
+double ComputeSigmaR::SrY(double r, double Y) {
+    double Sry;
+    if(r<nlodis_config::MINR){
+        Sry = 1.;
+    }else if(r>nlodis_config::MAXR-1e-7){
+        Sry = 0.;
+    }else{
+        // Note: icY0 controls how much evolution we have before we define that we have "initial condition"
+        if (std::exp(-Y) > icX0_bk){
+            Sry = ClassScopeDipolePointer->S(r, (icX0_bk*std::exp(-icY0)) ) ; //1-Nrx;
+        } else {
+            Sry = ClassScopeDipolePointer->S(r, (std::exp(-Y)*std::exp(-icY0)) ) ; //1-Nrx;
+        }
+    }
+    return Sry;
+}
+
 double ComputeSigmaR::SrTripole(double x01, double x02, double x21, double x) {
     return Nc/(2*CF)*(Sr(x02,x)*Sr(x21,x) - 1/Sq(Nc)*Sr(x01,x));
 }
@@ -845,6 +862,31 @@ double ComputeSigmaR::ILNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, d
     subterm = impact_factor_lo * nlo_if_kernel * ( -s02_shifted * s12_shifted + s01);
     return subterm;
 }
+
+double ComputeSigmaR::ILNLOqg_subterm_trbk_edmond(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
+    // subtraction term for the Edmond et al. kinematically constrained target rapidity BK. arxiv 1902.06637 Eq. 9.3.
+    // N.B. No step function in the final form Eq. 9.3.; Only LOBK kernel and the dipole amplitudes at shifted rapidities.
+    // Thus we only need to add the LO impact factor here then.
+
+    // Shifted rapidites
+    double eta = 9999;
+    double eta_delta02r = 9999;
+    double eta_delta21r = 9999;
+    
+    // Dipoles at shifted rapidity / scaled xbj
+    double s02_shifted = SrY(sqrt(x02sq), eta_delta02r);
+    double s12_shifted = SrY(sqrt(x21sq), eta_delta21r);
+    double s01 = SrY(sqrt(x01sq), eta);
+
+    double subterm;
+    double impact_factor_lo = ILLO(Q,z1,x01sq);
+    double P_at_zero = 2;
+    double nlo_if_kernel = P_at_zero * 0.5 * (x01sq + x21sq - x02sq) / (x02sq * x21sq); // this is the symmetric half of the LOBK kernel
+    subterm = impact_factor_lo * nlo_if_kernel * ( -s02_shifted * s12_shifted + s01);
+    return subterm;
+}
+
+
 
 double ComputeSigmaR::ITNLOqg_subterm_lobk_z2tozero(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
     // z2 -> 0 limit of the full NLO impact factors numerically
