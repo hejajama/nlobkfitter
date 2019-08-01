@@ -68,6 +68,7 @@ public:
   typedef  double (ComputeSigmaR::*z2funpointer)(double x, double q);
   typedef  double (ComputeSigmaR::*subterm_z2upper_fp)(double z);
   typedef  double (ComputeSigmaR::*xrapidity_funpointer)(double x, double q);
+  typedef  double (ComputeSigmaR::*xrapidity_NLO_funpointer)(double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq);
   typedef  double (ComputeSigmaR::*bkkernel_funpointer)(double x01sq, double x02sq, double x21sq);
   typedef  double (ComputeSigmaR::*INLOqg_subterm_fp)(double Q, double x, double z1, double z2,
                                                       double x01sq, double x02sq, double phix0102);
@@ -118,6 +119,8 @@ public:
     void SetImprovedZ2Bound(z2funpointer p){z2limit_PTR = p;} // function pointer setter
     void SetEvolutionX_LO(xrapidity_funpointer p){Xrpdty_LO_PTR = p;}
     void SetEvolutionX_DIP(xrapidity_funpointer p){Xrpdty_DIP_PTR = p;}
+    void SetEvolutionX_NLO(xrapidity_NLO_funpointer p){Xrpdty_NLO_PTR = p;}
+
     void SetSigma3BKKernel(bkkernel_funpointer p){K_kernel_PTR = p;} // function pointer setter
     void SetSubTermKernel(nlodis_config::SubSchemeTermKernel sstk){
         if (sstk == nlodis_config::SUBTERM_LOBK_Z2TOZERO){
@@ -132,6 +135,9 @@ public:
         }else if (sstk == nlodis_config::SUBTERM_KCBK_BEUF){
             ILNLOqg_subterm_PTR = &ComputeSigmaR::ILNLOqg_subterm_kcbk_beuf;
             ITNLOqg_subterm_PTR = &ComputeSigmaR::ITNLOqg_subterm_kcbk_beuf;
+        }else if (sstk == nlodis_config::SUBTERM_TRBK_EDMOND){
+            ILNLOqg_subterm_PTR = &ComputeSigmaR::ILNLOqg_subterm_trbk_edmond;
+            ITNLOqg_subterm_PTR = &ComputeSigmaR::ITNLOqg_subterm_trbk_edmond;
         }
     }
 
@@ -151,6 +157,7 @@ public:
     z2funpointer z2limit_PTR;
     subterm_z2upper_fp z2upper_qg_PTR;
     xrapidity_funpointer Xrpdty_LO_PTR, Xrpdty_DIP_PTR;
+    xrapidity_NLO_funpointer Xrpdty_NLO_PTR;
     bkkernel_funpointer K_kernel_PTR;
     INLOqg_subterm_fp ILNLOqg_subterm_PTR, ITNLOqg_subterm_PTR;
     // Cuba integrators
@@ -163,9 +170,7 @@ public:
     **  HELPERS & POINTERS
     */
     double Sr(double r, double x);
-    double Sr(double r, double x02sq, double x21sq, double xbj);
     double SrY(double r, double y);
-    double SrY(double r, double x02sq, double x21sq, double y);
     double SrTripole(double x01, double x02, double x21, double x);
     double P(double z);
     double heaviside_theta(double x);
@@ -193,6 +198,14 @@ public:
     double Xrpdty_DIP( double x, double qsq) { return (this->*Xrpdty_DIP_PTR)(x,qsq);}
     double Xrpdty_LO_simple( double x , double qsq ) { return x ; } // X = x0*z2min; z2min = xbj/x0
     double Xrpdty_LO_improved( double x , double qsq ) { return x*icQ0sqr/qsq ; } // X = x0*z2min; z2min = xbj/x0*Q0²/Q²
+    double Xrpdty_NLO( double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq ){
+        return (this->*Xrpdty_NLO_PTR)(z2,z2min,icX0,x01sq,x02sq,x21sq);
+    };
+    double Xrpdty_NLO_projectileY( double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq );
+    double Xrpdty_NLO_targetETA( double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq );
+
+    // Target rapidity Eta shift calculator(s)
+    double rho_rapidity_shift(double x01sq, double x02sq, double x21sq);
 
     // BK kernels
     double K_kernel( double rsq, double x02sq, double x21sq ) { return (this->*K_kernel_PTR)(rsq,x02sq,x21sq); } // pointer shell function
