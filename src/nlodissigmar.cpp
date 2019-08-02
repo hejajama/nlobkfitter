@@ -733,6 +733,13 @@ double ComputeSigmaR::rho_rapidity_shift(double x01sq, double x02sq, double x21s
     }
 }
 
+double ComputeSigmaR::x_eta_delta_ij_r(double x_ij_sq, double rsq){
+    // Edmond et al 1902.06637 Eq. 5.7
+    // Since this is used as a negative shift eta' = (eta - delta_ij) one gets the corresponding shifted x_eta' as x_eta/x_delta_ij.
+    double delta_ij_r = std::max(0, std::log(rsq / x_ij_sq));
+    double x_eta_delta = std::exp(-delta_ij_r);
+    return x_eta_delta;
+}
 
 
 ///===========================================================================================
@@ -920,14 +927,15 @@ double ComputeSigmaR::ILNLOqg_subterm_trbk_edmond(double Q, double x, double z1,
     // Thus we only need to add the LO impact factor here then.
 
     // Shifted rapidites; delta defined in Eq. 5.7
-    double eta = 9999;
-    double eta_delta02r = 9999;
-    double eta_delta21r = 9999;
+    double z2min = z2lower_bound(x,Q*Q);
+    double x_eta = Xrpdty_NLO_targetETA(z2, z2min, icX0, x01sq, x02sq, x21sq);
+    double x_eta_delta02r = x_eta / x_eta_delta_ij_r(x02sq, x01sq);
+    double x_eta_delta21r = x_eta / x_eta_delta_ij_r(x21sq, x01sq);
     
     // Dipoles at shifted rapidity / scaled xbj
-    double s02_shifted = SrY(sqrt(x02sq), eta_delta02r);
-    double s12_shifted = SrY(sqrt(x21sq), eta_delta21r);
-    double s01 = SrY(sqrt(x01sq), eta);
+    double s02_shifted = Sr(sqrt(x02sq), x_eta_delta02r);
+    double s12_shifted = Sr(sqrt(x21sq), x_eta_delta21r);
+    double s01 = Sr(sqrt(x01sq), x_eta);
 
     double subterm;
     double impact_factor_lo = ILLO(Q,z1,x01sq);
@@ -990,6 +998,29 @@ double ComputeSigmaR::ITNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, d
     return subterm;
 }
 
+double ComputeSigmaR::ITNLOqg_subterm_trbk_edmond(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq){
+    // subtraction term for the Edmond et al. kinematically constrained target rapidity BK. arxiv 1902.06637 Eq. 9.3.
+    // N.B. No step function in the final form Eq. 9.3.; Only LOBK kernel and the dipole amplitudes at shifted rapidities.
+    // Thus we only need to add the LO impact factor here then.
+
+    // Shifted rapidites; delta defined in Eq. 5.7
+    double z2min = z2lower_bound(x,Q*Q);
+    double x_eta = Xrpdty_NLO_targetETA(z2, z2min, icX0, x01sq, x02sq, x21sq);
+    double x_eta_delta02r = x_eta / x_eta_delta_ij_r(x02sq, x01sq);
+    double x_eta_delta21r = x_eta / x_eta_delta_ij_r(x21sq, x01sq);
+    
+    // Dipoles at shifted rapidity / scaled xbj
+    double s02_shifted = Sr(sqrt(x02sq), x_eta_delta02r);
+    double s12_shifted = Sr(sqrt(x21sq), x_eta_delta21r);
+    double s01 = Sr(sqrt(x01sq), x_eta);
+
+    double subterm;
+    double impact_factor_lo = ITLO(Q,z1,x01sq);
+    double P_at_zero = 2;
+    double nlo_if_kernel = P_at_zero * 0.5 * (x01sq + x21sq - x02sq) / (x02sq * x21sq); // this is the symmetric half of the LOBK kernel
+    subterm = impact_factor_lo * nlo_if_kernel * ( -s02_shifted * s12_shifted + s01);
+    return subterm;
+}
 
 
 

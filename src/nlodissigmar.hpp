@@ -206,6 +206,8 @@ public:
 
     // Target rapidity Eta shift calculator(s)
     double rho_rapidity_shift(double x01sq, double x02sq, double x21sq);
+    double x_eta_delta_ij_r(double x_ij_sq, double rsq);
+
 
     // BK kernels
     double K_kernel( double rsq, double x02sq, double x21sq ) { return (this->*K_kernel_PTR)(rsq,x02sq,x21sq); } // pointer shell function
