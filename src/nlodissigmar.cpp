@@ -642,6 +642,9 @@ void Cuba(string method, int ndim, integrand_t integrand,
     }
 }
 
+
+
+
 ///===========================================================================================
 ///===========================================================================================
 // HELPERS
@@ -693,6 +696,8 @@ double ComputeSigmaR::heaviside_theta(double x) {
     if (x >= 0) {result = 1.0;}
     return result;
 }
+
+
 
 ///===========================================================================================
 // NLO Rapidities and shift(s)
@@ -799,6 +804,8 @@ double ComputeSigmaR::alpha_bar_QG_running_guillaume( void *userdata ) { // alph
   return Nc/M_PI*AlphaSres;
 }
 
+
+
 ///===========================================================================================
 // HIGHER ORDER BK SIGMA3 CORRECTION TERM KERNELS
 
@@ -851,6 +858,8 @@ double ComputeSigmaR::K_lobk (double rsq, double x20sq, double x21sq) {
     double K_loBK = rsq/(x20sq*x21sq); // 1601.06598
     return K_loBK;
 }
+
+
 
 ///===========================================================================================
 // NLO sub scheme qg subtraction terms for different evolution equations.
@@ -982,6 +991,8 @@ double ComputeSigmaR::ITNLOqg_subterm_kcbk_beuf(double Q, double x, double z1, d
 }
 
 
+
+
 ///===========================================================================================
 // Computation dipole & data passing helpers
 ComputeSigmaR::ComputeSigmaR(AmplitudeLib *ObjectPointer){
@@ -994,6 +1005,9 @@ struct Userdata{
     double qMass_light;
     double icX0;
 };
+
+
+
 
 ///===========================================================================================
 ///===========================================================================================
