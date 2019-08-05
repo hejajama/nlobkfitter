@@ -402,6 +402,8 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     SigmaComputer.SetSigma3BKKernel(&ComputeSigmaR::K_resum);
     // sub scheme subtraction term choice
     SigmaComputer.SetSubTermKernel(nlodis_config::SUB_TERM_KERNEL);
+    // trbk rho prescription
+    SigmaComputer.SetTRBKRhoPrescription(nlodis_config::TRBK_RHO_PRESC);
     // CUBA Monte Carlo integration library algorithm setter
     SigmaComputer.SetCubaMethod(cubaMethod);
 
@@ -715,16 +717,20 @@ double ComputeSigmaR::Xrpdty_NLO_targetETA( double z2, double z2min, double icX0
 }
 
 // Target rapidity Eta shift calculator(s)
-double ComputeSigmaR::rho_rapidity_shift(double x01sq, double x02sq, double x21sq){
+double ComputeSigmaR::rho_rapidity_shift_XR(double x01sq, double x02sq, double x21sq){
     double rho;
-    if (nlodis_config::TRBK_RHO_PRESC == nlodis_config::TRBK_RHO_X_R){
-        rho = std::log( 1/icQ0sqr * x02sq/x01sq);
-    }else if(nlodis_config::TRBK_RHO_PRESC == nlodis_config::TRBK_RHO_MAX_X_Y_R){
-        rho = std::log( 1/icQ0sqr * std::max(x02sq, x21sq)/x01sq);
-    }else{
-        cout << "ComputeSigmaR::rho_rapidity_shift: Unknown rho prescription, exitting.";
-        exit(1);
+    rho = std::log( 1/icQ0sqr * x02sq/x01sq);
+
+    if ( rho < 0 ){
+        return 0;
+    } else {
+        return rho;
     }
+}
+
+double ComputeSigmaR::rho_rapidity_shift_MAX_XYR(double x01sq, double x02sq, double x21sq){
+    double rho;
+    rho = std::log( 1/icQ0sqr * std::max(x02sq, x21sq)/x01sq);
 
     if ( rho < 0 ){
         return 0;

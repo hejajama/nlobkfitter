@@ -70,6 +70,8 @@ public:
   typedef  double (ComputeSigmaR::*xrapidity_funpointer)(double x, double q);
   typedef  double (ComputeSigmaR::*xrapidity_NLO_funpointer)(double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq);
   typedef  double (ComputeSigmaR::*bkkernel_funpointer)(double x01sq, double x02sq, double x21sq);
+  typedef  double (ComputeSigmaR::*trbk_rho_funpointer)(double x01sq, double x02sq, double x21sq);
+  // old
   typedef  double (ComputeSigmaR::*INLOqg_subterm_fp)(double Q, double x, double z1, double z2,
                                                       double x01sq, double x02sq, double phix0102);
 
@@ -140,6 +142,10 @@ public:
             ITNLOqg_subterm_PTR = &ComputeSigmaR::ITNLOqg_subterm_trbk_edmond;
         }
     }
+    void SetTRBKRhoPrescription(nlodis_config::TargetRapidityBKRhoPresc rhopresc){
+        if (rhopresc == nlodis_config::TRBK_RHO_X_R){rho_PTR = &ComputeSigmaR::rho_rapidity_shift_XR;}
+        else if (rhopresc == nlodis_config::TRBK_RHO_MAX_X_Y_R){rho_PTR = &ComputeSigmaR::rho_rapidity_shift_MAX_XYR;}
+    }
 
     void SetCubaMethod(string s){cubamethod = s;}
 
@@ -159,6 +165,7 @@ public:
     xrapidity_funpointer Xrpdty_LO_PTR, Xrpdty_DIP_PTR;
     xrapidity_NLO_funpointer Xrpdty_NLO_PTR;
     bkkernel_funpointer K_kernel_PTR;
+    trbk_rho_funpointer rho_PTR;
     INLOqg_subterm_fp ILNLOqg_subterm_PTR, ITNLOqg_subterm_PTR;
     // Cuba integrators
     // old int way: static const int vegas = 1, suave = 2, divonne = 3;
@@ -205,7 +212,9 @@ public:
     double Xrpdty_NLO_targetETA( double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq );
 
     // Target rapidity Eta shift calculator(s)
-    double rho_rapidity_shift(double x01sq, double x02sq, double x21sq);
+    double rho_rapidity_shift(double x01sq, double x02sq, double x21sq){ return (this->*rho_PTR)(x01sq, x02sq, x21sq) };
+    double rho_rapidity_shift_XR(double x01sq, double x02sq, double x21sq);
+    double rho_rapidity_shift_MAX_XYR(double x01sq, double x02sq, double x21sq);
     double x_eta_delta_ij_r(double x_ij_sq, double rsq);
 
 

@@ -312,6 +312,8 @@ int main( int argc, char* argv[] )
     SigmaComputer.SetSigma3BKKernel(&ComputeSigmaR::K_resum);
     // sub scheme subtraction term choice
     SigmaComputer.SetSubTermKernel(nlodis_config::SUB_TERM_KERNEL);
+    // trbk rho prescription
+    SigmaComputer.SetTRBKRhoPrescription(nlodis_config::TRBK_RHO_PRESC);
     // CUBA Monte Carlo integration library algorithm setter
     SigmaComputer.SetCubaMethod(cubaMethod);
 
