@@ -19,13 +19,12 @@ namespace nlodis_config
     extern double MAXR;
     extern double MINR;
 
-    enum RunningCouplingDIS
+    enum SubtractionScheme
     {
-        DIS_RC_FIXED,
-        DIS_RC_PARENT,      // Parent dipole where all beta terms are included
-		DIS_RC_GUILLAUME    // 1708.06557
+        SUBTRACTED,     // \sigma_NLO = \sigma_LO + \sigma_qg,sub
+        UNSUBTRACTED    // \sigma_NLO = \sigma_IC + \sigma_qg,unsub
     };
-    extern RunningCouplingDIS RC_DIS;
+    extern SubtractionScheme SUB_SCHEME;
 
     enum SubSchemeTermKernel
     {
@@ -36,6 +35,21 @@ namespace nlodis_config
         SUBTERM_TRBK_EDMOND
     };
     extern SubSchemeTermKernel SUB_TERM_KERNEL;
+
+    enum GluonZ2Minimum
+    {
+        Z2SIMPLE,   // z2min = xbj/x0
+        Z2IMPROVED  // z2min = (xbj/x0)*(Q0^2/Q^2)
+    };
+    extern GluonZ2Minimum Z2MINIMUM;
+
+    enum RunningCouplingDIS
+    {
+        DIS_RC_FIXED,
+        DIS_RC_PARENT,      // Parent dipole where all beta terms are included
+		DIS_RC_GUILLAUME    // 1708.06557
+    };
+    extern RunningCouplingDIS RC_DIS;
 
     enum TargetRapidityBKRhoPresc
     {

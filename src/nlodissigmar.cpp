@@ -357,53 +357,11 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     SigmaComputer.SetQ0Sqr(icTypicalPartonVirtualityQ0sqr);
     SigmaComputer.SetQuarkMassLight(qMass_light);
     SigmaComputer.SetQuarkMassCharm(qMass_charm);
-    // NLO: set runningcoupling and C2=Csq for the object.
-    ComputeSigmaR::CmptrMemFn alphas_temppointer;
-    ComputeSigmaR::CmptrMemFn_void alphas_temppointer_QG;
-    if      (nlodis_config::RC_DIS == nlodis_config::DIS_RC_FIXED){
-        alphas_temppointer = &ComputeSigmaR::alpha_bar_fixed;
-        alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_fixed;
-        cout << "Using FIXED_LO" << endl;}
-    else if (nlodis_config::RC_DIS == nlodis_config::DIS_RC_PARENT){
-        alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd;
-        alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_pd;
-        cout << "Using parent dipole RC" << endl;}
-    else if (nlodis_config::RC_DIS == nlodis_config::DIS_RC_GUILLAUME){
-        alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd;
-        alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_guillaume;
-        cout << "Using Guillaume RC" << endl;}
-    else {
-        cout << "ERROR: Problem with the choice of runnincoupling. Unkonwn nlodis_config::RC_DIS." << endl;
-        exit(1);
-    }
-    SigmaComputer.SetRunningCoupling(alphas_temppointer);
-    SigmaComputer.SetRunningCoupling_QG(alphas_temppointer_QG);
-    SigmaComputer.SetAlphasScalingC2(alphas_scaling);
-    // Set z2 lower limit settings
-    ComputeSigmaR::z2funpointer z2bound_funptr;
-    if  (useImprovedZ2Bound == true) {z2bound_funptr = &ComputeSigmaR::z2bound_improved;}
-    else                             {z2bound_funptr = &ComputeSigmaR::z2bound_simple;}
-    SigmaComputer.SetImprovedZ2Bound(z2bound_funptr);
-    
-    // Dipole evalution X, (y = log(x0/X))
-    // if using 'sub' scheme with z2imp one must use the extended evolution variable for sigma_LO as well.
-    ComputeSigmaR::xrapidity_funpointer x_fun_ptr;
-    if (UseSub and useImprovedZ2Bound) {x_fun_ptr = &ComputeSigmaR::Xrpdty_LO_improved;}
-    else {x_fun_ptr = &ComputeSigmaR::Xrpdty_LO_simple;}
-    
-    ComputeSigmaR::xrapidity_NLO_funpointer x_nlo_fun_ptr;
-    if (config::KINEMATICAL_CONSTRAINT == config::KC_EDMOND_K_MINUS) {x_nlo_fun_ptr = &ComputeSigmaR::Xrpdty_NLO_targetETA;}
-    else {x_nlo_fun_ptr = &ComputeSigmaR::Xrpdty_NLO_projectileY;}
-    SigmaComputer.SetEvolutionX_LO(x_fun_ptr);
-    SigmaComputer.SetEvolutionX_DIP(x_fun_ptr);
-    SigmaComputer.SetEvolutionX_NLO(x_nlo_fun_ptr);
-    
-    // sigma_3 BK correction
-    SigmaComputer.SetSigma3BKKernel(&ComputeSigmaR::K_resum);
-    // sub scheme subtraction term choice
-    SigmaComputer.SetSubTermKernel(nlodis_config::SUB_TERM_KERNEL);
-    // trbk rho prescription
-    SigmaComputer.SetTRBKRhoPrescription(nlodis_config::TRBK_RHO_PRESC);
+    SigmaComputer.SetAlphasScalingC2(alphas_scaling); // running coupling alpha_s scaling parameter C^2
+
+    // Set running coupling and rapidity function pointters based on the setting enumerators in nlodis_config.hpp
+    SigmaComputer.MetaPrescriptionSetter();
+
     // CUBA Monte Carlo integration library algorithm setter
     SigmaComputer.SetCubaMethod(cubaMethod);
 

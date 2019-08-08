@@ -110,10 +110,13 @@ int main( int argc, char* argv[] )
     string_sub = string(argv [1]);
     if (string(argv [1]) == "sub"){
         useSUB = true;
+        nlodis_config::SUB_SCHEME = nlodis_config::SUBTRACTED;
     } else if (string(argv [1]) == "unsub"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
         useSigma3 = false;
     } else if (string(argv [1]) == "unsub+"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
         useSigma3 = true;
     } else {cout << helpstring << endl; return -1;}
@@ -165,15 +168,17 @@ int main( int argc, char* argv[] )
     } else {cout << helpstring << endl; return -1;}
 
     if (string(argv [4]) == "z2improved"){
-      useImprovedZ2Bound = true;
+        nlodis_config::Z2MINIMUM = nlodis_config::Z2IMPROVED;
+        useImprovedZ2Bound = true;
     } else if (string(argv [4]) == "z2simple"){
-      useImprovedZ2Bound = false;
+        nlodis_config::Z2MINIMUM = nlodis_config::Z2SIMPLE;
+        useImprovedZ2Bound = false;
     } else {cout << helpstring << endl; return -1;}
 
     if (string(argv [5]) == "z2boundloop"){
-      useBoundLoop = true;
+        useBoundLoop = true;
     } else if (string(argv [5]) == "unboundloop"){
-      useBoundLoop = false;
+        useBoundLoop = false;
     } else {cout << helpstring << endl; return -1;}
 
     int argi=6;

@@ -103,10 +103,13 @@ int main( int argc, char* argv[] )
     string_sub = string(argv [1]);
     if (string(argv [1]) == "sub"){
         useSUB = true;
+        nlodis_config::SUB_SCHEME = nlodis_config::SUBTRACTED;
     } else if (string(argv [1]) == "unsub"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
         useSigma3 = false;
     } else if (string(argv [1]) == "unsub+"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
         useSigma3 = true;
     } else {cout << helpstring << endl; return -1;}
@@ -164,8 +167,10 @@ int main( int argc, char* argv[] )
     } else {cout << helpstring << endl; return -1;}
 
     if (string(argv [4]) == "z2improved"){
+        nlodis_config::Z2MINIMUM = nlodis_config::Z2IMPROVED;
         useImprovedZ2Bound = true;
     } else if (string(argv [4]) == "z2simple"){
+        nlodis_config::Z2MINIMUM = nlodis_config::Z2SIMPLE;
         useImprovedZ2Bound = false;
     } else {cout << helpstring << endl; return -1;}
 
@@ -274,49 +279,12 @@ int main( int argc, char* argv[] )
     SigmaComputer.SetQ0Sqr(icTypicalPartonVirtualityQ0sqr);
     SigmaComputer.SetQuarkMassLight(qMass_light);
     SigmaComputer.SetQuarkMassCharm(qMass_charm);
-    // NLO: set runningcoupling and C2=Csq for the object.
-    ComputeSigmaR::CmptrMemFn alphas_temppointer;
-    ComputeSigmaR::CmptrMemFn_void alphas_temppointer_QG;
-    if      (nlodis_config::RC_DIS == nlodis_config::DIS_RC_FIXED){
-        alphas_temppointer = &ComputeSigmaR::alpha_bar_fixed;
-        alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_fixed;
-        cout << "# Using FIXED_LO" << endl;}
-    else if (nlodis_config::RC_DIS == nlodis_config::DIS_RC_PARENT){
-        alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd;
-        alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_pd;
-        cout << "# Using parent dipole RC" << endl;}
-    else if (nlodis_config::RC_DIS == nlodis_config::DIS_RC_GUILLAUME){
-        alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd;
-        alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_guillaume;
-        cout << "# Using Guillaume RC" << endl;}
-    else {
-        cout << "ERROR: Problem with the choice of runnincoupling. Unkonwn nlodis_config::RC_DIS." << endl;
-        exit(1);
-        }
-    SigmaComputer.SetRunningCoupling(alphas_temppointer);
-    SigmaComputer.SetRunningCoupling_QG(alphas_temppointer_QG);
     SigmaComputer.SetAlphasScalingC2(alphas_scaling);
-    // Set z2 lower limit settings
-    ComputeSigmaR::z2funpointer z2bound_funptr;
-    if  (useImprovedZ2Bound == true) {z2bound_funptr = &ComputeSigmaR::z2bound_improved;}
-    else                             {z2bound_funptr = &ComputeSigmaR::z2bound_simple;}
-    SigmaComputer.SetImprovedZ2Bound(z2bound_funptr);
-    // Dipole evalution X, (y = log(x0/X))
-    // if using 'sub' scheme with z2imp one must use the extended evolution variable for sigma_LO as well.
-    ComputeSigmaR::xrapidity_funpointer x_fun_ptr;
-    if (useSUB and useImprovedZ2Bound) {x_fun_ptr = &ComputeSigmaR::Xrpdty_LO_improved;}
-    else        {x_fun_ptr = &ComputeSigmaR::Xrpdty_LO_simple;}
-    SigmaComputer.SetEvolutionX_LO(x_fun_ptr);
-    SigmaComputer.SetEvolutionX_DIP(x_fun_ptr);
-    // sigma_3 BK correction
-    SigmaComputer.SetSigma3BKKernel(&ComputeSigmaR::K_resum);
-    // sub scheme subtraction term choice
-    SigmaComputer.SetSubTermKernel(nlodis_config::SUB_TERM_KERNEL);
-    // trbk rho prescription
-    SigmaComputer.SetTRBKRhoPrescription(nlodis_config::TRBK_RHO_PRESC);
+
+    // Set running coupling and rapidity function pointters
+    SigmaComputer.MetaPrescriptionSetter();
     // CUBA Monte Carlo integration library algorithm setter
     SigmaComputer.SetCubaMethod(cubaMethod);
-
 
     cout << "# === Computing Reduced Cross sections ===" << endl;
 
