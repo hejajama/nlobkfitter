@@ -68,9 +68,9 @@ public:
   typedef  double (ComputeSigmaR::*z2funpointer)(double x, double q);
   typedef  double (ComputeSigmaR::*subterm_z2upper_fp)(double z);
   typedef  double (ComputeSigmaR::*xrapidity_funpointer)(double x, double q);
-  typedef  double (ComputeSigmaR::*xrapidity_NLO_funpointer)(double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq);
+  typedef  double (ComputeSigmaR::*xrapidity_NLO_funpointer)(double Qsq, double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq);
   typedef  double (ComputeSigmaR::*bkkernel_funpointer)(double x01sq, double x02sq, double x21sq);
-  typedef  double (ComputeSigmaR::*trbk_rho_funpointer)(double x01sq, double x02sq, double x21sq);
+  typedef  double (ComputeSigmaR::*trbk_rho_funpointer)(double Qsq, double x01sq, double x02sq, double x21sq);
   // old
   typedef  double (ComputeSigmaR::*INLOqg_subterm_fp)(double Q, double x, double z1, double z2,
                                                       double x01sq, double x02sq, double phix0102);
@@ -143,7 +143,8 @@ public:
         }
     }
     void SetTRBKRhoPrescription(nlodis_config::TargetRapidityBKRhoPresc rhopresc){
-        if (rhopresc == nlodis_config::TRBK_RHO_X_R){rho_PTR = &ComputeSigmaR::rho_rapidity_shift_XR;}
+        if (rhopresc == nlodis_config::TRBK_RHO_QQ0){rho_PTR = &ComputeSigmaR::rho_rapidity_shift_QQ0;}
+        else if (rhopresc == nlodis_config::TRBK_RHO_X_R){rho_PTR = &ComputeSigmaR::rho_rapidity_shift_XR;}
         else if (rhopresc == nlodis_config::TRBK_RHO_MAX_X_Y_R){rho_PTR = &ComputeSigmaR::rho_rapidity_shift_MAX_XYR;}
     }
     void MetaPrescriptionSetter(){
@@ -257,16 +258,17 @@ public:
     double Xrpdty_DIP( double x, double qsq) { return (this->*Xrpdty_DIP_PTR)(x,qsq);}
     double Xrpdty_LO_simple( double x , double qsq ) { return x ; } // X = x0*z2min; z2min = xbj/x0
     double Xrpdty_LO_improved( double x , double qsq ) { return x*icQ0sqr/qsq ; } // X = x0*z2min; z2min = xbj/x0*Q0²/Q²
-    double Xrpdty_NLO( double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq ){
-        return (this->*Xrpdty_NLO_PTR)(z2,z2min,icX0,x01sq,x02sq,x21sq);
+    double Xrpdty_NLO(double Qsq, double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq ){
+        return (this->*Xrpdty_NLO_PTR)(Qsq,z2,z2min,icX0,x01sq,x02sq,x21sq);
     };
-    double Xrpdty_NLO_projectileY( double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq );
-    double Xrpdty_NLO_targetETA( double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq );
+    double Xrpdty_NLO_projectileY(double Qsq, double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq );
+    double Xrpdty_NLO_targetETA(double Qsq, double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq );
 
     // Target rapidity Eta shift calculator(s)
-    double rho_rapidity_shift(double x01sq, double x02sq, double x21sq){ return (this->*rho_PTR)(x01sq, x02sq, x21sq) };
-    double rho_rapidity_shift_XR(double x01sq, double x02sq, double x21sq);
-    double rho_rapidity_shift_MAX_XYR(double x01sq, double x02sq, double x21sq);
+    double rho_rapidity_shift(double Qsq, double x01sq, double x02sq, double x21sq){ return (this->*rho_PTR)(Qsq, x01sq, x02sq, x21sq); };
+    double rho_rapidity_shift_QQ0(double Qsq, double x01sq, double x02sq, double x21sq);
+    double rho_rapidity_shift_XR(double Qsq, double x01sq, double x02sq, double x21sq);
+    double rho_rapidity_shift_MAX_XYR(double Qsq, double x01sq, double x02sq, double x21sq);
     double x_eta_delta_ij_r(double x_ij_sq, double rsq);
 
 

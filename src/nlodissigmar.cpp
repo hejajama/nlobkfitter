@@ -662,20 +662,31 @@ double ComputeSigmaR::heaviside_theta(double x) {
 ///===========================================================================================
 // NLO Rapidities and shift(s)
 
-double ComputeSigmaR::Xrpdty_NLO_projectileY( double z2, double z2min, double icX0, double x01sq = 0, double x02sq = 0, double x21sq = 0 ){
+double ComputeSigmaR::Xrpdty_NLO_projectileY(double Qsq, double z2, double z2min, double icX0, double x01sq = 0, double x02sq = 0, double x21sq = 0 ){
     double X = z2min * icX0/z2;
     return X;
 }
-double ComputeSigmaR::Xrpdty_NLO_targetETA( double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq ){
+double ComputeSigmaR::Xrpdty_NLO_targetETA(double Qsq, double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq ){
     // Target rapidity eta = Y - rho is shifted so here we compute the bjorken-x corresponding to the shifted rapidity.
     // x_eta = x_Y * exp(rho)
-    double X_Y = Xrpdty_NLO_projectileY(z2, z2min, icX0);
-    double rho = rho_rapidity_shift(x01sq, x02sq, x21sq);
+    double X_Y = Xrpdty_NLO_projectileY(Qsq, z2, z2min, icX0);
+    double rho = rho_rapidity_shift(Qsq, x01sq, x02sq, x21sq);
     return X_Y*std::exp(rho);
 }
 
 // Target rapidity Eta shift calculator(s)
-double ComputeSigmaR::rho_rapidity_shift_XR(double x01sq, double x02sq, double x21sq){
+double ComputeSigmaR::rho_rapidity_shift_QQ0(double Qsq, double x01sq, double x02sq, double x21sq){
+    double rho;
+    rho = std::log( Qsq/icQ0sqr);
+
+    if ( rho < 0 ){
+        return 0;
+    } else {
+        return rho;
+    }
+}
+
+double ComputeSigmaR::rho_rapidity_shift_XR(double Qsq, double x01sq, double x02sq, double x21sq){
     double rho;
     rho = std::log( 1/icQ0sqr * x02sq/x01sq);
 
@@ -686,7 +697,7 @@ double ComputeSigmaR::rho_rapidity_shift_XR(double x01sq, double x02sq, double x
     }
 }
 
-double ComputeSigmaR::rho_rapidity_shift_MAX_XYR(double x01sq, double x02sq, double x21sq){
+double ComputeSigmaR::rho_rapidity_shift_MAX_XYR(double Qsq, double x01sq, double x02sq, double x21sq){
     double rho;
     rho = std::log( 1/icQ0sqr * std::max(x02sq, x21sq)/x01sq);
 
@@ -700,7 +711,7 @@ double ComputeSigmaR::rho_rapidity_shift_MAX_XYR(double x01sq, double x02sq, dou
 double ComputeSigmaR::x_eta_delta_ij_r(double x_ij_sq, double rsq){
     // Edmond et al 1902.06637 Eq. 5.7
     // Since this is used as a negative shift eta' = (eta - delta_ij) one gets the corresponding shifted x_eta' as x_eta/x_delta_ij.
-    double delta_ij_r = std::max(0, std::log(rsq / x_ij_sq));
+    double delta_ij_r = std::max(0., std::log(rsq / x_ij_sq));
     double x_eta_delta = std::exp(-delta_ij_r);
     return x_eta_delta;
 }
@@ -892,7 +903,7 @@ double ComputeSigmaR::ILNLOqg_subterm_trbk_edmond(double Q, double x, double z1,
 
     // Shifted rapidites; delta defined in Eq. 5.7
     double z2min = z2lower_bound(x,Q*Q);
-    double x_eta = Xrpdty_NLO_targetETA(z2, z2min, icX0, x01sq, x02sq, x21sq);
+    double x_eta = Xrpdty_NLO_targetETA(Q*Q, z2, z2min, icX0, x01sq, x02sq, x21sq);
     double x_eta_delta02r = x_eta / x_eta_delta_ij_r(x02sq, x01sq);
     double x_eta_delta21r = x_eta / x_eta_delta_ij_r(x21sq, x01sq);
     
@@ -969,7 +980,7 @@ double ComputeSigmaR::ITNLOqg_subterm_trbk_edmond(double Q, double x, double z1,
 
     // Shifted rapidites; delta defined in Eq. 5.7
     double z2min = z2lower_bound(x,Q*Q);
-    double x_eta = Xrpdty_NLO_targetETA(z2, z2min, icX0, x01sq, x02sq, x21sq);
+    double x_eta = Xrpdty_NLO_targetETA(Q*Q, z2, z2min, icX0, x01sq, x02sq, x21sq);
     double x_eta_delta02r = x_eta / x_eta_delta_ij_r(x02sq, x01sq);
     double x_eta_delta21r = x_eta / x_eta_delta_ij_r(x21sq, x01sq);
     
@@ -1398,7 +1409,7 @@ int integrand_ILqgunsub(const int *ndim, const double x[], const int *ncomp,doub
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
     double jac=(1.0-z2min)*(1.0-z1-z2min);
-    double Xrpdt= Optr->Xrpdty_NLO(z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
+    double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
 
     Alphasdata alphasdata;
     alphasdata.x01sq=x01sq;
@@ -1437,7 +1448,7 @@ int integrand_ILsigma3(const int *ndim, const double x[], const int *ncomp,doubl
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
     double jac=(1.0-z2min)*(1.0-z1-z2min);
-    double Xrpdt= Optr->Xrpdty_NLO(z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
+    double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
 
     Alphasdata alphasdata;
     alphasdata.x01sq=x01sq;
@@ -1476,7 +1487,7 @@ int integrand_ILqgsub(const int *ndim, const double x[], const int *ncomp,double
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
     double jac=(1.0-z2min);
-    double Xrpdt= Optr->Xrpdty_NLO(z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
+    double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
 
     Alphasdata alphasdata;
     alphasdata.x01sq=x01sq;
@@ -1873,7 +1884,7 @@ int integrand_ITqgunsub(const int *ndim, const double x[], const int *ncomp, dou
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
     double jac=(1.0-z2min)*(1.0-z1-z2min);
-    double Xrpdt= Optr->Xrpdty_NLO(z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
+    double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
 
     Alphasdata alphasdata;
     alphasdata.x01sq=x01sq;
@@ -1912,7 +1923,7 @@ int integrand_ITsigma3(const int *ndim, const double x[], const int *ncomp,doubl
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
     double jac=(1.0-z2min)*(1.0-z1-z2min);
-    double Xrpdt= Optr->Xrpdty_NLO(z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
+    double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
 
     Alphasdata alphasdata;
     alphasdata.x01sq=x01sq;
@@ -1951,7 +1962,7 @@ int integrand_ITqgsub(const int *ndim, const double x[], const int *ncomp, doubl
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
     double jac=(1.0-z2min);
-    double Xrpdt= Optr->Xrpdty_NLO(z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
+    double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
 
     Alphasdata alphasdata;
     alphasdata.x01sq=x01sq;
