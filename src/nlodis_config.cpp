@@ -18,5 +18,8 @@ namespace nlodis_config
     double MINR=1e-6;
 
     RunningCouplingDIS RC_DIS;
+    SubtractionScheme SUB_SCHEME;
     SubSchemeTermKernel SUB_TERM_KERNEL;
+    GluonZ2Minimum Z2MINIMUM;
+    TargetRapidityBKRhoPresc TRBK_RHO_PRESC;
 }
