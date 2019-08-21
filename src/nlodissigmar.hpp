@@ -246,6 +246,7 @@ public:
     double alpha_bar_QG_running_pd( void *userdata );
     double alpha_bar_QG_fixed( void *userdata );
     double alpha_bar_QG_running_guillaume( void *userdata );
+    double alpha_bar_QG_running_smallest( void *userdata );
 
     // z2 lower bounds
     // pointer, only one since lower bound is set consistently in all terms

@@ -47,6 +47,7 @@ namespace nlodis_config
     {
         DIS_RC_FIXED,
         DIS_RC_PARENT,      // Parent dipole where all beta terms are included
+        DIS_RC_SMALLEST,
 		DIS_RC_GUILLAUME    // 1708.06557
     };
     extern RunningCouplingDIS RC_DIS;

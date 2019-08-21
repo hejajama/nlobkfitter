@@ -164,6 +164,10 @@ int main( int argc, char* argv[] )
             config::RC_LO = config::FIXED_LO;
             config::RESUM_RC = config::RESUM_RC_FIXED;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_FIXED;
+    } else if (string(argv [3]) == "smallestrc" or string(argv [3]) == "sdrc"){
+            config::RC_LO = config::SMALLEST_LO;
+            config::RESUM_RC = config::RESUM_RC_BALITSKY;
+            nlodis_config::RC_DIS = nlodis_config::DIS_RC_SMALLEST;
     } else {cout << helpstring << endl; return -1;}
 
     if (string(argv [4]) == "z2improved" or string(argv [4]) == "z2imp"){

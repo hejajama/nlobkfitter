@@ -786,6 +786,23 @@ double ComputeSigmaR::alpha_bar_QG_running_guillaume( void *userdata ) { // alph
   return Nc/M_PI*AlphaSres;
 }
 
+double ComputeSigmaR::alpha_bar_QG_running_smallest( void *userdata ) { // alphabar = Nc/M_PI * alphas
+    Alphasdata *dataptr = (Alphasdata*)userdata;
+    double x01sq=dataptr->x01sq;
+    double x02sq=dataptr->x02sq;
+    double x21sq=dataptr->x21sq;
+    double r_min_sqr = std::min(x01sq, x02sq, x21sq); // r = x01 , X = x02 , Y = x21 , Q_{123} = 4C^2 / r_eff_sqr.
+
+    double scalefactor = 4.0*alpha_scaling_C2_;
+    const double alphas_mu0=2.5;    // mu0/lqcd
+    const double alphas_freeze_c=0.2;
+    double b0 = (11.0*config::NC - 2.0*config::NF)/3.0;
+
+    double AlphaSres = 4.0*M_PI / ( b0 * std::log(
+    std::pow( std::pow(alphas_mu0, 2.0/alphas_freeze_c) + std::pow(scalefactor/(r_min_sqr*lambdaqcd*lambdaqcd), 1.0/alphas_freeze_c), alphas_freeze_c)
+    ) );
+  return Nc/M_PI*AlphaSres;
+}
 
 
 ///===========================================================================================

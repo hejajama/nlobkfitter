@@ -153,29 +153,35 @@ int main( int argc, char* argv[] )
     } else {cout << helpstring << endl; return -1;}
 
     string_rc = string(argv [3]);
-    if (string(argv [3]) == "parentrc"){
+    if (string(argv [3]) == "parentrc" or string(argv [3]) == "pdrc"){
             config::RC_LO = config::PARENT_LO;
             config::RESUM_RC = config::RESUM_RC_PARENT;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_PARENT;
-    } else if (string(argv [3]) == "guillaumerc"){
+    } else if (string(argv [3]) == "guillaumerc" or string(argv [3]) == "gbrc"){
             config::RC_LO = config::GUILLAUME_LO;
             config::RESUM_RC = config::RESUM_RC_GUILLAUME;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_GUILLAUME;
-    } else if (string(argv [3]) == "fixedrc"){
+    } else if (string(argv [3]) == "fixedrc" or string(argv [3]) == "fc"){
             config::RC_LO = config::FIXED_LO;
             config::RESUM_RC = config::RESUM_RC_FIXED;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_FIXED;
+    } else if (string(argv [3]) == "smallestrc" or string(argv [3]) == "sdrc"){
+            config::RC_LO = config::SMALLEST_LO;
+            config::RESUM_RC = config::RESUM_RC_BALITSKY;
+            nlodis_config::RC_DIS = nlodis_config::DIS_RC_SMALLEST;
     } else {cout << helpstring << endl; return -1;}
 
-    if (string(argv [4]) == "z2improved"){
+    if (string(argv [4]) == "z2improved" or string(argv [4]) == "z2imp"){
+        nlodis_config::Z2MINIMUM = nlodis_config::Z2IMPROVED;
         useImprovedZ2Bound = true;
-    } else if (string(argv [4]) == "z2simple"){
+    } else if (string(argv [4]) == "z2simple" or string(argv [4]) == "z2sim"){
+        nlodis_config::Z2MINIMUM = nlodis_config::Z2SIMPLE;
         useImprovedZ2Bound = false;
     } else {cout << helpstring << endl; return -1;}
 
-    if (string(argv [5]) == "z2boundloop"){
+    if (string(argv [5]) == "z2boundloop" or string(argv [5]) == "z2b"){
         useBoundLoop = true;
-    } else if (string(argv [5]) == "unboundloop"){
+    } else if (string(argv [5]) == "unboundloop" or string(argv [5]) == "unb"){
         useBoundLoop = false;
     } else {cout << helpstring << endl; return -1;}
 
