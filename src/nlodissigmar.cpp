@@ -791,7 +791,8 @@ double ComputeSigmaR::alpha_bar_QG_running_smallest( void *userdata ) { // alpha
     double x01sq=dataptr->x01sq;
     double x02sq=dataptr->x02sq;
     double x21sq=dataptr->x21sq;
-    double r_min_sqr = std::min(x01sq, x02sq, x21sq); // r = x01 , X = x02 , Y = x21 , Q_{123} = 4C^2 / r_eff_sqr.
+    double r_min_0 = std::min(x01sq, x02sq); // r = x01 , X = x02 , Y = x21 , Q_{123} = 4C^2 / r_eff_sqr.
+    double r_min_sqr = std::min(r_min_0, x21sq);
 
     double scalefactor = 4.0*alpha_scaling_C2_;
     const double alphas_mu0=2.5;    // mu0/lqcd
