@@ -9,18 +9,18 @@
 
 ## Procedure
 
-    - install GSL
-    - build amplitudelib_v2 by:
-	-- clone https://github.com/hejajama/amplitudelib
-	-- mkdir [amplitudelib/]build && cd build && cmake .. && make
-    - build Minuit2:
-	-- download from CERN homepage
-	-- ./configure --disable-openmp --prefix=INSTALLDIR
-	-- make -j[N] && make install
-    - build Cuba:
-	-- download
-	-- ./configure --prefix=INSTALLDIR
-	-- make && make install
-    - build nlobkfitter & tools:
-	-- clone https://github.com/hejajama/nlobkfitter
-	-- make or cmake
+    1. install GSL
+    2. build amplitudelib_v2 
+       - clone https://github.com/hejajama/amplitudelib
+       - mkdir [amplitudelib/]build && cd build && cmake .. && make
+    3. build Minuit2:
+       - download from CERN homepage
+       - ./configure --disable-openmp --prefix=INSTALLDIR
+       - make -j[N] && make install
+    4. build Cuba:
+       - download
+       - ./configure --prefix=INSTALLDIR
+       - make && make install
+    5. build nlobkfitter & tools:
+       - clone https://github.com/hejajama/nlobkfitter
+       - make or cmake
