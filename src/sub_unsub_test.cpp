@@ -58,16 +58,16 @@ void ErrHandlerCustom(const char * reason,
             << " (code " << gsl_errno << ")." << std::endl;
 }
 
-// int main( int argc, char* argv[] )
-int main()
+int main( int argc, char* argv[] )
+// int main()
 {
     gsl_set_error_handler(&ErrHandlerCustom);
 
     // NLO DIS SIGMA_R COMPUTATION CONFIGS
     nlodis_config::CUBA_EPSREL = 10e-3;
-    nlodis_config::CUBA_MAXEVAL= 5e7;
-    nlodis_config::MINR = 1e-6;
-    nlodis_config::MAXR = 50;
+    nlodis_config::CUBA_MAXEVAL= 1e7;
+    nlodis_config::MINR = 1e-5;
+    nlodis_config::MAXR = 20;
     nlodis_config::PRINTDATA = true;
     bool useNLO = true;
     bool computeNLO = useNLO;
@@ -82,8 +82,8 @@ int main()
     //config::THETAINTPOINTS = 512/4;
 
     config::INTACCURACY = 10e-3;//0.02;
-    config::MINR = 1e-6;
-    config::MAXR = 50;
+    config::MINR = 1e-5;
+    config::MAXR = 20;
     config::RPOINTS = 100;
     config::DE_SOLVER_STEP = 0.4; // Rungekutta step
 
@@ -95,41 +95,27 @@ int main()
 
     bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop;
     bool useSigma3 = false;
-    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q C^2 X0 gamma Q0sq Y0 eta0\nsub/unsub/unsub+ resumbk/trbk/lobk parentrc/guillaumerc/fixedrc z2improved/z2simple z2boundloop/unboundloop";
+    string helpstring = "Argument order: BK RC useImprovedZ2Bound useBoundLoop Q C^2 X0 gamma Q0sq Y0 eta0\nresumbk/trbk/lobk parentrc/guillaumerc/fixedrc z2improved/z2simple z2boundloop/unboundloop";
     string string_sub, string_bk, string_rc;
     if (argc<2){ cout << helpstring << endl; return 0;}
     // Argv[0] is the name of the program
 
-    string_sub = string(argv [1]);
-    if (string(argv [1]) == "sub"){
-        useSUB = true;
-        nlodis_config::SUB_SCHEME = nlodis_config::SUBTRACTED;
-    } else if (string(argv [1]) == "unsub"){
-        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
-        useSUB = false;
-        useSigma3 = false;
-    } else if (string(argv [1]) == "unsub+"){
-        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
-        useSUB = false;
-        useSigma3 = true;
-    } else {cout << helpstring << endl; return -1;}
-
-    string_bk = string(argv [2]);
-    if (string(argv [2]) == "resumbk"){
+    string_bk = string(argv [1]);
+    if (string_bk == "resumbk"){
             config::EULER_METHOD = false;    // Use Runge-Kutta since no kin. constraint
             config::RESUM_DLOG = true;       // Resum doulbe logs
             config::RESUM_SINGLE_LOG = true; // Resum single logs
             config::KSUB = 0.65;             // Optimal value for K_sub
             config::NO_K2 = true;            // Do not include numerically demanding full NLO part
             nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_RESUM;
-    }else if (string(argv [2]) == "kcbk"){
+    }else if (string_bk == "kcbk"){
             config::EULER_METHOD = true;     // Kinematical constraint requires this
             config::RESUM_DLOG = false;
             config::RESUM_SINGLE_LOG = false;
             config::KINEMATICAL_CONSTRAINT = config::KC_BEUF_K_PLUS;
             config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
             nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_KCBK_BEUF;
-    }else if (string(argv [2]) == "trbk"){  // Target Rapidity BK
+    }else if (string_bk == "trbk"){  // Target Rapidity BK
             config::EULER_METHOD = true;     // Kinematical constraint requires this
             config::RESUM_DLOG = false;
             config::RESUM_SINGLE_LOG = false;
@@ -137,13 +123,13 @@ int main()
             config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
             nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_TRBK_EDMOND;
             nlodis_config::TRBK_RHO_PRESC = nlodis_config::TRBK_RHO_MAX_X_Y_R;
-    }else if (string(argv [2]) == "lobk"){
+    }else if (string_bk == "lobk"){
             config::EULER_METHOD = false;   // Use Runge-Kutta since no kin. constraint
             config::RESUM_DLOG = false;
             config::RESUM_SINGLE_LOG = false;
             config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
             nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_LOBK_EXPLICIT;
-    }else if (string(argv [2]) == "lobkold"){
+    }else if (string_bk == "lobkold"){
             config::EULER_METHOD = false;   // Use Runge-Kutta since no kin. constraint
             config::RESUM_DLOG = false;
             config::RESUM_SINGLE_LOG = false;
@@ -151,36 +137,36 @@ int main()
             nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_LOBK_Z2TOZERO;
     } else {cout << helpstring << endl; return -1;}
 
-    string_rc = string(argv [3]);
-    if (string(argv [3]) == "parentrc" or string(argv [3]) == "pdrc"){
+    string_rc = string(argv [2]);
+    if (string_rc == "parentrc" or string_rc == "pdrc"){
             config::RC_LO = config::PARENT_LO;
             config::RESUM_RC = config::RESUM_RC_PARENT;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_PARENT;
-    } else if (string(argv [3]) == "guillaumerc" or string(argv [3]) == "gbrc"){
+    } else if (string_rc == "guillaumerc" or string_rc == "gbrc"){
             config::RC_LO = config::GUILLAUME_LO;
             config::RESUM_RC = config::RESUM_RC_GUILLAUME;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_GUILLAUME;
-    } else if (string(argv [3]) == "fixedrc" or string(argv [3]) == "fc"){
+    } else if (string_rc == "fixedrc" or string_rc == "fc"){
             config::RC_LO = config::FIXED_LO;
             config::RESUM_RC = config::RESUM_RC_FIXED;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_FIXED;
-    } else if (string(argv [3]) == "smallestrc" or string(argv [3]) == "sdrc"){
+    } else if (string_rc == "smallestrc" or string_rc == "sdrc"){
             config::RC_LO = config::SMALLEST_LO;
             config::RESUM_RC = config::RESUM_RC_BALITSKY;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_SMALLEST;
     } else {cout << helpstring << endl; return -1;}
 
-    if (string(argv [4]) == "z2improved" or string(argv [4]) == "z2imp"){
+    if (string(argv [3]) == "z2improved" or string(argv [3]) == "z2imp"){
         nlodis_config::Z2MINIMUM = nlodis_config::Z2IMPROVED;
         useImprovedZ2Bound = true;
-    } else if (string(argv [4]) == "z2simple" or string(argv [4]) == "z2sim"){
+    } else if (string(argv [3]) == "z2simple" or string(argv [3]) == "z2sim"){
         nlodis_config::Z2MINIMUM = nlodis_config::Z2SIMPLE;
         useImprovedZ2Bound = false;
     } else {cout << helpstring << endl; return -1;}
 
-    if (string(argv [5]) == "z2boundloop" or string(argv [5]) == "z2b"){
+    if (string(argv [4]) == "z2boundloop" or string(argv [4]) == "z2b"){
         useBoundLoop = true;
-    } else if (string(argv [5]) == "unboundloop" or string(argv [5]) == "unb"){
+    } else if (string(argv [4]) == "unboundloop" or string(argv [4]) == "unb"){
         useBoundLoop = false;
     } else {cout << helpstring << endl; return -1;}
 
@@ -220,7 +206,7 @@ int main()
     double anomalous_dimension = 1.0; //par[ parameters.Index("anomalous_dimension")];
     double e_c          = 1.0; //par[ parameters.Index("e_c")];
     double icx0_nlo_impfac = 1.0; //par[ parameters.Index("initialconditionX0")];
-    double icx0_bk = 0.01; //par[ parameters.Index("initialconditionX0")];
+    double icx0_bk = 1.0; //par[ parameters.Index("initialconditionX0")];
     double initialconditionY0  = 0; //par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = 1.0; //par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
@@ -295,18 +281,20 @@ int main()
             // Print column titles.
             if(true){
             #pragma omp critical
-            cout    << setw(15) << "# xbj"        << " "
-                    << setw(15) << "Q^2"          << " "
-                    << setw(15) << "FL_IC"        << " "
-                    << setw(15) << "FL_LO"        << " "
-                    << setw(15) << "FL_dip"       << " "
-                    << setw(15) << "FL_qg"        << " "
-                    << setw(15) << "FL_sigma3"    << " "
-                    << setw(15) << "FT_IC"        << " "
-                    << setw(15) << "FT_LO"        << " "
-                    << setw(15) << "FT_dip"       << " "
-                    << setw(15) << "FT_qg"        << " "
-                    << setw(15) << "FT_sigma3"    << " "
+            cout    << setw(15) << "# xbj"               << " "
+                    << setw(15) << "Q^2"             << " "
+                    << setw(15) << "FL_LO_sub"         << " "
+                    << setw(15) << "FL_qg_sub"         << " "
+                    << setw(15) << "error_sub_L"       << " "
+                    << setw(15) << "FT_LO_sub"         << " "
+                    << setw(15) << "FT_qg_sub"         << " "
+                    << setw(15) << "error_sub_T"       << " "
+                    << setw(15) << "FL_IC_unsub"       << " "
+                    << setw(15) << "FL_qg_unsub"       << " "
+                    << setw(15) << "error_unsub_L"     << " "
+                    << setw(15) << "FT_IC_unsub"       << " "
+                    << setw(15) << "FT_qg_unsub"       << " "
+                    << setw(15) << "error_unsub_T"     << " "
                     << endl;
                     }
 
@@ -316,9 +304,8 @@ int main()
     *		- xbj[0] = 1e-3, xbj*=10^(1/4), while xbj >= 5e-7
     * 
     */
-    double icQ = 1.0;
-    double icx0 = icx0_bk;
 
+    int numpoints=0;
     std::vector< std::tuple<int, int> > coordinates;
 
     // #pragma omp parallel for collapse(2)
@@ -332,9 +319,14 @@ int main()
         {
             if (!((i == 0 or i == 17) or (j == 4 or j == 12))) { continue; }
             coordinates.emplace_back(i,j);
+            numpoints++;
         }
     }
 
+    double icQ = 1.0;
+    double icx0 = icx0_bk;
+    double chisqr_L = 0;
+    double chisqr_T = 0;
 // Loop over data points and compute both SUB and UNSUB and compute some chi^2 or similar qualifier
 // It suffices to compute sigma^IC, sigma^LO, sigma^qg in either scheme and compare ic+qg(unsub) and lo+qg(sub)
     #pragma omp parallel for
@@ -347,4 +339,67 @@ int main()
         double Q = 1.0*pow(10,(double)i/20.0);
         double xbj = icx0/pow(10,(double)j/4.0);
 
+        double FL_LO_sub=0, FL_qg_sub=0;
+        double FT_LO_sub=0, FT_qg_sub=0;
+        double FL_IC_unsub=0, FL_qg_unsub=0;
+        double FT_IC_unsub=0, FT_qg_unsub=0;
+
+        double error_sub_L=0, error_unsub_L=0;
+        double error_sub_T=0, error_unsub_T=0;
+
+        // UNSUB SCHEME Full NLO impact factors for reduced cross section
+        {
+        FL_IC_unsub = SigmaComputer.Structf_LLO(Q,icx0_bk);
+        FT_IC_unsub = SigmaComputer.Structf_TLO(Q,icx0_bk);
+        FL_qg_unsub  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
+        FT_qg_unsub  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+
+        error_unsub_L = nlodis_config::CUBA_EPSREL*sqrt( Sq(FL_IC_unsub)+Sq(FL_qg_unsub) );
+        error_unsub_T = nlodis_config::CUBA_EPSREL*sqrt( Sq(FT_IC_unsub)+Sq(FT_qg_unsub) );
         }
+
+        // SUB SCHEME Full NLO impact factors for reduced cross section
+        {
+        FL_LO_sub = SigmaComputer.Structf_LLO(Q,xbj);
+        FT_LO_sub = SigmaComputer.Structf_TLO(Q,xbj);
+        FL_qg_sub  = SigmaComputer.Structf_LNLOqg_sub(Q,xbj);
+        FT_qg_sub  = SigmaComputer.Structf_TNLOqg_sub(Q,xbj);
+
+        error_sub_L = nlodis_config::CUBA_EPSREL*sqrt( Sq(FL_LO_sub)+Sq(FL_qg_sub) );
+        error_sub_T = nlodis_config::CUBA_EPSREL*sqrt( Sq(FT_LO_sub)+Sq(FT_qg_sub) );
+        }
+
+        // chisq = sum (theory - data)^2 / error^2
+        chisqr_L += ( Sq(FL_LO_sub + FL_qg_sub - (FL_IC_unsub + FL_qg_unsub)) ) / ( Sq(error_sub_L) + Sq(error_unsub_L) );
+        chisqr_T += ( Sq(FT_LO_sub + FT_qg_sub - (FT_IC_unsub + FT_qg_unsub)) ) / ( Sq(error_sub_T) + Sq(error_unsub_T) );
+
+
+        //prints
+        if(true){
+            #pragma omp critical
+            cout    << setw(15) << xbj               << " "
+                    << setw(15) << Sq(Q)             << " "
+                    << setw(15) << FL_LO_sub         << " "
+                    << setw(15) << FL_qg_sub         << " "
+                    << setw(15) << error_sub_L       << " "
+                    << setw(15) << FT_LO_sub         << " "
+                    << setw(15) << FT_qg_sub         << " "
+                    << setw(15) << error_sub_T       << " "
+                    << setw(15) << FL_IC_unsub       << " "
+                    << setw(15) << FL_qg_unsub       << " "
+                    << setw(15) << error_unsub_L     << " "
+                    << setw(15) << FT_IC_unsub       << " "
+                    << setw(15) << FT_qg_unsub       << " "
+                    << setw(15) << error_unsub_T     << " "
+                    << endl;
+        }
+    }
+
+    // final prints on sub unsub agreement
+    cout    << setw(15) << "Overall SUB UNSUB agreement:"
+            << endl
+            << setw(15) << "chisqr_L/N: " << chisqr_L/numpoints << " "
+            << setw(15) << "chisqr_T/N: " << chisqr_T/numpoints
+            << endl;
+
+}
