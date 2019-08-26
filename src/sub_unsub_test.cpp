@@ -5,6 +5,7 @@
 #include <vector>
 #include <csignal>
 #include <ctime>
+#include <chrono>
 #include <gsl/gsl_errno.h>
 #include <tools/tools.hpp>
 #include <sstream>
@@ -65,7 +66,7 @@ int main( int argc, char* argv[] )
 
     // NLO DIS SIGMA_R COMPUTATION CONFIGS
     nlodis_config::CUBA_EPSREL = 10e-3;
-    nlodis_config::CUBA_MAXEVAL= 1e7;
+    nlodis_config::CUBA_MAXEVAL= 5e7;
     nlodis_config::MINR = 1e-5;
     nlodis_config::MAXR = 20;
     nlodis_config::PRINTDATA = true;
@@ -205,8 +206,8 @@ int main( int argc, char* argv[] )
     double alphas_scaling     = 1.0; //par[ parameters.Index("alphascalingC2")]; // MATCH THIS IN IMPACTFACTOR ALPHA_S WHEN NLO
     double anomalous_dimension = 1.0; //par[ parameters.Index("anomalous_dimension")];
     double e_c          = 1.0; //par[ parameters.Index("e_c")];
-    double icx0_nlo_impfac = 1.0; //par[ parameters.Index("initialconditionX0")];
-    double icx0_bk = 1.0; //par[ parameters.Index("initialconditionX0")];
+    double icx0_nlo_impfac = 0.01; //par[ parameters.Index("initialconditionX0")];
+    double icx0_bk = 0.01; //par[ parameters.Index("initialconditionX0")];
     double initialconditionY0  = 0; //par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = 1.0; //par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
@@ -327,6 +328,11 @@ int main( int argc, char* argv[] )
     double icx0 = icx0_bk;
     double chisqr_L = 0;
     double chisqr_T = 0;
+
+    float duration_L_sub;
+    float duration_T_sub;
+    float duration_L_unsub;
+    float duration_T_unsub;
 // Loop over data points and compute both SUB and UNSUB and compute some chi^2 or similar qualifier
 // It suffices to compute sigma^IC, sigma^LO, sigma^qg in either scheme and compare ic+qg(unsub) and lo+qg(sub)
     #pragma omp parallel for
@@ -349,10 +355,20 @@ int main( int argc, char* argv[] )
 
         // UNSUB SCHEME Full NLO impact factors for reduced cross section
         {
+        auto start_l_unsub = std::chrono::high_resolution_clock::now();
         FL_IC_unsub = SigmaComputer.Structf_LLO(Q,icx0_bk);
-        FT_IC_unsub = SigmaComputer.Structf_TLO(Q,icx0_bk);
         FL_qg_unsub  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
+        auto stop_l_unsub = std::chrono::high_resolution_clock::now();
+        auto dur_l_unsub = std::chrono::duration_cast<std::chrono::milliseconds>(stop_l_unsub - start_l_unsub);
+
+        auto start_t_unsub = std::chrono::high_resolution_clock::now();
+        FT_IC_unsub = SigmaComputer.Structf_TLO(Q,icx0_bk);
         FT_qg_unsub  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+        auto stop_t_unsub = std::chrono::high_resolution_clock::now();
+        auto dur_t_unsub = std::chrono::duration_cast<std::chrono::milliseconds>(stop_t_unsub - start_t_unsub);
+
+        duration_L_unsub += dur_l_unsub.count();
+        duration_T_unsub += dur_t_unsub.count();
 
         error_unsub_L = nlodis_config::CUBA_EPSREL*sqrt( Sq(FL_IC_unsub)+Sq(FL_qg_unsub) );
         error_unsub_T = nlodis_config::CUBA_EPSREL*sqrt( Sq(FT_IC_unsub)+Sq(FT_qg_unsub) );
@@ -360,10 +376,20 @@ int main( int argc, char* argv[] )
 
         // SUB SCHEME Full NLO impact factors for reduced cross section
         {
+        auto start_l_sub = std::chrono::high_resolution_clock::now();
         FL_LO_sub = SigmaComputer.Structf_LLO(Q,xbj);
-        FT_LO_sub = SigmaComputer.Structf_TLO(Q,xbj);
         FL_qg_sub  = SigmaComputer.Structf_LNLOqg_sub(Q,xbj);
+        auto stop_l_sub = std::chrono::high_resolution_clock::now();
+        auto dur_l_sub = std::chrono::duration_cast<std::chrono::milliseconds>(stop_l_sub - start_l_sub);
+
+        auto start_t_sub = std::chrono::high_resolution_clock::now();
+        FT_LO_sub = SigmaComputer.Structf_TLO(Q,xbj);
         FT_qg_sub  = SigmaComputer.Structf_TNLOqg_sub(Q,xbj);
+        auto stop_t_sub = std::chrono::high_resolution_clock::now();
+        auto dur_t_sub = std::chrono::duration_cast<std::chrono::milliseconds>(stop_t_sub - start_t_sub);
+
+        duration_L_sub += dur_l_sub.count();
+        duration_T_sub += dur_t_sub.count();
 
         error_sub_L = nlodis_config::CUBA_EPSREL*sqrt( Sq(FL_LO_sub)+Sq(FL_qg_sub) );
         error_sub_T = nlodis_config::CUBA_EPSREL*sqrt( Sq(FT_LO_sub)+Sq(FT_qg_sub) );
@@ -391,6 +417,8 @@ int main( int argc, char* argv[] )
                     << setw(15) << FT_IC_unsub       << " "
                     << setw(15) << FT_qg_unsub       << " "
                     << setw(15) << error_unsub_T     << " "
+                    << setw(15) << Sq(FL_LO_sub + FL_qg_sub - (FL_IC_unsub + FL_qg_unsub))     << " "
+                    << setw(15) << Sq(FT_LO_sub + FT_qg_sub - (FT_IC_unsub + FT_qg_unsub))     << " "
                     << endl;
         }
     }
@@ -400,6 +428,12 @@ int main( int argc, char* argv[] )
             << endl
             << setw(15) << "chisqr_L/N: " << chisqr_L/numpoints << " "
             << setw(15) << "chisqr_T/N: " << chisqr_T/numpoints
+            << endl
+            << setw(15) << "L sub t[ms]: " << duration_L_sub << " "
+            << setw(15) << "T sub t[ms]: " << duration_T_sub << " "
+            << endl
+            << setw(15) << "L unsub t[ms]: " << duration_L_unsub << " "
+            << setw(15) << "T unsub t[ms]: " << duration_T_unsub << " "
             << endl;
 
 }
