@@ -67,8 +67,8 @@ int main( int argc, char* argv[] )
     // NLO DIS SIGMA_R COMPUTATION CONFIGS
     nlodis_config::CUBA_EPSREL = 10e-3;
     nlodis_config::CUBA_MAXEVAL= 5e7;
-    nlodis_config::MINR = 1e-5;
-    nlodis_config::MAXR = 20;
+    nlodis_config::MINR = 1e-6;
+    nlodis_config::MAXR = 40;
     nlodis_config::PRINTDATA = true;
     bool useNLO = true;
     bool computeNLO = useNLO;
@@ -83,8 +83,8 @@ int main( int argc, char* argv[] )
     //config::THETAINTPOINTS = 512/4;
 
     config::INTACCURACY = 10e-3;//0.02;
-    config::MINR = 1e-5;
-    config::MAXR = 20;
+    config::MINR = 1e-6;
+    config::MAXR = 40;
     config::RPOINTS = 100;
     config::DE_SOLVER_STEP = 0.4; // Rungekutta step
 
@@ -206,8 +206,8 @@ int main( int argc, char* argv[] )
     double alphas_scaling     = 1.0; //par[ parameters.Index("alphascalingC2")]; // MATCH THIS IN IMPACTFACTOR ALPHA_S WHEN NLO
     double anomalous_dimension = 1.0; //par[ parameters.Index("anomalous_dimension")];
     double e_c          = 1.0; //par[ parameters.Index("e_c")];
-    double icx0_nlo_impfac = 0.01; //par[ parameters.Index("initialconditionX0")];
-    double icx0_bk = 0.01; //par[ parameters.Index("initialconditionX0")];
+    double icx0_nlo_impfac = 1.0; //par[ parameters.Index("initialconditionX0")];
+    double icx0_bk = 1.0; //par[ parameters.Index("initialconditionX0")];
     double initialconditionY0  = 0; //par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = 1.0; //par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
@@ -296,6 +296,8 @@ int main( int argc, char* argv[] )
                     << setw(15) << "FT_IC_unsub"       << " "
                     << setw(15) << "FT_qg_unsub"       << " "
                     << setw(15) << "error_unsub_T"     << " "
+                    << setw(15) << "squared diff L"     << " "
+                    << setw(15) << "squared diff T"     << " "
                     << endl;
                     }
 
@@ -424,16 +426,16 @@ int main( int argc, char* argv[] )
     }
 
     // final prints on sub unsub agreement
-    cout    << setw(15) << "Overall SUB UNSUB agreement:"
+    cout    << setw(15) << "# Overall SUB UNSUB agreement:"
             << endl
-            << setw(15) << "chisqr_L/N: " << chisqr_L/numpoints << " "
-            << setw(15) << "chisqr_T/N: " << chisqr_T/numpoints
+            << setw(15) << "# chisqr_L/N: " << chisqr_L/numpoints << " "
+            << setw(15) << "# chisqr_T/N: " << chisqr_T/numpoints
             << endl
-            << setw(15) << "L sub t[ms]: " << duration_L_sub << " "
-            << setw(15) << "T sub t[ms]: " << duration_T_sub << " "
+            << setw(15) << "# L sub t[s]: " << duration_L_sub/1000.0 << " "
+            << setw(15) << "# T sub t[s]: " << duration_T_sub/1000.0 << " "
             << endl
-            << setw(15) << "L unsub t[ms]: " << duration_L_unsub << " "
-            << setw(15) << "T unsub t[ms]: " << duration_T_unsub << " "
+            << setw(15) << "# L unsub t[s]: " << duration_L_unsub/1000.0 << " "
+            << setw(15) << "# T unsub t[s]: " << duration_T_unsub/1000.0 << " "
             << endl;
 
 }
