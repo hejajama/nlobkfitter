@@ -102,7 +102,7 @@ int main( int argc, char* argv[] )
 
     bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop;
     bool useSigma3 = false;
-    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q C^2 X0 gamma Q0sq Y0 eta0\nsub/unsub/unsub+ resumbk/trbk/lobk parentrc/guillaumerc/fixedrc z2improved/z2simple z2boundloop/unboundloop";
+    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop [Qs0 C^2 gamma] X0_if X0_bk e_c Q0sq Y0 eta0\nsub/unsub/unsub+ resumbk/trbk/lobk parentrc/guillaumerc/fixedrc z2improved/z2simple z2boundloop/unboundloop";
     string string_sub, string_bk, string_rc;
     if (argc<2){ cout << helpstring << endl; return 0;}
     // Argv[0] is the name of the program
@@ -190,23 +190,27 @@ int main( int argc, char* argv[] )
     int argi=6;
     double icqs0sq, iccsq, icx0_if, icx0_bk, ic_ec, icgamma, icQ0sq, icY0, icEta0;
     // reading fit initial condition parameters:
-    if (argc == argi+3){
+    if (argc == argi){
+        cout << "Swarmscan needs Q^2, C^2 and gamma IC values at the least!" << endl;
+        cout << helpstring << endl;
+        exit(1);
+    } else if (argc == argi+3){
         icqs0sq   = stod( argv [argi] ); argi++;
         iccsq     = stod( argv [argi] ); argi++;
+        icgamma   = stod( argv [argi] ); argi++;
         icx0_if   = 1.0;
         icx0_bk   = 0.01;
         ic_ec     = 1.0;
-        icgamma   = stod( argv [argi] ); argi++;
         icQ0sq    = 1.0;
         icY0      = 0;
         icEta0    = 0;
     } else {
         icqs0sq   = stod( argv [argi] ); argi++;
         iccsq     = stod( argv [argi] ); argi++;
+        icgamma   = stod( argv [argi] ); argi++;
         icx0_if   = stod( argv [argi] ); argi++;
         icx0_bk   = stod( argv [argi] ); argi++;
         ic_ec     = stod( argv [argi] ); argi++;
-        icgamma   = stod( argv [argi] ); argi++;
         icQ0sq    = stod( argv [argi] ); argi++;
         icY0      = stod( argv [argi] ); argi++;
         icEta0    = stod( argv [argi] ); argi++;
@@ -231,8 +235,8 @@ int main( int argc, char* argv[] )
     parameters.Add("anomalous_dimension",   icgamma );
     parameters.Add("icx0_nlo_impfac",       icx0_if );
     parameters.Add("icx0_bk",               icx0_bk );
-    parameters.Add("initialconditionY0",    icY0 );
     parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
+    parameters.Add("initialconditionY0",    icY0 );
     parameters.Add("eta0", icEta0 );
 
     NLODISFitter fitter(parameters);
