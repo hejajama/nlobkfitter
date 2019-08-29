@@ -194,7 +194,7 @@ int main( int argc, char* argv[] )
         icqs0sq   = stod( argv [argi] ); argi++;
         iccsq     = stod( argv [argi] ); argi++;
         icx0_if   = 1.0;
-        icx0_bk   = 1.0;
+        icx0_bk   = 0.01;
         ic_ec     = 1.0;
         icgamma   = stod( argv [argi] ); argi++;
         icQ0sq    = 1.0;
