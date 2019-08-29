@@ -64,7 +64,9 @@ int main( int argc, char* argv[] )
 
     // NLO DIS SIGMA_R COMPUTATION CONFIGS
     nlodis_config::CUBA_EPSREL = 10e-3;
+    //nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
     nlodis_config::CUBA_MAXEVAL= 1e7;
+    //nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
     nlodis_config::MINR = 1e-6;
     nlodis_config::MAXR = 30;
     nlodis_config::PRINTDATA = true;

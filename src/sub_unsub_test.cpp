@@ -66,9 +66,11 @@ int main( int argc, char* argv[] )
 
     // NLO DIS SIGMA_R COMPUTATION CONFIGS
     nlodis_config::CUBA_EPSREL = 10e-3;
-    nlodis_config::CUBA_MAXEVAL= 5e7;
+    //nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
+    nlodis_config::CUBA_MAXEVAL= 1e7;
+    //nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
     nlodis_config::MINR = 1e-6;
-    nlodis_config::MAXR = 40;
+    nlodis_config::MAXR = 30;
     nlodis_config::PRINTDATA = true;
     bool useNLO = true;
     bool computeNLO = useNLO;
@@ -84,7 +86,7 @@ int main( int argc, char* argv[] )
 
     config::INTACCURACY = 10e-3;//0.02;
     config::MINR = 1e-6;
-    config::MAXR = 40;
+    config::MAXR = 30;
     config::RPOINTS = 100;
     config::DE_SOLVER_STEP = 0.4; // Rungekutta step
 
@@ -206,8 +208,9 @@ int main( int argc, char* argv[] )
     double alphas_scaling     = 1.0; //par[ parameters.Index("alphascalingC2")]; // MATCH THIS IN IMPACTFACTOR ALPHA_S WHEN NLO
     double anomalous_dimension = 1.0; //par[ parameters.Index("anomalous_dimension")];
     double e_c          = 1.0; //par[ parameters.Index("e_c")];
-    double icx0_nlo_impfac = 1.0; //par[ parameters.Index("initialconditionX0")];
-    double icx0_bk = 1.0; //par[ parameters.Index("initialconditionX0")];
+    double icx0_nlo_impfac = 0.01; //par[ parameters.Index("initialconditionX0")];
+//     double icx0_bk = 1.0; //par[ parameters.Index("initialconditionX0")];
+    double icx0_bk = 0.01; //par[ parameters.Index("initialconditionX0")];
     double initialconditionY0  = 0; //par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = 1.0; //par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
@@ -436,6 +439,8 @@ int main( int argc, char* argv[] )
             << endl
             << setw(15) << "# L unsub t[s]: " << duration_L_unsub/1000.0 << " "
             << setw(15) << "# T unsub t[s]: " << duration_T_unsub/1000.0 << " "
+            << endl
+            << setw(15) << "# Total duration: " << (duration_L_sub+duration_T_sub+duration_L_unsub+duration_T_unsub)/1000.0 << " "
             << endl;
 
 }

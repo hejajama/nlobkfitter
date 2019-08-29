@@ -163,6 +163,10 @@ public:
             alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd;
             alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_guillaume;
             cout << "# Using Guillaume RC" << endl;}
+        else if (nlodis_config::RC_DIS == nlodis_config::DIS_RC_SMALLEST){
+            alphas_temppointer = &ComputeSigmaR::alpha_bar_running_pd; // parent dipole in the LO-like qqbar terms where there are no daughter dipoles.
+            alphas_temppointer_QG  = &ComputeSigmaR::alpha_bar_QG_running_smallest;
+            cout << "# Using smallest dipole RC" << endl;}
         else {
             cout << "ERROR: Problem with the choice of runnincoupling. Unkonwn nlodis_config::RC_DIS." << endl;
             exit(1);
