@@ -154,8 +154,8 @@ int main( int argc, char* argv[] )
             config::RESUM_RC = config::RESUM_RC_FIXED;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_FIXED;
     } else if (string_rc == "smallestrc" or string_rc == "sdrc"){
-            config::RC_LO = config::SMALLEST_LO;
-            config::RESUM_RC = config::RESUM_RC_BALITSKY;
+            config::RC_LO = config::BALITSKY_LO;
+            config::RESUM_RC = config::RESUM_RC_SMALLEST;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_SMALLEST;
     } else {cout << helpstring << endl; return -1;}
 
