@@ -66,25 +66,19 @@ int main( int argc, char* argv[] )
     // NLO DIS SIGMA_R COMPUTATION CONFIGS
     nlodis_config::CUBA_EPSREL = 10e-3;
     //nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
-    nlodis_config::CUBA_MAXEVAL= 1e7;
+    nlodis_config::CUBA_MAXEVAL= 2e7;
     //nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
     nlodis_config::MINR = 1e-6;
-    nlodis_config::MAXR = 50;
-    nlodis_config::PRINTDATA = true;
+    nlodis_config::MAXR = 30;
+    nlodis_config::PRINTDATA = false;
     bool useNLO = true;
-    //bool useSUB = true;               // Set by a command line switch in swarmscan
-    //bool useImprovedZ2Bound = true;   // Set by a command line switch in swarmscan
-    //bool useBoundLoop = true;         // Set by a command line switch in swarmscan
     string cubaMethod = "suave";
-    //bool useResumBK = true;
-    //bool useKCBK = false;
-    //if (useResumBK == true and useKCBK == true) {cout << "Both ResumBK and KCBK enabled, exitting." << endl; return -1;}
 
     // Constants
     config::NF=3;   // Only light quarks
     config::LAMBDAQCD = 0.241;
     
-    config::VERBOSE = true;
+    config::VERBOSE = false;
     // config::RINTPOINTS = 512/4;
     // config::THETAINTPOINTS = 512/4;
 
@@ -96,7 +90,7 @@ int main( int argc, char* argv[] )
     // config::MCINTACCURACY = 10e-3;//0.02;
     // config::MCINTPOINTS = 1e7;
     config::MINR = 1e-6;
-    config::MAXR = 50;
+    config::MAXR = 30;
     config::RPOINTS = 100;
     config::DE_SOLVER_STEP = 0.4; // Rungekutta step
     // config::DE_SOLVER_STEP = 0.05; // Euler step
@@ -104,7 +98,7 @@ int main( int argc, char* argv[] )
 
     // READING RUN CONFIGURATION FROM THE STDIN
     bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop, useSigma3;
-    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q0² C^2 X0 ec gamma Q0sq Y0 eta0\nsub/unsub/unsub+ resumbk/trbk/lobk parentrc/guillaumerc/fixedrc z2improved/z2simple z2boundloop/unboundloop";
+    string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop [Qs0 C^2 gamma] X0_if X0_bk e_c Q0sq Y0 eta0\nsub/unsub/unsub+ resumbk/trbk/lobk parentrc/guillaumerc/fixedrc z2improved/z2simple z2boundloop/unboundloop";
     string string_sub, string_bk, string_rc;
     if (argc<2){ cout << helpstring << endl; return 0;}
     // Argv[0] is the name of the program
@@ -145,7 +139,7 @@ int main( int argc, char* argv[] )
             config::KINEMATICAL_CONSTRAINT = config::KC_EDMOND_K_MINUS;
             config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
             nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_TRBK_EDMOND;
-            nlodis_config::TRBK_RHO_PRESC = nlodis_config::TRBK_RHO_MAX_X_Y_R;
+            nlodis_config::TRBK_RHO_PRESC = nlodis_config::TRBK_RHO_QQ0;
     }else if (string(argv [2]) == "lobk"){
             config::EULER_METHOD = false;   // Use Runge-Kutta since no kin. constraint
             config::RESUM_DLOG = false;
@@ -188,17 +182,18 @@ int main( int argc, char* argv[] )
     } else {cout << helpstring << endl; return -1;}
 
     int argi=6;
-    double icqs0sq, iccsq, icx0, ic_ec, icgamma, icQ0sq, icY0, icEta0;
+    double icqs0sq, iccsq, icx0_if, icx0_bk, ic_ec, icgamma, icQ0sq, icY0, icEta0;
     // reading fit initial condition parameters:
     if (argc > 6){
         icqs0sq   = stod( argv [argi] ); argi++;
         iccsq     = stod( argv [argi] ); argi++;
-        icx0      = stod( argv [argi] ); argi++;
-        ic_ec     = stod( argv [argi] ); argi++;
         icgamma   = stod( argv [argi] ); argi++;
+        icx0_if   = stod( argv [argi] ); argi++;
+        icx0_bk   = stod( argv [argi] ); argi++;
+        ic_ec     = stod( argv [argi] ); argi++;
         icQ0sq    = stod( argv [argi] ); argi++;
         icY0      = stod( argv [argi] ); argi++;
-        icEta0    = stod( argv [argi] ); argi++;
+        icEta0    = stod( argv [argi] ); argi++;        
     } else {
         // use LO fit as IC
         icqs0sq   = 0.104;
@@ -217,12 +212,12 @@ int main( int argc, char* argv[] )
         //if(argc = 13){
         parameters.Add("qs0sqr",                icqs0sq, 0.2);
         // parameters.Add("qs0sqr",                icqs0sq);
-        parameters.Add("alphascalingC2",        iccsq, 10.0);
+        parameters.Add("alphascalingC2",        iccsq, 1.0);
         // parameters.Add("alphascalingC2",        iccsq);
         parameters.Add("e_c",                   ic_ec );
         parameters.Add("anomalous_dimension",   icgamma);
-        parameters.Add("icx0_nlo_impfac",       icx0 );
-        parameters.Add("icx0_bk",               0.01 );
+        parameters.Add("icx0_nlo_impfac",       icx0_if );
+        parameters.Add("icx0_bk",               icx0_bk );
         parameters.Add("initialconditionY0",    icY0 );
         parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
         parameters.Add("eta0", icEta0 );
@@ -247,8 +242,7 @@ int main( int argc, char* argv[] )
         //
         // Set limits
         //
-        parameters.SetLimits("qs0sqr",              0.001 , 0.7);
-        // parameters.SetLimits("fitsigma0",           1.0   , 40.0);
+        parameters.SetLimits("qs0sqr",              0.01 , 0.7);
         parameters.SetLimits("alphascalingC2",      0.1  ,	900.0);
         //parameters.SetLimits("e_c",                 0.4   , 10.0);
         //parameters.SetLimits("anomalous_dimension", 0.1   ,	2.0);

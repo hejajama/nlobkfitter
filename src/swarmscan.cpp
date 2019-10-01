@@ -110,10 +110,13 @@ int main( int argc, char* argv[] )
     string_sub = string(argv [1]);
     if (string(argv [1]) == "sub"){
         useSUB = true;
+        nlodis_config::SUB_SCHEME = nlodis_config::SUBTRACTED;
     } else if (string(argv [1]) == "unsub"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
         useSigma3 = false;
     } else if (string(argv [1]) == "unsub+"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
         useSigma3 = true;
     } else {cout << helpstring << endl; return -1;}
@@ -140,6 +143,7 @@ int main( int argc, char* argv[] )
             config::KINEMATICAL_CONSTRAINT = config::KC_EDMOND_K_MINUS;
             config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
             nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_TRBK_EDMOND;
+	    nlodis_config::TRBK_RHO_PRESC = nlodis_config::TRBK_RHO_QQ0;
     }else if (string(argv [2]) == "lobk"){
             config::EULER_METHOD = false;   // Use Runge-Kutta since no kin. constraint
             config::RESUM_DLOG = false;

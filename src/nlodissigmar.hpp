@@ -143,9 +143,15 @@ public:
         }
     }
     void SetTRBKRhoPrescription(nlodis_config::TargetRapidityBKRhoPresc rhopresc){
-        if (rhopresc == nlodis_config::TRBK_RHO_QQ0){rho_PTR = &ComputeSigmaR::rho_rapidity_shift_QQ0;}
-        else if (rhopresc == nlodis_config::TRBK_RHO_X_R){rho_PTR = &ComputeSigmaR::rho_rapidity_shift_XR;}
-        else if (rhopresc == nlodis_config::TRBK_RHO_MAX_X_Y_R){rho_PTR = &ComputeSigmaR::rho_rapidity_shift_MAX_XYR;}
+        if (rhopresc == nlodis_config::TRBK_RHO_QQ0){
+	    rho_PTR = &ComputeSigmaR::rho_rapidity_shift_QQ0;
+	    cout << "# TRBK RHO is TRBK_RHO_QQ0" << endl; }
+        else if (rhopresc == nlodis_config::TRBK_RHO_X_R){
+	    rho_PTR = &ComputeSigmaR::rho_rapidity_shift_XR;
+	    cout << "# TRBK RHO is TRBK_RHO_X_R" << endl; }
+        else if (rhopresc == nlodis_config::TRBK_RHO_MAX_X_Y_R){
+	    rho_PTR = &ComputeSigmaR::rho_rapidity_shift_MAX_XYR;
+	    cout << "# TRBK RHO is TRBK_RHO_MAX_X_Y_R" << endl; }
     }
     void MetaPrescriptionSetter(){
         // NLO: set runningcoupling and C2=Csq for the object.
