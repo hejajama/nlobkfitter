@@ -78,8 +78,8 @@ int main( int argc, char* argv[] )
     config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
 
     config::VERBOSE = true;
-    config::RINTPOINTS = 512/4;
-    config::THETAINTPOINTS = 512/4;
+    //config::RINTPOINTS = 512/4;
+    //config::THETAINTPOINTS = 512/4;
 
     config::INTACCURACY = 10e-3;//0.02;
     config::MINR = 1e-6;
