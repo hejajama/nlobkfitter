@@ -198,9 +198,10 @@ int main( int argc, char* argv[] )
         // use LO fit as IC
         icqs0sq   = 0.104;
         iccsq     = 10.0;
-        icx0      = 1.0;
-        ic_ec     = 1.0;
         icgamma   = 1.0;
+        icx0_if   = 1.0;
+        icx0_bk   = 0.01;
+        ic_ec     = 1.0;
         icQ0sq    = 1.0;
         icY0      = 0.0;
         icEta0    = 0.0;
@@ -209,45 +210,23 @@ int main( int argc, char* argv[] )
 
     MnUserParameters parameters;
     // Fit parameters, first value is starting value, second is uncertainty
-        //if(argc = 13){
-        parameters.Add("qs0sqr",                icqs0sq, 0.2);
-        // parameters.Add("qs0sqr",                icqs0sq);
+        parameters.Add("qs0sqr",                icqs0sq, 0.05);
         parameters.Add("alphascalingC2",        iccsq, 1.0);
-        // parameters.Add("alphascalingC2",        iccsq);
-        parameters.Add("e_c",                   ic_ec );
-        parameters.Add("anomalous_dimension",   icgamma);
+        parameters.Add("anomalous_dimension",   icgamma, 0.05);
         parameters.Add("icx0_nlo_impfac",       icx0_if );
         parameters.Add("icx0_bk",               icx0_bk );
-        parameters.Add("initialconditionY0",    icY0 );
+        parameters.Add("e_c",                   ic_ec );
         parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
+        parameters.Add("initialconditionY0",    icY0 );
         parameters.Add("eta0", icEta0 );
-        //}
-        /*else{
-        cout << "INSUFFICIENT RUN PARAMETERS, running a preset test run:" << endl;
-        useSUB = true;
-        useSigma3 = false;            
-        config::LO_BK = false;  // Solve RESUM BK with running coupling
-        useImprovedZ2Bound = true;  
-        useBoundLoop = true;        
-        parameters.Add("qs0sqr", 0.1 );
-        parameters.Add("fitsigma0", 20.0 ); // 1mb = 2.568 GeV² // (2.568)*16.36
-        parameters.Add("alphascalingC2", 0.315 );
-        parameters.Add("e_c", 1.0 );
-        parameters.Add("anomalous_dimension", 1.0 );
-        parameters.Add("initialconditionX0", 1.0 );
-        parameters.Add("initialconditionY0", 0. );
-        parameters.Add("icTypicalPartonVirtualityQ0sqr", 1.0 ); }
-        */
+    //
+    // Set limits
+    //
+        parameters.SetLimits("qs0sqr",              0.01 , 0.3);
+        parameters.SetLimits("alphascalingC2",      0.1  , 15.0);
+        parameters.SetLimits("anomalous_dimension", 0.5  , 2.0);
+        //parameters.SetLimits("icx0_nlo_impfac",	    0.01 , 10.0);
 
-        //
-        // Set limits
-        //
-        parameters.SetLimits("qs0sqr",              0.01 , 0.7);
-        parameters.SetLimits("alphascalingC2",      0.1  ,	900.0);
-        //parameters.SetLimits("e_c",                 0.4   , 10.0);
-        //parameters.SetLimits("anomalous_dimension", 0.1   ,	2.0);
-        //parameters.SetLimits("initialconditionX0",  0.01  ,	10.0);
-        //parameters.SetLimits("initialconditionY0",  0.01  ,	10.0);
 
 
     Data data;
@@ -294,8 +273,6 @@ int main( int argc, char* argv[] )
     cout << parameters << endl;
     if(nlodis_config::VERBOSE) cout << "=== Starting fit ===" << endl;
 
-    //MnMachinePrecision precc();
-    //precc.SetPrecision(1e-3);
     // MnMinimize: use MIGRAD, if it fails, fall back to SIMPLEX
     // Optional 3rd argument, an unsigned int, set algorithm strategy: 0 = low (fast) , 1 = medium (def) , 2 = high (taxing)
     //MnMigrad fit(fitter, parameters, 0);
@@ -303,7 +280,7 @@ int main( int argc, char* argv[] )
     //MnSimplex fit(fitter,parameters);
     //MnScan fit(fitter, parameters);
 
-    fit.SetPrecision(15e-2); // TODO Should this match BK solver acc?
+    //fit.SetPrecision(15e-2);
     // minimize
     FunctionMinimum min = fit();
     // output
