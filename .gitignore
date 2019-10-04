@@ -9,12 +9,14 @@ Makefile.*
 build/
 *.[oa]
 fit
+fitex
 swarmscan
 tool
 plottool
 lgcy-plottool
 subunsub
 lightqscan
+
 
 # Editor and other files
 .vscode/
