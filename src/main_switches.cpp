@@ -63,16 +63,27 @@ int main( int argc, char* argv[] )
 {
     gsl_set_error_handler(&ErrHandlerCustom);
 
+    string method_string = "suave";
+    double cubaeps = 1e-3;
+    double cubamaxev = 2e7;
+    double minuit_prec = 1e-10;
+    if (argc == 19){
+	method_string = string(argv[15]);
+	cubaeps = stod( argv[16] );
+	cubamaxev = stod( argv[17] );
+	minuit_prec = stod( argv[18] );
+    }
+
     // NLO DIS SIGMA_R COMPUTATION CONFIGS
-    nlodis_config::CUBA_EPSREL = 10e-3;
+    nlodis_config::CUBA_EPSREL = cubaeps;
     //nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
-    nlodis_config::CUBA_MAXEVAL= 2e7;
+    nlodis_config::CUBA_MAXEVAL= cubamaxev;
     //nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
     nlodis_config::MINR = 1e-6;
     nlodis_config::MAXR = 30;
     nlodis_config::PRINTDATA = false;
     bool useNLO = true;
-    string cubaMethod = "suave";
+    string cubaMethod = method_string;
 
     // Constants
     config::NF=3;   // Only light quarks
@@ -264,6 +275,8 @@ int main( int argc, char* argv[] )
                 << ", Cuba eps = " << nlodis_config::CUBA_EPSREL
                 << ", Cuba maxeval = " << (float)nlodis_config::CUBA_MAXEVAL
                 << endl
+	    << "# Minuit Precision = " << minuit_prec
+		<< endl
             << "# config::INTACCURACY = " << config::INTACCURACY
                 << ", config::RPOINTS = " << config::RPOINTS
                 << ", config::DE_SOLVER_STEP = " << config::DE_SOLVER_STEP
@@ -280,7 +293,9 @@ int main( int argc, char* argv[] )
     //MnSimplex fit(fitter,parameters);
     //MnScan fit(fitter, parameters);
 
-    //fit.SetPrecision(15e-2);
+    if (minuit_prec != 0){
+        fit.SetPrecision(minuit_prec);
+    }
     // minimize
     FunctionMinimum min = fit();
     // output
@@ -308,6 +323,8 @@ int main( int argc, char* argv[] )
                 << ", Cuba eps = " << nlodis_config::CUBA_EPSREL
                 << ", Cuba maxeval = " << (float)nlodis_config::CUBA_MAXEVAL
                 << endl
+	    << "# Minuit Precision = " << minuit_prec
+		<< endl
             << "# config::INTACCURACY = " << config::INTACCURACY
                 << ", config::RPOINTS = " << config::RPOINTS
                 << ", config::DE_SOLVER_STEP = " << config::DE_SOLVER_STEP
