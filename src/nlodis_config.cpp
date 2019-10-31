@@ -21,5 +21,5 @@ namespace nlodis_config
     SubtractionScheme SUB_SCHEME;
     SubSchemeTermKernel SUB_TERM_KERNEL;
     GluonZ2Minimum Z2MINIMUM;
-    TargetRapidityBKRhoPresc TRBK_RHO_PRESC;
+    TargetRapidityBKRhoPresc TRBK_RHO_PRESC = nlodis_config::TRBK_RHO_DISABLED;
 }

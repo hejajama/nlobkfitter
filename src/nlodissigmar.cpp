@@ -660,8 +660,22 @@ double ComputeSigmaR::heaviside_theta(double x) {
 
 
 ///===========================================================================================
-// NLO Rapidities and shift(s)
+// LO Rapidities with / w/o shift
+double ComputeSigmaR::Xrpdty_LO_projectileY(double x, double Qsq){
+    double X = (this->*Xrpdty_LO_projectileY_z2min_PTR)( x, Qsq );
+    return X;
+}
 
+double ComputeSigmaR::Xrpdty_LO_targetETA(double x, double Qsq){
+    // Target rapidity eta = Y - rho is shifted so here we compute the bjorken-x corresponding to the shifted rapidity.
+    // x_eta = x_Y * exp(rho)
+    double X_Y = (this->*Xrpdty_LO_projectileY_z2min_PTR)( x, Qsq );
+    double rho = rho_rapidity_shift_QQ0(Qsq); // virtuality dependent shift is the only valid one at LO context of the known shifts
+    return X_Y*std::exp(rho); // return X_eta for the shifted eta = Y - rho
+}
+
+
+// NLO Rapidities and shift(s)
 double ComputeSigmaR::Xrpdty_NLO_projectileY(double Qsq, double z2, double z2min, double icX0, double x01sq = 0, double x02sq = 0, double x21sq = 0 ){
     double X = z2min * icX0/z2;
     return X;
@@ -673,6 +687,7 @@ double ComputeSigmaR::Xrpdty_NLO_targetETA(double Qsq, double z2, double z2min, 
     double rho = rho_rapidity_shift(Qsq, x01sq, x02sq, x21sq);
     return X_Y*std::exp(rho);
 }
+
 
 // Target rapidity Eta shift calculator(s)
 double ComputeSigmaR::rho_rapidity_shift_QQ0(double Qsq, double x01sq, double x02sq, double x21sq){

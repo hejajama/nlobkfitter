@@ -120,6 +120,7 @@ public:
 
     void SetImprovedZ2Bound(z2funpointer p){z2limit_PTR = p;} // function pointer setter
     void SetEvolutionX_LO(xrapidity_funpointer p){Xrpdty_LO_PTR = p;}
+    void SetEvolutionX_LO_z2scheme(xrapidity_funpointer p){Xrpdty_LO_projectileY_z2min_PTR = p;}
     void SetEvolutionX_DIP(xrapidity_funpointer p){Xrpdty_DIP_PTR = p;}
     void SetEvolutionX_NLO(xrapidity_NLO_funpointer p){Xrpdty_NLO_PTR = p;}
 
@@ -144,14 +145,15 @@ public:
     }
     void SetTRBKRhoPrescription(nlodis_config::TargetRapidityBKRhoPresc rhopresc){
         if (rhopresc == nlodis_config::TRBK_RHO_QQ0){
-	    rho_PTR = &ComputeSigmaR::rho_rapidity_shift_QQ0;
-	    cout << "# TRBK RHO is TRBK_RHO_QQ0" << endl; }
+	        rho_PTR = &ComputeSigmaR::rho_rapidity_shift_QQ0;
+	        cout << "# TRBK RHO is TRBK_RHO_QQ0" << endl; }
         else if (rhopresc == nlodis_config::TRBK_RHO_X_R){
-	    rho_PTR = &ComputeSigmaR::rho_rapidity_shift_XR;
-	    cout << "# TRBK RHO is TRBK_RHO_X_R" << endl; }
+	        rho_PTR = &ComputeSigmaR::rho_rapidity_shift_XR;
+	        cout << "# TRBK RHO is TRBK_RHO_X_R" << endl; }
         else if (rhopresc == nlodis_config::TRBK_RHO_MAX_X_Y_R){
-	    rho_PTR = &ComputeSigmaR::rho_rapidity_shift_MAX_XYR;
-	    cout << "# TRBK RHO is TRBK_RHO_MAX_X_Y_R" << endl; }
+	        rho_PTR = &ComputeSigmaR::rho_rapidity_shift_MAX_XYR;
+	        cout << "# TRBK RHO is TRBK_RHO_MAX_X_Y_R" << endl; }
+        else if (rhopresc == nlodis_config::TRBK_RHO_DISABLED){}
     }
     void MetaPrescriptionSetter(){
         // NLO: set runningcoupling and C2=Csq for the object.
@@ -188,16 +190,32 @@ public:
 
         // Dipole evalution X, (y = log(x0/X))
         // if using 'sub' scheme with z2imp one must use the extended evolution variable for sigma_LO as well.
-        ComputeSigmaR::xrapidity_funpointer x_fun_ptr;
+        ComputeSigmaR::xrapidity_funpointer x_Y_z2min_ptr;
         if (nlodis_config::SUB_SCHEME == nlodis_config::SUBTRACTED 
-            and nlodis_config::Z2MINIMUM == nlodis_config::Z2IMPROVED) {x_fun_ptr = &ComputeSigmaR::Xrpdty_LO_improved;}
-        else {x_fun_ptr = &ComputeSigmaR::Xrpdty_LO_simple;}
-
+            and nlodis_config::Z2MINIMUM == nlodis_config::Z2IMPROVED) {
+                x_Y_z2min_ptr = &ComputeSigmaR::Xrpdty_LO_improved;
+                cout << "# Using Z2IMP -- improved z2min scheme" << endl;
+                }
+        else {
+            x_Y_z2min_ptr = &ComputeSigmaR::Xrpdty_LO_simple;
+            cout << "# Using Z2SIM -- simple z2min scheme" << endl;
+            }
+        
+        ComputeSigmaR::xrapidity_funpointer x_y_eta_rap_ptr;
         ComputeSigmaR::xrapidity_NLO_funpointer x_nlo_fun_ptr;
-        if (config::KINEMATICAL_CONSTRAINT == config::KC_EDMOND_K_MINUS) {x_nlo_fun_ptr = &ComputeSigmaR::Xrpdty_NLO_targetETA;}
-        else {x_nlo_fun_ptr = &ComputeSigmaR::Xrpdty_NLO_projectileY;}
-        this->SetEvolutionX_LO(x_fun_ptr);
-        this->SetEvolutionX_DIP(x_fun_ptr);
+        if (config::KINEMATICAL_CONSTRAINT == config::KC_EDMOND_K_MINUS) {
+            x_y_eta_rap_ptr = &ComputeSigmaR::Xrpdty_LO_targetETA;
+            x_nlo_fun_ptr = &ComputeSigmaR::Xrpdty_NLO_targetETA;
+            cout << "# Using target ETA evolution rapidity" << endl;
+            }
+        else {
+            x_y_eta_rap_ptr = &ComputeSigmaR::Xrpdty_LO_projectileY;
+            x_nlo_fun_ptr = &ComputeSigmaR::Xrpdty_NLO_projectileY;
+            cout << "# Using projectile Y evolution rapidity" << endl;
+            }
+        this->SetEvolutionX_LO(x_y_eta_rap_ptr);
+        this->SetEvolutionX_DIP(x_y_eta_rap_ptr); // dipole term is always evaluated at the same rapidity as the lowest order term.
+        this->SetEvolutionX_LO_z2scheme(x_Y_z2min_ptr);
         this->SetEvolutionX_NLO(x_nlo_fun_ptr);
 
         // sigma_3 BK correction
@@ -225,7 +243,8 @@ public:
     CmptrMemFn_void Alphabar_QG_PTR;
     z2funpointer z2limit_PTR;
     subterm_z2upper_fp z2upper_qg_PTR;
-    xrapidity_funpointer Xrpdty_LO_PTR, Xrpdty_DIP_PTR;
+    xrapidity_funpointer Xrpdty_LO_PTR, Xrpdty_DIP_PTR; // point to probe or target rapidity functions
+    xrapidity_funpointer Xrpdty_LO_projectileY_z2min_PTR; // points to z2min consistent probe rapidity
     xrapidity_NLO_funpointer Xrpdty_NLO_PTR;
     bkkernel_funpointer K_kernel_PTR;
     trbk_rho_funpointer rho_PTR;
@@ -272,12 +291,16 @@ public:
     double Xrpdty_NLO(double Qsq, double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq ){
         return (this->*Xrpdty_NLO_PTR)(Qsq,z2,z2min,icX0,x01sq,x02sq,x21sq);
     };
+
+    double Xrpdty_LO_projectileY(double x, double Qsq);
+    double Xrpdty_LO_targetETA(double x, double Qsq);
+
     double Xrpdty_NLO_projectileY(double Qsq, double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq );
     double Xrpdty_NLO_targetETA(double Qsq, double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq );
 
     // Target rapidity Eta shift calculator(s)
-    double rho_rapidity_shift(double Qsq, double x01sq, double x02sq, double x21sq){ return (this->*rho_PTR)(Qsq, x01sq, x02sq, x21sq); };
-    double rho_rapidity_shift_QQ0(double Qsq, double x01sq, double x02sq, double x21sq);
+    double rho_rapidity_shift(double Qsq, double x01sq = 0, double x02sq = 0, double x21sq = 0){ return (this->*rho_PTR)(Qsq, x01sq, x02sq, x21sq); };
+    double rho_rapidity_shift_QQ0(double Qsq, double x01sq = 0, double x02sq = 0, double x21sq = 0);
     double rho_rapidity_shift_XR(double Qsq, double x01sq, double x02sq, double x21sq);
     double rho_rapidity_shift_MAX_XYR(double Qsq, double x01sq, double x02sq, double x21sq);
     double x_eta_delta_ij_r(double x_ij_sq, double rsq);

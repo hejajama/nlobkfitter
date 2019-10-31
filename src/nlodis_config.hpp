@@ -54,6 +54,7 @@ namespace nlodis_config
 
     enum TargetRapidityBKRhoPresc
     {
+        TRBK_RHO_DISABLED,
         TRBK_RHO_QQ0,
         TRBK_RHO_X_R,
         TRBK_RHO_MAX_X_Y_R

@@ -97,6 +97,7 @@ int main( int argc, char* argv[] )
     config::NO_K2 = true;  // Do not include numerically demanding full NLO part
     config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
 
+
     config::INTACCURACY = 10e-3;//0.02;
     // config::MCINTACCURACY = 10e-3;//0.02;
     // config::MCINTPOINTS = 1e7;
