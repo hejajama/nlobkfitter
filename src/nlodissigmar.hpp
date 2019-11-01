@@ -201,20 +201,29 @@ public:
             cout << "# Using Z2SIM -- simple z2min scheme" << endl;
             }
         
-        ComputeSigmaR::xrapidity_funpointer x_y_eta_rap_ptr;
+        ComputeSigmaR::xrapidity_funpointer x_lo_y_eta_rap_ptr; // only sub scheme LO term should have kinematical rapidity shift. No shift with unsub!
         ComputeSigmaR::xrapidity_NLO_funpointer x_nlo_fun_ptr;
         if (config::KINEMATICAL_CONSTRAINT == config::KC_EDMOND_K_MINUS) {
-            x_y_eta_rap_ptr = &ComputeSigmaR::Xrpdty_LO_targetETA;
-            x_nlo_fun_ptr = &ComputeSigmaR::Xrpdty_NLO_targetETA;
-            cout << "# Using target ETA evolution rapidity" << endl;
+            if (nlodis_config::SUB_SCHEME == nlodis_config::SUBTRACTED){
+                // sub scheme has evolution in the LO term so it needs the kinematical shift there as well.
+                x_lo_y_eta_rap_ptr = &ComputeSigmaR::Xrpdty_LO_targetETA;
+                cout << "# Using shifted target ETA rapidity in SUB leading order term." << endl;
+            }else{
+                // unsub scheme has no evolution in the lowest order term, so no shift there, use the Y rapidity technology that doesn't shift.
+                // Initial condition will be defined in x_eta = x0_bk.
+                x_lo_y_eta_rap_ptr = &ComputeSigmaR::Xrpdty_LO_projectileY;
+                cout << "# Using unshifted target ETA rapidity in UNSUB lowest order term." << endl;
             }
+            x_nlo_fun_ptr = &ComputeSigmaR::Xrpdty_NLO_targetETA;
+            cout << "# Using target ETA evolution rapidity in NLO terms" << endl;
+        }
         else {
-            x_y_eta_rap_ptr = &ComputeSigmaR::Xrpdty_LO_projectileY;
+            x_lo_y_eta_rap_ptr = &ComputeSigmaR::Xrpdty_LO_projectileY;
             x_nlo_fun_ptr = &ComputeSigmaR::Xrpdty_NLO_projectileY;
             cout << "# Using projectile Y evolution rapidity" << endl;
             }
-        this->SetEvolutionX_LO(x_y_eta_rap_ptr);
-        this->SetEvolutionX_DIP(x_y_eta_rap_ptr); // dipole term is always evaluated at the same rapidity as the lowest order term.
+        this->SetEvolutionX_LO(x_lo_y_eta_rap_ptr);
+        this->SetEvolutionX_DIP(x_lo_y_eta_rap_ptr); // dipole term is always evaluated at the same rapidity as the lowest order term.
         this->SetEvolutionX_LO_z2scheme(x_Y_z2min_ptr);
         this->SetEvolutionX_NLO(x_nlo_fun_ptr);
 
