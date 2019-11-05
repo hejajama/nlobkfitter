@@ -276,6 +276,11 @@ int main( int argc, char* argv[] )
     string dipole_filename = dipole_basename
                              + "_" + string_bk
                              + "_" + string_rc
+                             + "_qs0sqr" + std::to_string(qs0sqr)
+                             + "_anomdim" + std::to_string(anomalous_dimension)
+                             + "_ec" + std::to_string(e_c)
+                             + "_alphasscaling" + std::to_string(alphas_scaling)
+                             + "_eta0" + std::to_string(eta0)
                              + "_maxy" + std::to_string(maxy)
                              + "_euler" + std::to_string(config::EULER_METHOD)
                              + "_step" + std::to_string(config::DE_SOLVER_STEP)
