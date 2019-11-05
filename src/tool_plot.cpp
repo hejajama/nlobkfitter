@@ -86,7 +86,8 @@ int main( int argc, char* argv[] )
     config::MINR = 1e-6;
     config::MAXR = 30;
     config::RPOINTS = 100;
-    config::DE_SOLVER_STEP = 0.4; // Rungekutta step
+    // config::DE_SOLVER_STEP = 0.4; // Rungekutta step
+    config::DE_SOLVER_STEP = 0.8; // Rungekutta step
 
     // Constants
     config::NF=3;   // Only light quarks
@@ -186,6 +187,13 @@ int main( int argc, char* argv[] )
         useBoundLoop = false;
     } else {cout << helpstring << endl; return -1;}
 
+    bool use_custom_prescription = false;
+    string custom_presc;
+    if (argc == 7){
+        use_custom_prescription = true;
+        custom_presc = argv[6];
+    }
+
 
     cout << std::boolalpha;
     cout    << "# === Perturbative settings ===" << endl
@@ -261,18 +269,41 @@ int main( int argc, char* argv[] )
     double eta0 = 0;
     solver.SetAlphasScaling(alphas_scaling);
     // solver.SetEta0(eta0);
-    solver.Solve(maxy);                                // Solve up to maxy
+    // solver.Solve(maxy);                                // Solve up to maxy
 
+    AmplitudeLib* DipoleAmplitude_ptr; // Forward declaration of the dipole object to be initialized from a file or solved data.
+    string dipole_basename = "./out/dipoles/dipole";
+    string dipole_filename = dipole_basename
+                             + "_" + string_bk
+                             + "_" + string_rc
+                             + "_maxy" + std::to_string(maxy)
+                             + "_euler" + std::to_string(config::EULER_METHOD)
+                             + "_step" + std::to_string(config::DE_SOLVER_STEP)
+                             + "_rpoints" + std::to_string(config::RPOINTS)
+                             + "_rminmax" + std::to_string(config::MINR) + "--" + std::to_string(config::MAXR)
+                             + "_intacc" + std::to_string(config::INTACCURACY) ;
+    if (FILE *file = fopen(dipole_filename.c_str(), "r")) {
+        cout << "# Previously saved dipole file found: " << dipole_filename << endl;
+        DipoleAmplitude_ptr = new AmplitudeLib(dipole_filename);      // read data from existing file.
+        fclose(file);
+    } else {
+        solver.Solve(maxy);     // Solve up to maxy since specified dipole datafile was not found.
+        solver.GetDipole()->Save(dipole_filename);
+        cout << "# Saved dipole to file: "<< dipole_filename << endl;
+        DipoleAmplitude_ptr = new AmplitudeLib(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
+    }   
     // solver.GetDipole()->Save("./out/dipoles/dipole_lobk_fc_RK_step0.2_rpoints100_rmin1e-6rmax50_INTACC10e-3.dat");
     // cout << "Saved dipole to file, exiting." << endl;
     // exit(0);
     // */
 
     // Give solution to the AmplitudeLib object
-    AmplitudeLib DipoleAmplitude(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
+    // AmplitudeLib DipoleAmplitude(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
     // AmplitudeLib DipoleAmplitude("./data/paper1dipole/pap1_fcBK_MV.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
     // AmplitudeLib DipoleAmplitude("./out/dipoles/dipole_lobk_fc_step0.2_rpoints400-2.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
     // AmplitudeLib DipoleAmplitude("./out/dipoles/dipole_lobk_fc_step0.2_rpoints400_rmin1e-6rmax50_INTACC2e-3.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
+    AmplitudeLib DipoleAmplitude(*DipoleAmplitude_ptr);
+    delete DipoleAmplitude_ptr;
     DipoleAmplitude.SetInterpolationMethod(LINEAR_LINEAR);
     DipoleAmplitude.SetX0(icx0_bk);
     DipoleAmplitude.SetOutOfRangeErrors(false);
@@ -289,6 +320,45 @@ int main( int argc, char* argv[] )
 
     // Set running coupling and rapidity function pointters
     SigmaComputer.MetaPrescriptionSetter();
+    if (use_custom_prescription == true){
+        // DEFINE CUSTOM PRESCRIPTION HERE BY OVERWRITING SOME EFFECTS OF MetaPrescriptionSetter
+        cout << "############## USE_CUSTOM_PRESCRIPTION IS SET TO TRUE ################" << endl;
+
+        if (custom_presc == "cust1"){
+            /* z2sim vs z2imp + kinematical rapidity shift comparison
+            *  These settings force rapidity shift on with any BK evolution
+            */
+            cout << "# custom1 -- z2sim vs z2imp+rho: forcing eta rapidity shift (rho) to be on. USE WITH Z2IMP." << endl;
+
+            ComputeSigmaR::xrapidity_funpointer x_lo_y_eta_rap_ptr; // only sub scheme LO term should have kinematical rapidity shift. No shift with unsub!
+            ComputeSigmaR::xrapidity_NLO_funpointer x_nlo_fun_ptr;
+            if (nlodis_config::SUB_SCHEME == nlodis_config::SUBTRACTED){
+                // sub scheme has evolution in the LO term so it needs the kinematical shift there as well.
+                x_lo_y_eta_rap_ptr = &ComputeSigmaR::Xrpdty_LO_targetETA;
+                cout << "# Using shifted target ETA rapidity in SUB leading order term." << endl;
+            }else{
+                // unsub scheme has no evolution in the lowest order term, so no shift there, use the Y rapidity technology that doesn't shift.
+                // Initial condition will be defined in x_eta = x0_bk.
+                x_lo_y_eta_rap_ptr = &ComputeSigmaR::Xrpdty_LO_projectileY;
+                cout << "# Using unshifted target ETA rapidity in UNSUB lowest order term." << endl;
+            }
+            x_nlo_fun_ptr = &ComputeSigmaR::Xrpdty_NLO_targetETA;
+            cout << "# Using target ETA evolution rapidity in NLO terms" << endl;
+        
+            SigmaComputer.SetEvolutionX_LO(x_lo_y_eta_rap_ptr);
+            SigmaComputer.SetEvolutionX_DIP(x_lo_y_eta_rap_ptr); // dipole term is always evaluated at the same rapidity as the lowest order term.
+            SigmaComputer.SetEvolutionX_NLO(x_nlo_fun_ptr);
+
+            // trbk rho prescription
+            SigmaComputer.SetTRBKRhoPrescription(nlodis_config::TRBK_RHO_QQ0);
+            cout << "# Using rapidity shift RHO with ANY evolution equation." << endl;
+        }
+        else{
+            cout << "Unknown custom prescription: " << custom_presc << endl;
+        }
+
+    }
+    
     // CUBA Monte Carlo integration library algorithm setter
     SigmaComputer.SetCubaMethod(cubaMethod);
 
