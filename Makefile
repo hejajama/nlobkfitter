@@ -19,6 +19,9 @@ fitex: $(OBJECTS) src/main_switches.o
 swarmscan: $(OBJECTS) src/swarmscan.o 
 	g++ $(OBJECTS) src/swarmscan.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o swarmscan $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
 
+lightqscan: $(OBJECTS) src/lightq_scan.o
+	g++ $(OBJECTS) src/lightq_scan.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o lightqscan $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
+
 
 plottool: $(OBJECTS) src/tool_plot.o 
 	g++ $(OBJECTS) src/tool_plot.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o plottool $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
