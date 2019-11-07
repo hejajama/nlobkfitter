@@ -86,8 +86,8 @@ int main( int argc, char* argv[] )
     config::MINR = 1e-6;
     config::MAXR = 30;
     config::RPOINTS = 100;
-    // config::DE_SOLVER_STEP = 0.4; // Rungekutta step
-    config::DE_SOLVER_STEP = 0.8; // Rungekutta step
+    config::DE_SOLVER_STEP = 0.4; // Rungekutta step
+    // config::DE_SOLVER_STEP = 0.8; // Rungekutta step
 
     // Constants
     config::NF=3;   // Only light quarks
@@ -230,7 +230,7 @@ int main( int argc, char* argv[] )
     double anomalous_dimension = 1.0; //par[ parameters.Index("anomalous_dimension")];
     double e_c          = 1.0; //par[ parameters.Index("e_c")];
     double icx0_nlo_impfac = 1.0; //par[ parameters.Index("initialconditionX0")];
-    double icx0_bk = 1.0; //par[ parameters.Index("initialconditionX0")];
+    double icx0_bk = 0.01; //par[ parameters.Index("initialconditionX0")];
     double initialconditionY0  = 0; //par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = 1.0; //par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
@@ -308,7 +308,7 @@ int main( int argc, char* argv[] )
     // AmplitudeLib DipoleAmplitude("./out/dipoles/dipole_lobk_fc_step0.2_rpoints400-2.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
     // AmplitudeLib DipoleAmplitude("./out/dipoles/dipole_lobk_fc_step0.2_rpoints400_rmin1e-6rmax50_INTACC2e-3.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
     AmplitudeLib DipoleAmplitude(*DipoleAmplitude_ptr);
-    delete DipoleAmplitude_ptr;
+    // delete DipoleAmplitude_ptr;
     DipoleAmplitude.SetInterpolationMethod(LINEAR_LINEAR);
     DipoleAmplitude.SetX0(icx0_bk);
     DipoleAmplitude.SetOutOfRangeErrors(false);
@@ -526,6 +526,6 @@ int main( int argc, char* argv[] )
                 << endl;
                 }
     }
-
+    // cout << "End was reached." << endl;
     return 0;
 }
