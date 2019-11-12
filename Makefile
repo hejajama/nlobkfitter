@@ -8,7 +8,13 @@ LDFLAGS = `gsl-config --libs` -L$(MINUITLIBDIR) -lMinuit2 -L$(CUBAPATH) -lcuba -
 
 include filelist.m
 
-all: fit
+all: fitex swarmscan lightqscan
+
+%.o: %.cpp $(DEPENDENCIES) # Works but recompiles all objects if a single header changes. Safe.
+	g++ -c -o $@ $< $(CXXFLAGS)
+
+#$(OBJECTS): %.o: %.cpp %.hpp # Recompiles only the corresponding object after a header change. Uncertain if this is enough, possibly unsafe.
+#	g++ -c -o $@ $< $(CXXFLAGS)
 
 fit: $(OBJECTS) src/main.o
 	g++ $(OBJECTS) src/main.o amplitudelib_v2/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o fit $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
@@ -16,7 +22,7 @@ fit: $(OBJECTS) src/main.o
 fitex: $(OBJECTS) src/main_switches.o 
 	g++ $(OBJECTS) src/main_switches.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o fitex $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
 
-swarmscan: $(OBJECTS) src/swarmscan.o 
+swarmscan: $(OBJECTS) src/swarmscan.o src/nlodissigmar.hpp
 	g++ $(OBJECTS) src/swarmscan.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o swarmscan $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
 
 lightqscan: $(OBJECTS) src/lightq_scan.o
@@ -34,4 +40,4 @@ subunsubtest: $(OBJECTS) src/sub_unsub_test.o
 
 clean:
 	rm -f $(OBJECTS) $(AMPLITUDELIBO) src/main.o src/toolF2.o src/main_switches.o src/tool_plot.o src/swarmscan.o src/lightq_scan.o src/sub_unsub_test.o
-	rm -f fit tool plottool swarmscan lightqscan subunsub
+	rm -f fit fitex tool plottool swarmscan lightqscan subunsub
