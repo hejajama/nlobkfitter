@@ -67,11 +67,27 @@ int main( int argc, char* argv[] )
     double cubaeps = 1e-3;
     double cubamaxev = 2e7;
     double minuit_prec = 1e-10;
-    if (argc == 19){
+    if (argc >= 19){
 	method_string = string(argv[15]);
 	cubaeps = stod( argv[16] );
 	cubamaxev = stod( argv[17] );
 	minuit_prec = stod( argv[18] );
+    }
+    bool fit_qs0sqr = false, fit_csqr = false, fit_gamma = false, fit_ec = false;
+    if (argc == 20){
+        string fit_par_string = argv[19];
+        if (fit_par_string.find('0') != std::string::npos){
+            fit_qs0sqr = true;
+        }
+        if (fit_par_string.find('1') != std::string::npos){
+            fit_csqr = true;
+        }
+        if (fit_par_string.find('2') != std::string::npos){
+            fit_gamma = true;
+        }
+        if (fit_par_string.find('3') != std::string::npos){
+            fit_ec = true;
+        }
     }
 
     // NLO DIS SIGMA_R COMPUTATION CONFIGS
@@ -222,21 +238,41 @@ int main( int argc, char* argv[] )
 
     MnUserParameters parameters;
     // Fit parameters, first value is starting value, second is uncertainty
-        parameters.Add("qs0sqr",                icqs0sq, 0.05);
-        parameters.Add("alphascalingC2",        iccsq, 1.0);
-        parameters.Add("anomalous_dimension",   icgamma, 0.05);
+        if (fit_qs0sqr){
+            parameters.Add("qs0sqr",                icqs0sq, 0.05);
+        }else{
+            parameters.Add("qs0sqr",                icqs0sq);
+        }
+
+        if (fit_csqr){
+            parameters.Add("alphascalingC2",        iccsq, 1.0);
+        }else{
+            parameters.Add("alphascalingC2",        iccsq);
+        }
+        
+        if (fit_gamma){
+            parameters.Add("anomalous_dimension",   icgamma, 0.05);
+        }else{
+            parameters.Add("anomalous_dimension",   icgamma);
+        }
+                
         parameters.Add("icx0_nlo_impfac",       icx0_if );
         parameters.Add("icx0_bk",               icx0_bk );
-        parameters.Add("e_c",                   ic_ec );
+        if (fit_ec){
+            parameters.Add("e_c",                   ic_ec , 0.1);
+        }else{
+            parameters.Add("e_c",                   ic_ec );
+        }        
+        
         parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
         parameters.Add("initialconditionY0",    icY0 );
         parameters.Add("eta0", icEta0 );
     //
     // Set limits
     //
-        parameters.SetLimits("qs0sqr",              0.01 , 0.3);
-        parameters.SetLimits("alphascalingC2",      0.1  , 15.0);
-        parameters.SetLimits("anomalous_dimension", 0.5  , 2.0);
+        // parameters.SetLimits("qs0sqr",              0.01 , 0.3);
+        // parameters.SetLimits("alphascalingC2",      0.1  , 15.0);
+        // parameters.SetLimits("anomalous_dimension", 0.5  , 2.0);
         //parameters.SetLimits("icx0_nlo_impfac",	    0.01 , 10.0);
 
 
