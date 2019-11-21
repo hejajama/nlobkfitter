@@ -4,6 +4,8 @@ Makefile.*
 
 # Ignore run files
 *.sh
+# Whitelist run script folder
+!run-scripts/*
 
 # Ignore build related files
 build/
@@ -22,3 +24,4 @@ lightqscan
 .vscode/
 doc/
 out/
+fits/
