@@ -239,19 +239,19 @@ int main( int argc, char* argv[] )
     MnUserParameters parameters;
     // Fit parameters, first value is starting value, second is uncertainty
         if (fit_qs0sqr){
-            parameters.Add("qs0sqr",                icqs0sq, 0.05);
+            parameters.Add("qs0sqr",                icqs0sq, 0.01);
         }else{
             parameters.Add("qs0sqr",                icqs0sq);
         }
 
         if (fit_csqr){
-            parameters.Add("alphascalingC2",        iccsq, 1.0);
+            parameters.Add("alphascalingC2",        iccsq, 5.0);
         }else{
             parameters.Add("alphascalingC2",        iccsq);
         }
         
         if (fit_gamma){
-            parameters.Add("anomalous_dimension",   icgamma, 0.05);
+            parameters.Add("anomalous_dimension",   icgamma, 0.2);
         }else{
             parameters.Add("anomalous_dimension",   icgamma);
         }
@@ -270,9 +270,9 @@ int main( int argc, char* argv[] )
     //
     // Set limits
     //
-        // parameters.SetLimits("qs0sqr",              0.01 , 0.3);
-        // parameters.SetLimits("alphascalingC2",      0.1  , 15.0);
-        // parameters.SetLimits("anomalous_dimension", 0.5  , 2.0);
+        parameters.SetLimits("qs0sqr",              0.01, 0.2);
+        parameters.SetLimits("alphascalingC2",      30.0, 100.0);
+        parameters.SetLimits("anomalous_dimension", 0.9 , 3.0);
         //parameters.SetLimits("icx0_nlo_impfac",	    0.01 , 10.0);
 
 
