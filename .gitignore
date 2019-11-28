@@ -6,6 +6,7 @@ Makefile.*
 *.sh
 # Whitelist run script folder
 !run-scripts/*
+!run-scripts/echo_inputs/*
 
 # Ignore build related files
 build/
