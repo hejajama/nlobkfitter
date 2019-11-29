@@ -271,7 +271,7 @@ int main( int argc, char* argv[] )
     // Set limits
     //
         parameters.SetLimits("qs0sqr",              0.01, 0.2);
-        parameters.SetLimits("alphascalingC2",      0.1, 200.0);
+        parameters.SetLimits("alphascalingC2",      50, 200.0);
         parameters.SetLimits("anomalous_dimension", 0.9 , 3.0);
         //parameters.SetLimits("icx0_nlo_impfac",	    0.01 , 10.0);
 
@@ -281,7 +281,7 @@ int main( int argc, char* argv[] )
     data.SetMinQsqr(0.75);
     data.SetMaxQsqr(50);
     data.SetMaxX(0.01);
-    data.LoadData("./data/hera_combined_sigmar.txt", TOTAL);
+    data.LoadData("./data/light_quark_f2/hera_I_combined_eplus_lightq", TOTAL);
 
     NLODISFitter fitter(parameters);
     fitter.AddDataset(data);
