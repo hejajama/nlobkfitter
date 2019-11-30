@@ -287,6 +287,7 @@ int main( int argc, char* argv[] )
     fitter.AddDataset(data);
     fitter.SetNLO(useNLO);
     fitter.SetSUB(useSUB);
+    fitter.SetSigma3(useSigma3);
     fitter.UseImprovedZ2Bound(useImprovedZ2Bound);
     fitter.UseConsistentlyBoundLoopTerm(useBoundLoop);
     fitter.SetCubaMethod(cubaMethod);
