@@ -64,7 +64,7 @@ int main( int argc, char* argv[] )
     gsl_set_error_handler(&ErrHandlerCustom);
 
     string method_string = "suave";
-    double cubaeps = 1e-3;
+    double cubaeps = 1e-4;
     double cubamaxev = 2e7;
     double minuit_prec = 1e-10;
     // if (argc >= 19){
@@ -73,7 +73,7 @@ int main( int argc, char* argv[] )
 	// cubamaxev = stod( argv[17] );
 	// minuit_prec = stod( argv[18] );
     // }
-    // bool fit_qs0sqr = false, fit_csqr = false, fit_gamma = false, fit_ec = false;
+    bool fit_qs0sqr = false, fit_csqr = false, fit_gamma = false, fit_ec = false;
     // if (argc == 20){
     //     string fit_par_string = argv[19];
     //     if (fit_par_string.find('0') != std::string::npos){
@@ -94,7 +94,7 @@ int main( int argc, char* argv[] )
     nlodis_config::CUBA_EPSREL = cubaeps;
     nlodis_config::CUBA_MAXEVAL= cubamaxev;
     nlodis_config::MINR = 1e-6;
-    nlodis_config::MAXR = 30;
+    nlodis_config::MAXR = 50;
     nlodis_config::PRINTDATA = true;
     bool useNLO = false;
     cout << "Running LO fit plot tool, useNLO is: " << useNLO << endl;
@@ -104,16 +104,18 @@ int main( int argc, char* argv[] )
     config::NF=3;   // Only light quarks
     config::LAMBDAQCD = 0.241;
     
-    config::VERBOSE = false;
+    config::VERBOSE = true;
     config::KSUB = 0.65;  // Optimal value for K_sub
     config::NO_K2 = true;  // Do not include numerically demanding full NLO part
     config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
 
-    config::INTACCURACY = 10e-3;//0.02;
+    config::INTACCURACY = 5e-3;//0.02;
+    // config::INTACCURACY = 1e-3;//0.02;
     config::MINR = 1e-6;
-    config::MAXR = 30;
-    config::RPOINTS = 100;
-    config::DE_SOLVER_STEP = 0.4; // Rungekutta step
+    config::MAXR = 50;
+    config::RPOINTS = 200;
+    // config::DE_SOLVER_STEP = 0.4; // Rungekutta step
+    config::DE_SOLVER_STEP = 0.1; // Rungekutta step
     // config::DE_SOLVER_STEP = 0.05; // Euler step
 
 
@@ -121,17 +123,22 @@ int main( int argc, char* argv[] )
     // bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop, useSigma3;
     bool useSUB = false;
     bool useResumBK = false;
-    bool useImprovedZ2Bound = false
-    bool useBoundLoop = false
+    bool useImprovedZ2Bound = false;
+    bool useBoundLoop = false;
     bool useSigma3 = false;
     // string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop [Qs0 C^2 gamma] X0_if X0_bk e_c Q0sq Y0 eta0 CUBA_MTHD CUBA_EPS CUBA_MEVAL MINUIT_PREC\nsub/unsub/unsub+ resumbk/trbk/lobk parentrc/guillaumerc/fixedrc z2improved/z2simple z2boundloop/unboundloop";
+    string helpstring = "Configure in lo-fit-plot.cpp";
     // string string_sub, string_bk, string_rc;
+    string string_sub = "N/A";
     // if (argc<2){ cout << helpstring << endl; return 0;}
     // Argv[0] is the name of the program
 
     string string_bk = "lobk";
-    string string_rc = "pdrc";
-    string string_ic_preset = "def";
+    string string_rc = "sdrc";
+    // string string_ic_preset = "hmtl-mv";
+    // string string_ic_preset = "hmtl-mvgamma";
+    string string_ic_preset = "hmtl-mvec";
+    string fit_par_string = ""; // empty string doesn't fit, 0 = qs0sqr, 1 = C^2, 2 = gamma, 3 = ec
 
 
     // string_bk = string(argv [2]);
@@ -187,29 +194,59 @@ int main( int argc, char* argv[] )
 
     double icqs0sq, iccsq, icx0_if, icx0_bk, ic_ec, icgamma, icQ0sq, icY0, icEta0;
     // reading fit initial condition parameters:
-    if (argc > 6){
-        icqs0sq   = stod( argv [argi] ); argi++;
-        iccsq     = stod( argv [argi] ); argi++;
-        icgamma   = stod( argv [argi] ); argi++;
-        icx0_if   = stod( argv [argi] ); argi++;
-        icx0_bk   = stod( argv [argi] ); argi++;
-        ic_ec     = stod( argv [argi] ); argi++;
-        icQ0sq    = stod( argv [argi] ); argi++;
-        icY0      = stod( argv [argi] ); argi++;
-        icEta0    = stod( argv [argi] ); argi++;        
-    } else {
+    if (string_ic_preset == "hmtl-mv") {
         // use LO fit as IC
         icqs0sq   = 0.104;
-        iccsq     = 10.0;
+        iccsq     = 14.5;
         icgamma   = 1.0;
+        ic_ec     = 1.0;
+
         icx0_if   = 1.0;
         icx0_bk   = 0.01;
-        ic_ec     = 1.0;
         icQ0sq    = 1.0;
         icY0      = 0.0;
         icEta0    = 0.0;
+    } else if (string_ic_preset == "hmtl-mvgamma") {
+        // use LO fit as IC
+        icqs0sq   = 0.165;
+        iccsq     = 6.35;
+        icgamma   = 1.135;
+        ic_ec     = 1.0;
+
+        icx0_if   = 0.01;
+        icx0_bk   = 0.01;
+        icQ0sq    = 1.0;
+        icY0      = 0.0;
+        icEta0    = 0.0;
+    } else if (string_ic_preset == "hmtl-mvec") {
+        // use LO fit as IC
+        icqs0sq   = 0.060;
+        iccsq     = 7.2;
+        icgamma   = 1.0;
+        ic_ec     = 18.9;
+
+        icx0_if   = 1.0;
+        icx0_bk   = 0.01;
+        icQ0sq    = 1.0;
+        icY0      = 0.0;
+        icEta0    = 0.0;
+    } else {
+        cout << "Bad fit ic preset!" << endl;
+        exit(1);
     }
 
+    if (fit_par_string.find('0') != std::string::npos){
+        fit_qs0sqr = true;
+    }
+    if (fit_par_string.find('1') != std::string::npos){
+        fit_csqr = true;
+    }
+    if (fit_par_string.find('2') != std::string::npos){
+        fit_gamma = true;
+    }
+    if (fit_par_string.find('3') != std::string::npos){
+        fit_ec = true;
+    }
 
     MnUserParameters parameters;
     // Fit parameters, first value is starting value, second is uncertainty
@@ -245,15 +282,16 @@ int main( int argc, char* argv[] )
     //
     // Set limits
     //
-        parameters.SetLimits("qs0sqr",              0.01, 0.2);
-        parameters.SetLimits("alphascalingC2",      0.1, 200.0);
-        parameters.SetLimits("anomalous_dimension", 0.9 , 3.0);
+        // parameters.SetLimits("qs0sqr",              0.01, 0.2);
+        // parameters.SetLimits("alphascalingC2",      0.1, 200.0);
+        // parameters.SetLimits("anomalous_dimension", 0.9 , 3.0);
         //parameters.SetLimits("icx0_nlo_impfac",	    0.01 , 10.0);
 
 
 
     Data data;
-    data.SetMinQsqr(0.75);
+    // data.SetMinQsqr(0.75);
+    data.SetMinQsqr(1.0);
     data.SetMaxQsqr(50);
     data.SetMaxX(0.01);
     data.LoadData("./data/hera_combined_sigmar.txt", TOTAL);
