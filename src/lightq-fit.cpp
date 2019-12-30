@@ -271,7 +271,14 @@ int main( int argc, char* argv[] )
     // Set limits
     //
         parameters.SetLimits("qs0sqr",              0.01, 0.2);
-        parameters.SetLimits("alphascalingC2",      50, 200.0);
+    
+	if (iccsq < 10){	
+            parameters.SetLimits("alphascalingC2", 0.0, 10.0);
+	}else if (iccsq > 10 and iccsq < 100){
+	    //parameters.SetLimits("alphascalingC2",      50, 200.0);
+	}else{
+	    parameters.SetLowerLimit("alphascalingC2", 100);
+	}
         parameters.SetLimits("anomalous_dimension", 0.9 , 3.0);
         //parameters.SetLimits("icx0_nlo_impfac",	    0.01 , 10.0);
 
