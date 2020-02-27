@@ -62,10 +62,10 @@ int main( int argc, char* argv[] )
     gsl_set_error_handler(&ErrHandlerCustom);
 
     // NLO DIS SIGMA_R COMPUTATION CONFIGS
-    nlodis_config::CUBA_EPSREL = 10e-3;
-    //nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
-    nlodis_config::CUBA_MAXEVAL= 2e7;
-    //nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
+//     nlodis_config::CUBA_EPSREL = 10e-3;
+    nlodis_config::CUBA_EPSREL = 2e-3; // highacc def1
+//     nlodis_config::CUBA_MAXEVAL= 2e7;
+    nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
     nlodis_config::MINR = 1e-6;
     nlodis_config::MAXR = 30;
     nlodis_config::PRINTDATA = true;
@@ -81,7 +81,8 @@ int main( int argc, char* argv[] )
     //config::RINTPOINTS = 512/4;
     //config::THETAINTPOINTS = 512/4;
 
-    config::INTACCURACY = 10e-3;//0.02;
+//     config::INTACCURACY = 10e-3;//0.02;
+    config::INTACCURACY = 5e-3; // highacc def1
     config::MINR = 1e-6;
     config::MAXR = 30;
     config::RPOINTS = 100;

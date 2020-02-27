@@ -47,7 +47,7 @@ int Data::LoadData(string filename, DataType type)
     {
         string line;
         getline(file, line);
-        if (line.substr(0, 1)=="#")
+        if (line.substr(0, 1)=="#" or line.length() < 5)
         continue;
         string x,qsqr,y,sigmar,err;
         stringstream l(line);
@@ -59,6 +59,7 @@ int Data::LoadData(string filename, DataType type)
         yvals.push_back(DataStrToReal(y));
         sigmarvals.push_back(DataStrToReal(sigmar)); errors.push_back(DataStrToReal(err));
         only_charm.push_back(onlycharm);
+	//cout << "Accept line " << line << endl;
     }
     
     cout << "# Loaded " << points << " datapoints from " << filename << " in Q2 range " << minQ2 << " - " << maxQ2 << " GeV^2, now we have in total " << sigmarvals.size() << " points " << endl;
