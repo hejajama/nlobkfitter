@@ -68,8 +68,8 @@ int main( int argc, char* argv[] )
     nlodis_config::CUBA_MAXEVAL= 1e7;
     //nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
     //nlodis_config::MINR = 1e-6;
-    nlodis_config::MINR = 1e-7;
-    nlodis_config::MAXR = 40;
+    nlodis_config::MINR = 1e-6;
+    nlodis_config::MAXR = 30;
     nlodis_config::PRINTDATA = true;
     bool useNLO = true;
     bool computeNLO = useNLO;
@@ -84,13 +84,13 @@ int main( int argc, char* argv[] )
     //config::THETAINTPOINTS = 512/4;
 
     //config::INTACCURACY = 10e-3;//0.02;
-    config::INTACCURACY = 1e-3;
+    config::INTACCURACY = 5e-3;
     //config::MINR = 1e-6;
-    config::MINR = 1e-7;
+    config::MINR = 1e-6;
     //config::MAXR = 30;
-    config::MAXR = 40;
+    config::MAXR = 30;
     //config::RPOINTS = 100;
-    config::RPOINTS = 400;
+    config::RPOINTS = 100;
     config::DE_SOLVER_STEP = 0.4; // Rungekutta step
     // config::DE_SOLVER_STEP = 0.8; // Rungekutta step
 
@@ -397,8 +397,10 @@ int main( int argc, char* argv[] )
     Dipole dipole(&ic);
     BKSolver solver(&dipole);
     // double maxy = std::log(initialconditionX0/(1e-5)) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
-    double maxy = 10; // from the paper, fcBK_MV.dat, 15=10+5 extra for z2improved extended evolution
-    if (useImprovedZ2Bound){maxy += 5;}
+    //double maxy = 11.2; // from the paper, fcBK_MV.dat, 15=10+5 extra for z2improved extended evolution
+    double maxy = std::log(icx0_bk/(1e-7)); // from the paper, fcBK_MV.dat, 15=10+5 extra for z2improved extended evolution
+    if (useImprovedZ2Bound){maxy += std::log(100/1);} // extra evolution from the term log(Q^2 / Q_0^2)
+    //if (useImprovedZ2Bound){maxy += 5;}
 
     double eta0 = 0;
     solver.SetAlphasScaling(alphas_scaling);
@@ -410,10 +412,11 @@ int main( int argc, char* argv[] )
     string dipole_filename = dipole_basename
                              + "_" + string_bk
                              + "_" + string_rc
+                             + "_x0bk" + std::to_string(icx0_bk)
                              + "_qs0sqr" + std::to_string(qs0sqr)
-                             + "_anomdim" + std::to_string(anomalous_dimension)
+                             + "_asC^2" + std::to_string(alphas_scaling)
+                             + "_gamma" + std::to_string(anomalous_dimension)
                              + "_ec" + std::to_string(e_c)
-                             + "_alphasscaling" + std::to_string(alphas_scaling)
                              + "_eta0" + std::to_string(eta0)
                              + "_maxy" + std::to_string(maxy)
                              + "_euler" + std::to_string(config::EULER_METHOD)
@@ -537,7 +540,8 @@ int main( int argc, char* argv[] )
     * 
     */
     double icQ = 1.0;
-    double icx0 = icx0_bk;
+    //double icx0 = icx0_bk;
+    double icx0 = 0.01;
 
     std::vector< std::tuple<int, int> > coordinates;
 
