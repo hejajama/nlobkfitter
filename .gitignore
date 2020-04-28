@@ -21,6 +21,7 @@ subunsub
 lightqscan
 lightqfitex
 lofit
+fltool
 
 # Editor and other files
 .vscode/

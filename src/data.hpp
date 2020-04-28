@@ -19,7 +19,8 @@ using namespace std;
 enum DataType
 {
     TOTAL,      // total reduced cross section
-    CHARM       // only charm contribution
+    CHARM,      // only charm contribution
+    FL          // F_L stucture function data
 };
 
 class Data
@@ -56,6 +57,7 @@ private:
     vector<double> sigmarvals;
     vector<double> errors;
     vector<bool> only_charm;
+    vector<bool> only_fl;
 
 };
 

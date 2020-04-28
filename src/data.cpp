@@ -39,10 +39,12 @@ int Data::LoadData(string filename, DataType type)
     
     int points=0;
     
-    bool onlycharm = false;
+    bool onlycharm, onlyFL = false;
     if (type == CHARM )
         onlycharm = true;
-    
+    else if (type == FL )
+        onlyFL = true;
+
     while(!file.eof() )
     {
         string line;
@@ -51,14 +53,24 @@ int Data::LoadData(string filename, DataType type)
         continue;
         string x,qsqr,y,sigmar,err;
         stringstream l(line);
-        l >> qsqr; l>>x; l>>y; l>>sigmar; l>>err;
-        
-        if (DataStrToReal(x)>maxx or DataStrToReal(x)<minx or DataStrToReal(qsqr)<minQ2 or DataStrToReal(qsqr)>maxQ2) continue;
-        points++;
-        Qsqrvals.push_back(DataStrToReal(qsqr)); xbjvals.push_back(DataStrToReal(x));
-        yvals.push_back(DataStrToReal(y));
-        sigmarvals.push_back(DataStrToReal(sigmar)); errors.push_back(DataStrToReal(err));
-        only_charm.push_back(onlycharm);
+        if (onlyFL == true){
+            l >> qsqr; l>>x; l>>sigmar; l>>err;
+
+            if (DataStrToReal(x)>maxx or DataStrToReal(x)<minx or DataStrToReal(qsqr)<minQ2 or DataStrToReal(qsqr)>maxQ2) continue;
+            points++;
+            Qsqrvals.push_back(DataStrToReal(qsqr)); xbjvals.push_back(DataStrToReal(x));
+            sigmarvals.push_back(DataStrToReal(sigmar)); errors.push_back(DataStrToReal(err));
+        }
+        else{
+            l >> qsqr; l>>x; l>>y; l>>sigmar; l>>err;
+
+            if (DataStrToReal(x)>maxx or DataStrToReal(x)<minx or DataStrToReal(qsqr)<minQ2 or DataStrToReal(qsqr)>maxQ2) continue;
+            points++;
+            Qsqrvals.push_back(DataStrToReal(qsqr)); xbjvals.push_back(DataStrToReal(x));
+            yvals.push_back(DataStrToReal(y));
+            sigmarvals.push_back(DataStrToReal(sigmar)); errors.push_back(DataStrToReal(err));
+            only_charm.push_back(onlycharm);
+        }
 	//cout << "Accept line " << line << endl;
     }
     
