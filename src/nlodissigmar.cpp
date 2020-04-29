@@ -66,6 +66,14 @@ double ComputeSigmaR::SigmarNLOunsub ( double Q , double xbj, double y) {
     double F2 = FL+FT;
     double fy = Sq(y)/(1+Sq(1-y));
     double sigma = F2 - fy*FL;
+    // Printing intermediate F2 FL FT
+    // cout << "SigmarNLOunsub(Q xbj y) sigmar F2 FL FT "  << Q << " "
+    //                                                     << xbj << " "
+    //                                                     << y << " "
+    //                                                     << sigma << " "
+    //                                                     << F2 << " "
+    //                                                     << FL << " "
+    //                                                     << FT << endl;
     return sigma;
 }
 
@@ -643,8 +651,11 @@ double ComputeSigmaR::SrY(double r, double Y) {
     return Sry;
 }
 
-double ComputeSigmaR::SrTripole(double x01, double x02, double x21, double x) {
-    return Nc/(2*CF)*(Sr(x02,x)*Sr(x21,x) - 1/Sq(Nc)*Sr(x01,x));
+double ComputeSigmaR::SrTripole(double x01, double x_x01, double x02, double x_x02, double x21, double x_x21) {
+    // double x_x01 = cov_to_eta_x(x01, x);
+    // double x_x02 = cov_to_eta_x(x02, x);
+    // double x_x21 = cov_to_eta_x(x21, x);
+    return Nc/(2*CF)*(Sr(x02, x_x02)*Sr(x21, x_x21) - 1/Sq(Nc)*Sr(x01, x_x01));
 }
 
 double ComputeSigmaR::P(double z) {
@@ -661,16 +672,19 @@ double ComputeSigmaR::heaviside_theta(double x) {
 
 ///===========================================================================================
 // LO Rapidities with / w/o shift
-double ComputeSigmaR::Xrpdty_LO_projectileY(double x, double Qsq){
+double ComputeSigmaR::Xrpdty_LO_projectileY(double x, double Qsq, double rsq){
     double X = (this->*Xrpdty_LO_projectileY_z2min_PTR)( x, Qsq );
     return X;
 }
 
-double ComputeSigmaR::Xrpdty_LO_targetETA(double x, double Qsq){
+double ComputeSigmaR::Xrpdty_LO_targetETA(double x, double Qsq, double rsq){
     // Target rapidity eta = Y - rho is shifted so here we compute the bjorken-x corresponding to the shifted rapidity.
     // x_eta = x_Y * exp(rho)
+    // THIS SHOULD ONLY be used with sub scheme LO term and with the DIPOLE term. Not with unsub IC.
+
     double X_Y = (this->*Xrpdty_LO_projectileY_z2min_PTR)( x, Qsq );
-    double rho = rho_rapidity_shift_QQ0(Qsq); // virtuality dependent shift is the only valid one at LO context of the known shifts
+    // double rho = rho_rapidity_shift_QQ0(Qsq);
+    double rho = rho_rapidity_shift(Qsq, rsq);
     return X_Y*std::exp(rho); // return X_eta for the shifted eta = Y - rho
 }
 
@@ -684,15 +698,39 @@ double ComputeSigmaR::Xrpdty_NLO_targetETA(double Qsq, double z2, double z2min, 
     // Target rapidity eta = Y - rho is shifted so here we compute the bjorken-x corresponding to the shifted rapidity.
     // x_eta = x_Y * exp(rho)
     double X_Y = Xrpdty_NLO_projectileY(Qsq, z2, z2min, icX0);
-    double rho = rho_rapidity_shift(Qsq, x01sq, x02sq, x21sq);
-    return X_Y*std::exp(rho);
+    // cout << "This QQG term level uniform shift is wrong! Don't use this!" << endl;
+    // TODO test that this is used only with QQ0 shift
+    // double rho = rho_rapidity_shift(Qsq, x01sq, x02sq, x21sq);
+    // return X_Y*std::exp(rho);
+    return X_Y;
 }
 
+double ComputeSigmaR::cov_to_eta_x(double r, double xbj, double Qsq){
+    // shift xbj_Y to xbj_eta
+    double rho = rho_rapidity_shift(Qsq, Sq(r));
+    return xbj * std::exp(rho);
+}
 
 // Target rapidity Eta shift calculator(s)
+double ComputeSigmaR::rho_no_shift_projectileY(double Qsq, double x01sq, double x02sq, double x21sq){
+    return 0;
+}
+
 double ComputeSigmaR::rho_rapidity_shift_QQ0(double Qsq, double x01sq, double x02sq, double x21sq){
     double rho;
     rho = std::log( Qsq/icQ0sqr);
+
+    if ( rho < 0 ){
+        return 0;
+    } else {
+        return rho;
+    }
+}
+
+double ComputeSigmaR::rho_rapidity_shift_RQ0(double Qsq, double Rsq, double x02sq, double x21sq){
+    // This is the dipole size dependent target eta shift; Rsq is the relevant dipole: parent or daughter.
+    double rho;
+    rho = std::log( 1/(Rsq * icQ0sqr));
 
     if ( rho < 0 ){
         return 0;
@@ -894,7 +932,7 @@ double ComputeSigmaR::ILNLOqg_subterm_lobk_explicit(double Q, double x, double z
     double x01 = sqrt(x01sq);
     double x02 = sqrt(x02sq);
     double x21 = sqrt(x21sq);
-    double nlo_if_bk_evol_dipoles = Sr(x01, x) - SrTripole(x01, x02, x21, x);
+    double nlo_if_bk_evol_dipoles = Sr(x01, x) - SrTripole(x01, x, x02, x, x21, x);
     subterm = impact_factor_lo * nlo_if_kernel * nlo_if_bk_evol_dipoles;
     return subterm;
 }
@@ -971,7 +1009,7 @@ double ComputeSigmaR::ITNLOqg_subterm_lobk_explicit(double Q, double x, double z
     double x01 = sqrt(x01sq);
     double x02 = sqrt(x02sq);
     double x21 = sqrt(x21sq);
-    double nlo_if_bk_evol_dipoles = Sr(x01, x) - SrTripole(x01, x02, x21, x);
+    double nlo_if_bk_evol_dipoles = Sr(x01, x) - SrTripole(x01, x, x02, x, x21, x);
     subterm = impact_factor_lo * nlo_if_kernel * nlo_if_bk_evol_dipoles;
     return subterm;
 }
@@ -1077,7 +1115,7 @@ int integrand_ILLOp(const int *ndim, const double x[], const int *ncomp,double *
     double z1=x[0];
     double x01=nlodis_config::MAXR*x[1];
     double x01sq=x01*x01;
-    double Xrpdty_lo = Optr->Xrpdty_LO(xbj, Sq(Q));
+    double Xrpdty_lo = Optr->Xrpdty_LO(xbj, Sq(Q), x01sq);
 
     double res=(1.0-(Optr->Sr(x01,Xrpdty_lo)))*(Optr->ILLO(Q,z1,x01sq))*x01;
         *f=res;
@@ -1105,7 +1143,7 @@ int integrand_ILLOpMass(const int *ndim, const double x[], const int *ncomp,doub
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
     double z1=x[0];
     double x01=nlodis_config::MAXR*x[1];
-    double Xrpdty_lo = Optr->Xrpdty_LO(xbj, Sq(Q));
+    double Xrpdty_lo = Optr->Xrpdty_LO(xbj, Sq(Q), x01*x01);
 
     double af = sqrt( Sq(Q)*z1*(1-z1) + Sq(qmass) );
     double impactfac = 4.0*Sq(Q*(z1)*(1.0-z1)*gsl_sf_bessel_K0(af*x01));
@@ -1162,7 +1200,7 @@ int integrand_ITLOp(const int *ndim, const double x[], const int *ncomp,double *
     double z1=x[0];
     double x01=nlodis_config::MAXR*x[1];
     double x01sq=x01*x01;
-    double Xrpdty_lo = Optr->Xrpdty_LO(xbj, Sq(Q));
+    double Xrpdty_lo = Optr->Xrpdty_LO(xbj, Sq(Q), x01sq);
 
     double res=(1.0-(Optr->Sr(x01,Xrpdty_lo)))*(Optr->ITLO(Q,z1,x01sq))*x01;
     if(gsl_finite(res)==1){
@@ -1194,7 +1232,7 @@ int integrand_ITLOpMass(const int *ndim, const double x[], const int *ncomp,doub
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
     double z1=x[0];
     double x01=nlodis_config::MAXR*x[1];
-    double Xrpdty_lo = Optr->Xrpdty_LO(xbj, Sq(Q));
+    double Xrpdty_lo = Optr->Xrpdty_LO(xbj, Sq(Q), x01*x01);
 
     double af = sqrt( Sq(Q)*z1*(1.0-z1) + Sq(qmass) );
     double impactfac = (1.0-2.0*z1+2.0*Sq(z1))*Sq(af*gsl_sf_bessel_K1(af*x01)) + Sq( qmass*gsl_sf_bessel_K0( af*x01 ) );
@@ -1254,7 +1292,7 @@ int integrand_ILdip(const int *ndim, const double x[], const int *ncomp, double 
 
     double alphabar=Optr->Alphabar(x01sq); //2;
     double alphfac=alphabar*CF/Nc;
-    double Xrpdty_lo = Optr->Xrpdty_DIP(xbj, Sq(Q));
+    double Xrpdty_lo = Optr->Xrpdty_DIP(xbj, Sq(Q), x01sq);
     double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
     double regconst = 5.0/2.0 - Sq(M_PI)/6.0;
     double res;
@@ -1311,6 +1349,11 @@ double ComputeSigmaR::Bessel0Tripole(double Q, double x, double z1, double z2, d
 
     double X3sq = z1*(1.0 - z1 - z2)*x01sq + z2*(1.0 - z1 - z2)*x02sq + z2*z1*x21sq;
 
+    double Qsq = Sq(Q);
+    double x_x01 = cov_to_eta_x(x01, x, Qsq);
+    double x_x02 = cov_to_eta_x(x02, x, Qsq);
+    double x_x21 = cov_to_eta_x(x21, x, Qsq);
+
     double bessel_innerfun = Q*sqrt(X3sq);
     double facNLO = 0;
     if (bessel_innerfun < 1e-7){
@@ -1319,7 +1362,7 @@ double ComputeSigmaR::Bessel0Tripole(double Q, double x, double z1, double z2, d
     }else{
         facNLO = 4.0*Sq(Q*gsl_sf_bessel_K0( bessel_innerfun ));
     }
-    return facNLO*(1-SrTripole(x01,x02,x21,x));
+    return facNLO*(1-SrTripole(x01, x_x01, x02, x_x02, x21, x_x21));
 }
 
 double ComputeSigmaR::ILNLOqg(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) { // old ILNLObeufQG
@@ -1347,7 +1390,7 @@ double ComputeSigmaR::ILNLOqg(double Q, double x, double z1, double z2, double x
 double ComputeSigmaR::ILNLOsigma3(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) {
     double impactfac_lo = ILLO(Q,z1,x01sq);
     double BKkernel = (K_kernel(x01sq,x02sq,x21sq) - 1.0)*2*K_lobk(x01sq,x02sq,x21sq);
-    double S012 = SrTripole(sqrt(x01sq),sqrt(x02sq),sqrt(x21sq),x);
+    double S012 = SrTripole(sqrt(x01sq),x,sqrt(x02sq),x,sqrt(x21sq),x);
     double Sdipole_bkevol = Sr(sqrt(x01sq),x) - S012;
 
     double res = BKkernel*Sdipole_bkevol*impactfac_lo;
@@ -1737,7 +1780,7 @@ int integrand_ITdip(const int *ndim, const double x[], const int *ncomp, double 
 
     double alphabar=Optr->Alphabar(x01sq);
     double alphfac=alphabar*CF/Nc;
-    double Xrpdty_lo = Optr->Xrpdty_DIP(xbj, Sq(Q));
+    double Xrpdty_lo = Optr->Xrpdty_DIP(xbj, Sq(Q), x01sq);
     double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
     double regconst = 5.0/2.0 - Sq(M_PI)/6.0;
     double res;
@@ -1795,6 +1838,11 @@ double ComputeSigmaR::Bessel1Tripole(double Q, double x, double z1, double z2, d
 
     double X3sq = z1*(1.0 - z1 - z2)*x01sq + z2*(1.0 - z1 - z2)*x02sq + z2*z1*x21sq;
 
+    double Qsq = Sq(Q);
+    double x_x01 = cov_to_eta_x(x01, x, Qsq);
+    double x_x02 = cov_to_eta_x(x02, x, Qsq);
+    double x_x21 = cov_to_eta_x(x21, x, Qsq);
+
     double bessel_innerfun = Q*sqrt(X3sq);
     double facNLO = 0;
     if (bessel_innerfun < 1e-7){
@@ -1803,7 +1851,7 @@ double ComputeSigmaR::Bessel1Tripole(double Q, double x, double z1, double z2, d
     }else{
         facNLO = Sq(Q*gsl_sf_bessel_K1(bessel_innerfun));
     }
-    double res = facNLO*(1-SrTripole(x01,x02,x21,x));
+    double res = facNLO*(1-SrTripole(x01, x_x01, x02, x_x02, x21, x_x21));
     return res;
 }
 
@@ -1829,7 +1877,7 @@ double ComputeSigmaR::ITNLOqg(double Q, double x, double z1, double z2, double x
 double ComputeSigmaR::ITNLOsigma3(double Q, double x, double z1, double z2, double x01sq, double x02sq, double x21sq) {
     double impactfac_lo = ITLO(Q,z1,x01sq);
     double BKkernel = (K_kernel(x01sq,x02sq,x21sq) - 1.0)*2*K_lobk(x01sq,x02sq,x21sq);
-    double S012 = SrTripole(sqrt(x01sq),sqrt(x02sq),sqrt(x21sq),x);
+    double S012 = SrTripole(sqrt(x01sq),x,sqrt(x02sq),x,sqrt(x21sq),x);
     double Sdipole_bkevol = Sr(sqrt(x01sq),x) - S012;
 
     double res = BKkernel*Sdipole_bkevol*impactfac_lo;
