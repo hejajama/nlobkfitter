@@ -81,8 +81,9 @@ int main( int argc, char* argv[] )
     //config::RINTPOINTS = 512/4;
     //config::THETAINTPOINTS = 512/4;
 
-//     config::INTACCURACY = 10e-3;//0.02;
+    // config::INTACCURACY = 10e-3;//0.02;
     config::INTACCURACY = 5e-3; // highacc def1
+    // config::INTACCURACY = 20e-3; // quick low acc
     config::MINR = 1e-6;
     config::MAXR = 30;
     config::RPOINTS = 100;
@@ -144,7 +145,8 @@ int main( int argc, char* argv[] )
             config::KINEMATICAL_CONSTRAINT = config::KC_EDMOND_K_MINUS;
             config::DE_SOLVER_STEP = 0.05;  //0.02; // Euler method requires smaller step than RungeKutta!
             nlodis_config::SUB_TERM_KERNEL = nlodis_config::SUBTERM_TRBK_EDMOND;
-            nlodis_config::TRBK_RHO_PRESC = nlodis_config::TRBK_RHO_QQ0;
+            nlodis_config::TRBK_RHO_PRESC = nlodis_config::TRBK_RHO_RQ0;
+            // nlodis_config::TRBK_RHO_PRESC = nlodis_config::TRBK_RHO_QQ0;
     }else if (string(argv [2]) == "lobk"){
             config::EULER_METHOD = false;   // Use Runge-Kutta since no kin. constraint
             config::RESUM_DLOG = false;
@@ -263,6 +265,7 @@ int main( int argc, char* argv[] )
                                     and (config::RESUM_SINGLE_LOG)
                                     and (config::KINEMATICAL_CONSTRAINT == config::KC_NONE)) << endl
             << "# KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
+            << "# Target eta0 RHO shift: " << nlodis_config::TRBK_RHO_PRESC << " (0 TRBK_RHO_DISABLED, 1 TRBK_RHO_QQ0, 2 TRBK_RHO_RQ0)" << endl
             << "# Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
             << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
             << "# Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
@@ -298,6 +301,7 @@ int main( int argc, char* argv[] )
                                     and (config::RESUM_SINGLE_LOG)
                                     and (config::KINEMATICAL_CONSTRAINT == config::KC_NONE)) << endl
             << "# KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
+            << "# Target eta0 RHO shift: " << nlodis_config::TRBK_RHO_PRESC << " (0 TRBK_RHO_DISABLED, 1 TRBK_RHO_QQ0, 2 TRBK_RHO_RQ0)" << endl
             << "# Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
             << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
             << "# Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
