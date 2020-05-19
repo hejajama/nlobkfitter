@@ -378,44 +378,44 @@ int main( int argc, char* argv[] )
 
     // Set running coupling and rapidity function pointters
     SigmaComputer.MetaPrescriptionSetter();
-    if (use_custom_prescription == true){
-        // DEFINE CUSTOM PRESCRIPTION HERE BY OVERWRITING SOME EFFECTS OF MetaPrescriptionSetter
-        cout << "############## USE_CUSTOM_PRESCRIPTION IS SET TO TRUE ################" << endl;
+    // if (use_custom_prescription == true){
+    //     // DEFINE CUSTOM PRESCRIPTION HERE BY OVERWRITING SOME EFFECTS OF MetaPrescriptionSetter
+    //     cout << "############## USE_CUSTOM_PRESCRIPTION IS SET TO TRUE ################" << endl;
 
-        if (custom_presc == "cust1"){
-            /* z2sim vs z2imp + kinematical rapidity shift comparison
-            *  These settings force rapidity shift on with any BK evolution
-            */
-            cout << "# custom1 -- z2sim vs z2imp+rho: forcing eta rapidity shift (rho) to be on. USE WITH Z2IMP." << endl;
+    //     if (custom_presc == "cust1"){
+    //         /* z2sim vs z2imp + kinematical rapidity shift comparison
+    //         *  These settings force rapidity shift on with any BK evolution
+    //         */
+    //         cout << "# custom1 -- z2sim vs z2imp+rho: forcing eta rapidity shift (rho) to be on. USE WITH Z2IMP." << endl;
 
-            ComputeSigmaR::xrapidity_funpointer x_lo_y_eta_rap_ptr; // only sub scheme LO term should have kinematical rapidity shift. No shift with unsub!
-            ComputeSigmaR::xrapidity_NLO_funpointer x_nlo_fun_ptr;
-            if (nlodis_config::SUB_SCHEME == nlodis_config::SUBTRACTED){
-                // sub scheme has evolution in the LO term so it needs the kinematical shift there as well.
-                x_lo_y_eta_rap_ptr = &ComputeSigmaR::Xrpdty_LO_targetETA;
-                cout << "# Using shifted target ETA rapidity in SUB leading order term." << endl;
-            }else{
-                // unsub scheme has no evolution in the lowest order term, so no shift there, use the Y rapidity technology that doesn't shift.
-                // Initial condition will be defined in x_eta = x0_bk.
-                x_lo_y_eta_rap_ptr = &ComputeSigmaR::Xrpdty_LO_projectileY;
-                cout << "# Using unshifted target ETA rapidity in UNSUB lowest order term." << endl;
-            }
-            x_nlo_fun_ptr = &ComputeSigmaR::Xrpdty_NLO_targetETA;
-            cout << "# Using target ETA evolution rapidity in NLO terms" << endl;
+    //         ComputeSigmaR::xrapidity_funpointer x_lo_y_eta_rap_ptr; // only sub scheme LO term should have kinematical rapidity shift. No shift with unsub!
+    //         ComputeSigmaR::xrapidity_NLO_funpointer x_nlo_fun_ptr;
+    //         if (nlodis_config::SUB_SCHEME == nlodis_config::SUBTRACTED){
+    //             // sub scheme has evolution in the LO term so it needs the kinematical shift there as well.
+    //             x_lo_y_eta_rap_ptr = &ComputeSigmaR::Xrpdty_LO_targetETA;
+    //             cout << "# Using shifted target ETA rapidity in SUB leading order term." << endl;
+    //         }else{
+    //             // unsub scheme has no evolution in the lowest order term, so no shift there, use the Y rapidity technology that doesn't shift.
+    //             // Initial condition will be defined in x_eta = x0_bk.
+    //             x_lo_y_eta_rap_ptr = &ComputeSigmaR::Xrpdty_LO_projectileY;
+    //             cout << "# Using unshifted target ETA rapidity in UNSUB lowest order term." << endl;
+    //         }
+    //         x_nlo_fun_ptr = &ComputeSigmaR::Xrpdty_NLO_targetETA;
+    //         cout << "# Using target ETA evolution rapidity in NLO terms" << endl;
         
-            SigmaComputer.SetEvolutionX_LO(x_lo_y_eta_rap_ptr);
-            SigmaComputer.SetEvolutionX_DIP(x_lo_y_eta_rap_ptr); // dipole term is always evaluated at the same rapidity as the lowest order term.
-            SigmaComputer.SetEvolutionX_NLO(x_nlo_fun_ptr);
+    //         SigmaComputer.SetEvolutionX_LO(x_lo_y_eta_rap_ptr);
+    //         SigmaComputer.SetEvolutionX_DIP(x_lo_y_eta_rap_ptr); // dipole term is always evaluated at the same rapidity as the lowest order term.
+    //         SigmaComputer.SetEvolutionX_NLO(x_nlo_fun_ptr);
 
-            // trbk rho prescription
-            SigmaComputer.SetTRBKRhoPrescription(nlodis_config::TRBK_RHO_QQ0);
-            cout << "# Using rapidity shift RHO with ANY evolution equation." << endl;
-        }
-        else{
-            cout << "Unknown custom prescription: " << custom_presc << endl;
-        }
+    //         // trbk rho prescription
+    //         SigmaComputer.SetTRBKRhoPrescription(nlodis_config::TRBK_RHO_QQ0);
+    //         cout << "# Using rapidity shift RHO with ANY evolution equation." << endl;
+    //     }
+    //     else{
+    //         cout << "Unknown custom prescription: " << custom_presc << endl;
+    //     }
 
-    }
+    // }
     
     // CUBA Monte Carlo integration library algorithm setter
     SigmaComputer.SetCubaMethod(cubaMethod);
