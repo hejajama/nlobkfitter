@@ -65,7 +65,7 @@ int main( int argc, char* argv[] )
     // NLO DIS SIGMA_R COMPUTATION CONFIGS
     nlodis_config::CUBA_EPSREL = 10e-3;
     //nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
-    nlodis_config::CUBA_MAXEVAL= 1e7;
+    nlodis_config::CUBA_MAXEVAL = 2e7;
     //nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
     //nlodis_config::MINR = 1e-6;
     nlodis_config::MINR = 1e-6;
@@ -83,8 +83,8 @@ int main( int argc, char* argv[] )
     //config::RINTPOINTS = 512/4;
     //config::THETAINTPOINTS = 512/4;
 
-    //config::INTACCURACY = 10e-3;//0.02;
-    config::INTACCURACY = 5e-3;
+    // config::INTACCURACY = 10e-3;//0.02;
+    config::INTACCURACY = 2e-3;
     //config::MINR = 1e-6;
     config::MINR = 1e-6;
     //config::MAXR = 30;
@@ -235,122 +235,24 @@ int main( int argc, char* argv[] )
     double sigma02;
 
     if (argc == 6){
-	qs0sqr       = 0.2; //par[ parameters.Index("qs0sqr")];
+	    qs0sqr       = 0.2; //par[ parameters.Index("qs0sqr")];
         alphas_scaling     = 1.0; //par[ parameters.Index("alphascalingC2")]; // MATCH THIS IN IMPACTFACTOR ALPHA_S WHEN NLO
-	anomalous_dimension = 1.0; //par[ parameters.Index("anomalous_dimension")];
+	    anomalous_dimension = 1.0; //par[ parameters.Index("anomalous_dimension")];
         icx0_bk = 0.01; //par[ parameters.Index("initialconditionX0")];
         sigma02 = 1.0;
 	cout << "# NO INITIAL PARAMETERS PASSED, USING DEFAULTS" << endl;
     }
 
     if (argc == 11){
-	qs0sqr		    = stod(argv[6]);
+    	qs0sqr		    = stod(argv[6]);
         alphas_scaling	    = stod(argv[7]);
-	anomalous_dimension = stod(argv[8]);
+	    anomalous_dimension = stod(argv[8]);
         icx0_bk		    = stod(argv[9]);
         sigma02		    = stod(argv[10]);
 
     }
 
     string string_ic = "cli_mode";
-    // string_ic = "default";
-    // string_ic = "resum";
-    // string_ic = "resumpdhera";
-    // string_ic = "resumsdhera";
-    // string_ic = "resumpdherax1";
-    // string_ic = "resumsdherax1";
-    // string_ic = "kcbk";
-    // string_ic = "kcbkx1";
-//     string_ic = "kcbkpdhera";
-    // string_ic = "kcbksdhera";
-    // string_ic = "kcbkpdherax1";
-    // string_ic = "kcbksdherax1";
-    // string_ic = "trbk";
-    // string_ic = "trbkpdhera";
-    // string_ic = "trbksdhera";
-    // string_ic = "trbkx1";
-
-//     string_ic = "trbkhera";
-  /*
-    *   COMPUTING FIT PREDICTIONS
-    */
-    // resum + pdrc + z2imp LIGHTQ
-    if (string_ic == "resum"){
-    qs0sqr       = 0.075;
-    alphas_scaling     = 11.2959;
-    anomalous_dimension = 1.225;
-    icx0_bk = 0.01;
-    }
-    // resum + pdrc + z2imp HERA
-    if (string_ic == "resumpdhera"){
-    qs0sqr       = 0.11;
-    alphas_scaling     = 1.06282;
-    anomalous_dimension = 1.0;
-    icx0_bk = 0.01;
-    }
-    // resum + pdrc + z2imp HERA
-    if (string_ic == "resumsdhera"){
-    qs0sqr       = 0.09;
-    alphas_scaling     = 0.312992;
-    anomalous_dimension = 1.2;
-    icx0_bk = 0.01;
-    }
-    // kcbk + pdrc + z2imp LIGHTQ
-    if (string_ic == "kcbk"){
-    qs0sqr       = 0.075;
-    alphas_scaling     = 48.9819;
-    anomalous_dimension = 1.25;
-    icx0_bk = 0.01;
-    }
-    // kcbk + pdrc + z2imp HERA
-    if (string_ic == "kcbkpdhera"){
-    qs0sqr       = 0.085;
-    alphas_scaling     = 4.24795;
-    anomalous_dimension = 1.0;
-    icx0_bk = 0.01;
-    }
-    // kcbk + sdrc + z2imp HERA
-    if (string_ic == "kcbksdhera"){
-    qs0sqr       = 0.09;
-    alphas_scaling     = 0.832291;
-    anomalous_dimension = 1.2;
-    icx0_bk = 0.01;
-    }
-    // kcbk + pdrc + z2imp HERA x1
-    if (string_ic == "kcbkpdherax1"){
-    qs0sqr       = 0.07;
-    alphas_scaling     = 57.6536;
-    anomalous_dimension = 1.2;
-    icx0_bk = 1.0;
-    }
-    // kcbk + sdrc + z2imp HERA x1
-    if (string_ic == "kcbksdherax1"){
-    qs0sqr       = 0.1;
-    alphas_scaling     = 0.902964;
-    anomalous_dimension = 1.8;
-    icx0_bk = 1.0;
-    }
-    // trbk + pdrc + z2imp LIGHTQ
-    if (string_ic == "trbk"){
-    qs0sqr       = 0.086;
-    alphas_scaling     = 68.9756;
-    anomalous_dimension = 1.82;
-    icx0_bk = 0.01;
-    }
-    // trbk + pdrc + z2imp HERA
-    if (string_ic == "trbkpdhera"){
-    qs0sqr       = 0.09;
-    alphas_scaling     = 9.75463;
-    anomalous_dimension = 1.38;
-    icx0_bk = 0.01;
-    }
-    // trbk + sdrc + z2imp HERA ~~~~ HIGH CHI^2
-    if (string_ic == "trbksdhera"){
-    qs0sqr       = 0.06;
-    alphas_scaling     = 1.8803;
-    anomalous_dimension = 1.5;
-    icx0_bk = 0.01;
-    }
     /*
     *   PARAMS TO IC
     */
@@ -385,27 +287,44 @@ int main( int argc, char* argv[] )
          << endl;
 
     /*
-    // ***Solve resummed BK***
+    // ***Solve BK***
     */
 
-    // /*
+    // double maxy = 15.4249; // from the paper, fcBK_MV.dat, 15=10+5 extra for z2improved extended evolution
+
+    // double maxy = std::log(icx0_bk/(1e-5)) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
+    // if (useImprovedZ2Bound){maxy += 5;}
+
+    // double maxy = std::log(icx0_bk/(1e-7)); // from the paper, fcBK_MV.dat, 15=10+5 extra for z2improved extended evolution
+    // if (useImprovedZ2Bound){maxy += std::log(100/1);} // extra evolution from the term log(Q^2 / Q_0^2)
+
+    double eta0 = 0;
+
+    double min_xbj = 1e-5;
+    // NLODISSIGMAR IC + SOLVER CODE
     MV ic;                                            // Initial condition
     ic.SetQsqr(qs0sqr);
     ic.SetAnomalousDimension(anomalous_dimension);
     ic.SetE(e_c);                                     // e_c of MVe parametrization
 
     Dipole dipole(&ic);
+    dipole.SetX0(icx0_bk);
     BKSolver solver(&dipole);
-    // double maxy = std::log(initialconditionX0/(1e-5)) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
-    //double maxy = 11.2; // from the paper, fcBK_MV.dat, 15=10+5 extra for z2improved extended evolution
-    double maxy = std::log(icx0_bk/(1e-7)); // from the paper, fcBK_MV.dat, 15=10+5 extra for z2improved extended evolution
-    if (useImprovedZ2Bound){maxy += std::log(100/1);} // extra evolution from the term log(Q^2 / Q_0^2)
-    //if (useImprovedZ2Bound){maxy += 5;}
+    double maxy = std::log(icx0_bk/(1e-7)) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
+    
+    double maxq2=100;     // Todo, take from actual data!
+    if (useImprovedZ2Bound)
+        maxy += std::log(maxq2 / icTypicalPartonVirtualityQ0sqr);
 
-    double eta0 = 0;
+    // cout << "=== Solving BK ===" << endl;
+
     solver.SetAlphasScaling(alphas_scaling);
-    // solver.SetEta0(eta0);
-    // solver.Solve(maxy);                                // Solve up to maxy
+    // solver.SetEta0(par[ parameters.Index("eta0")]);
+    solver.SetX0(icx0_bk);
+    solver.SetICX0_nlo_impfac(icx0_nlo_impfac);
+    solver.SetICTypicalPartonVirtualityQ0sqr(icTypicalPartonVirtualityQ0sqr);
+
+
 
     AmplitudeLib* DipoleAmplitude_ptr; // Forward declaration of the dipole object to be initialized from a file or solved data.
     string dipole_basename = "./out/dipoles/dipole";
@@ -437,13 +356,10 @@ int main( int argc, char* argv[] )
     // solver.GetDipole()->Save("./out/dipoles/dipole_lobk_fc_RK_step0.2_rpoints100_rmin1e-6rmax50_INTACC10e-3.dat");
     // cout << "Saved dipole to file, exiting." << endl;
     // exit(0);
-    // */
 
     // Give solution to the AmplitudeLib object
     // AmplitudeLib DipoleAmplitude(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
     // AmplitudeLib DipoleAmplitude("./data/paper1dipole/pap1_fcBK_MV.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
-    // AmplitudeLib DipoleAmplitude("./out/dipoles/dipole_lobk_fc_step0.2_rpoints400-2.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
-    // AmplitudeLib DipoleAmplitude("./out/dipoles/dipole_lobk_fc_step0.2_rpoints400_rmin1e-6rmax50_INTACC2e-3.dat"); // pap1_fcBK_MV.dat, pap1_rcBK_MV_parent.dat
     AmplitudeLib DipoleAmplitude(*DipoleAmplitude_ptr);
     // delete DipoleAmplitude_ptr;
     DipoleAmplitude.SetInterpolationMethod(LINEAR_LINEAR);
@@ -553,6 +469,7 @@ int main( int argc, char* argv[] )
         // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
         //for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
         for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
+        // for (int j=1; j<=9; j+=8)      // xbj = {~1e-2, ~1e-4} // LHEC predictions for x0bk=0.01
         // for (int j=2; j<=8; j+=2)  // xbj = {1e-6} // LHEC predictions for x0bk=0.01
         // for (int j=0; j<=1; j++)
         {
