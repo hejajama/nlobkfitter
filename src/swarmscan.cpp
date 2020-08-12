@@ -175,10 +175,17 @@ int main( int argc, char* argv[] )
             config::RESUM_RC = config::RESUM_RC_FIXED;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_FIXED;
     } else if (string(argv [3]) == "smallestrc" or string(argv [3]) == "sdrc"){
+            config::RC_LO = config::SMALLEST_LO;
+            config::RESUM_RC = config::RESUM_RC_SMALLEST;
+            nlodis_config::RC_DIS = nlodis_config::DIS_RC_SMALLEST;
+    } else if (string(argv [3]) == "balitskysmallrc" or string(argv [3]) == "balsdrc"){
+            // Even though this coupling should be more realistic than smallest dipole alone,
+            // the subtraction between the LO and qg terms is not exact. This shortcoming makes
+            // this coupling less than ideal.
             config::RC_LO = config::BALITSKY_LO;
             config::RESUM_RC = config::RESUM_RC_SMALLEST;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_SMALLEST;
-    } else {cout << helpstring << endl; return -1;}
+    }else {cout << helpstring << endl; return -1;}
 
     if (string(argv [4]) == "z2improved" or string(argv [4]) == "z2imp"){
         nlodis_config::Z2MINIMUM = nlodis_config::Z2IMPROVED;
