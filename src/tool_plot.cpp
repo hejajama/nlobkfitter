@@ -84,7 +84,8 @@ int main( int argc, char* argv[] )
     //config::THETAINTPOINTS = 512/4;
 
     // config::INTACCURACY = 10e-3;//0.02;
-    config::INTACCURACY = 2e-3;
+    // config::INTACCURACY = 2e-3;
+    config::INTACCURACY = 0.005; // used in the final fits
     //config::MINR = 1e-6;
     config::MINR = 1e-6;
     //config::MAXR = 30;
@@ -243,13 +244,18 @@ int main( int argc, char* argv[] )
 	cout << "# NO INITIAL PARAMETERS PASSED, USING DEFAULTS" << endl;
     }
 
-    if (argc == 11){
+    if (argc >= 11){
     	qs0sqr		    = stod(argv[6]);
         alphas_scaling	    = stod(argv[7]);
 	    anomalous_dimension = stod(argv[8]);
         icx0_bk		    = stod(argv[9]);
         sigma02		    = stod(argv[10]);
 
+    }
+
+    string dataname;
+    if (argc >= 12){
+        dataname = argv[11];
     }
 
     string string_ic = "cli_mode";
@@ -328,21 +334,33 @@ int main( int argc, char* argv[] )
 
     AmplitudeLib* DipoleAmplitude_ptr; // Forward declaration of the dipole object to be initialized from a file or solved data.
     string dipole_basename = "./out/dipoles/dipole";
+    // string dipole_filename = dipole_basename
+    //                          + "_" + string_bk
+    //                          + "_" + string_rc
+    //                          + "_x0bk" + std::to_string(icx0_bk)
+    //                          + "_qs0sqr" + std::to_string(qs0sqr)
+    //                          + "_asC^2" + std::to_string(alphas_scaling)
+    //                          + "_gamma" + std::to_string(anomalous_dimension)
+    //                          + "_ec" + std::to_string(e_c)
+    //                          + "_eta0" + std::to_string(eta0)
+    //                          + "_maxy" + std::to_string(maxy)
+    //                          + "_euler" + std::to_string(config::EULER_METHOD)
+    //                          + "_step" + std::to_string(config::DE_SOLVER_STEP)
+    //                          + "_rpoints" + std::to_string(config::RPOINTS)
+    //                          + "_rminmax" + std::to_string(config::MINR) + "--" + std::to_string(config::MAXR)
+    //                          + "_intacc" + std::to_string(config::INTACCURACY) ;
+    //
+    // generate publishable filenames
+    string bk_name = (string_bk == "trbk") ? "tbk" : string_bk;
+    string rc_name = (string_rc == "sdrc") ? "bal+sd" : "parent";
+    string Y0_valu = (icx0_bk == 1.0) ? "0.00" : std::to_string((int)(std::log(1./icx0_bk) * 100 + .5) / 100.0);
+    Y0_valu.erase(Y0_valu.find_last_of(".") + 3, std::string::npos);
     string dipole_filename = dipole_basename
-                             + "_" + string_bk
-                             + "_" + string_rc
-                             + "_x0bk" + std::to_string(icx0_bk)
-                             + "_qs0sqr" + std::to_string(qs0sqr)
-                             + "_asC^2" + std::to_string(alphas_scaling)
-                             + "_gamma" + std::to_string(anomalous_dimension)
-                             + "_ec" + std::to_string(e_c)
-                             + "_eta0" + std::to_string(eta0)
-                             + "_maxy" + std::to_string(maxy)
-                             + "_euler" + std::to_string(config::EULER_METHOD)
-                             + "_step" + std::to_string(config::DE_SOLVER_STEP)
-                             + "_rpoints" + std::to_string(config::RPOINTS)
-                             + "_rminmax" + std::to_string(config::MINR) + "--" + std::to_string(config::MAXR)
-                             + "_intacc" + std::to_string(config::INTACCURACY) ;
+                             + "-" + bk_name
+                             + "-" + dataname
+                             + "-" + rc_name
+                             + "-" + Y0_valu
+                             + ".dip";
     if (FILE *file = fopen(dipole_filename.c_str(), "r")) {
         cout << "# Previously saved dipole file found: " << dipole_filename << endl;
         DipoleAmplitude_ptr = new AmplitudeLib(dipole_filename);      // read data from existing file.
@@ -464,6 +482,7 @@ int main( int argc, char* argv[] )
     // #pragma omp parallel for collapse(2)
     // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
     for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
+    // for (int i=10; i<=20; i+=11)  // Q^2 = 10
     // for (int i=0; i<=1; i++)
     {
         // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
@@ -489,6 +508,7 @@ int main( int argc, char* argv[] )
         if (j==0 and cubaMethod=="suave"){continue;}
         double Q = 1.0*pow(10,(double)i/20.0);
         double xbj = icx0/pow(10,(double)j/4.0);
+        // double xbj = 0.1/pow(10,(double)j/4.0); // TODO NOTE: modify xbj upper limit for Heikki & Jani F2 testing 
         // #pragma omp critical
         // cout << "Q=" << Q << ", xbj=" << xbj << endl;
         
