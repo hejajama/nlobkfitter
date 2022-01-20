@@ -347,9 +347,14 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     //solver.SetTmpOutput("tmp_datafile.dat");
     solver.Solve(maxy);
 
-    //solver.GetDipole()->Save("output_dipole_lobk_x0=10_euler_DESTEP0.02.dat");
+    // solver.GetDipole()->Save("output_dipole_uksi_balsd_heraII.dat");
+    // solver.GetDipole()->Save("output_dipole_urpbsi_hera_resumpd_ic_nlobk.dat");
     //solver.GetDipole()->Save("output_dipole_lobk_x0=10_euler_KINCOST_DESTEP0.08.dat");
     //solver.GetDipole()->Save("output_dipole_lobk_x0=10_rungekutta_DESTEP0.4.dat");
+    // AmplitudeLib* DipoleAmplitude_ptr; // Forward declaration of the dipole object to be initialized from a file or solved data.
+    // DipoleAmplitude_ptr = new AmplitudeLib("output_dipole_uksi_balsd_heraII.dat");      // read data from existing file.
+    // AmplitudeLib DipoleAmplitude(*DipoleAmplitude_ptr);
+
     
     // Give solution to the AmplitudeLib object
     AmplitudeLib DipoleAmplitude(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
