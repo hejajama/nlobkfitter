@@ -15,6 +15,7 @@
 
 #include "nlodis_config.hpp"
 #include "nlodissigmar.hpp"
+#include "nlodissigmar_massiveq.hpp"
 #include "helper.hpp"
 
 
@@ -1084,7 +1085,7 @@ ComputeSigmaR::ComputeSigmaR(AmplitudeLib *ObjectPointer){
 struct Userdata{
     ComputeSigmaR* ComputerPtr;
     double Q, xbj;
-    double qMass_light;
+    double qMass;
     double icX0;
 };
 
@@ -1144,7 +1145,7 @@ int integrand_ILLOpMass(const int *ndim, const double x[], const int *ncomp,doub
     Userdata *dataptr = (Userdata*)userdata;
     double Q=dataptr->Q;
     double xbj=dataptr->xbj;
-    double qmass=dataptr->qMass_light;
+    double qmass=dataptr->qMass;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
     double z1=x[0];
     double x01=nlodis_config::MAXR*x[1];
@@ -1168,9 +1169,9 @@ double ComputeSigmaR::LLOpMass(double Q, double x, bool charm) {
     userdata.Q=Q;
     userdata.xbj=x;
     if (charm==false)
-        userdata.qMass_light=qMass_light;
+        userdata.qMass=qMass_light;
     else
-        userdata.qMass_light=qMass_charm;
+        userdata.qMass=qMass_charm;
     userdata.ComputerPtr=this;
     double ef = sumef;
     if (charm) ef = 4.0/9.0;
@@ -1233,7 +1234,7 @@ int integrand_ITLOpMass(const int *ndim, const double x[], const int *ncomp,doub
     Userdata *dataptr = (Userdata*)userdata;
     double Q=dataptr->Q;
     double xbj=dataptr->xbj;
-    double qmass=dataptr->qMass_light;
+    double qmass=dataptr->qMass;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
     double z1=x[0];
     double x01=nlodis_config::MAXR*x[1];
@@ -1257,9 +1258,9 @@ double ComputeSigmaR::TLOpMass(double Q, double x, bool charm) {
     userdata.Q=Q;
     userdata.xbj=x;
     if (charm==false)
-        userdata.qMass_light=qMass_light;
+        userdata.qMass=qMass_light;
     else
-        userdata.qMass_light = qMass_charm;
+        userdata.qMass = qMass_charm;
     userdata.ComputerPtr=this;
 
     double ef = sumef;
