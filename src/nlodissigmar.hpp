@@ -399,6 +399,9 @@ public:
     double LLOpMass(double Q, double x, bool charm) ;
     double LNLOdip(double Q, double x) ;
     double LNLOdip_z2(double Q, double x) ;
+    double LNLOdip_massive_LiLogConst(double Q, double x, bool charm) ;
+    double LNLOdip_massive_Iab(double Q, double x, bool charm) ;
+    double LNLOdip_massive_Icd(double Q, double x, bool charm) ;
     double LNLOqgunsub(double Q, double x) ;
     double LNLOsigma3(double Q, double x) ;
     double LNLOqgsub(double Q, double x) ;

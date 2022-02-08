@@ -1761,6 +1761,90 @@ double ComputeSigmaR::LNLOqgsubRisto(double Q, double x) {
 
 
 ///===========================================================================================
+/// --- LLL ---  NLO  MASSIVE --- LLL ---------------------
+
+
+
+int integrand_ILdip_massive_LiLogConst(const int *ndim, const double x[], const int *ncomp, double *f, void *userdata) {
+    Userdata *dataptr = (Userdata*)userdata;
+    double Q=dataptr->Q;
+    double xbj=dataptr->xbj;
+    ComputeSigmaR *Optr = dataptr->ComputerPtr;
+    double z1=x[0];
+    double x01=nlodis_config::MAXR*x[1];
+    double x01sq=Sq(x01);
+
+    double alphabar=Optr->Alphabar(x01sq); //2;
+    double alphfac=alphabar*CF/Nc;
+    double Xrpdty_lo = Optr->Xrpdty_DIP(xbj, Sq(Q), x01sq);
+    double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
+    double regconst = 5.0/2.0 - Sq(M_PI)/6.0;
+    double res;
+
+    // #TODO
+    res = SKernel*(Optr->ILdip(Q,z1,x01sq))*x01*( alphfac*(0.5*Sq(log(z1/(1-z1))) + regconst ) );
+    if(gsl_finite(res)==1){
+        *f=res;
+    }else{
+        *f=0;
+    }
+    return 0;
+}
+
+
+
+double ComputeSigmaR::LNLOdip_massive_LiLogConst(double Q, double x, bool charm) {
+    double integral, error, prob;
+    const int ndim=2;
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xbj=x;
+    if (charm==false)
+        userdata.qMass=qMass_light;
+    else
+        userdata.qMass = qMass_charm;
+    userdata.ComputerPtr=this;
+    Cuba(cubamethod,ndim,integrand_ILdip_massive_LiLogConst,&userdata,&integral,&error,&prob);
+    return fac*2.0*M_PI*nlodis_config::MAXR*integral;
+}
+
+
+double ComputeSigmaR::LNLOdip_massive_Iab(double Q, double x, bool charm) {
+    double integral, error, prob;
+    const int ndim=3; // One more integral than in the Li & Log & Const terms
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xbj=x;
+    if (charm==false)
+        userdata.qMass=qMass_light;
+    else
+        userdata.qMass = qMass_charm;
+    userdata.ComputerPtr=this;
+    Cuba(cubamethod,ndim,integrand_ILdip_massive_Iab,&userdata,&integral,&error,&prob);
+    return fac*2.0*M_PI*nlodis_config::MAXR*integral;
+}
+
+double ComputeSigmaR::LNLOdip_massive_Icd(double Q, double x, bool charm) {
+    double integral, error, prob;
+    const int ndim=4; // Two more integrals than in the Li & Log & Const terms
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xbj=x;
+    if (charm==false)
+        userdata.qMass=qMass_light;
+    else
+        userdata.qMass = qMass_charm;
+    userdata.ComputerPtr=this;
+    Cuba(cubamethod,ndim,integrand_ILdip_massive_Icd,&userdata,&integral,&error,&prob);
+    return fac*2.0*M_PI*nlodis_config::MAXR*integral;
+}
+
+
+
+///===========================================================================================
 ///===========================================================================================
 ///===========================================================================================
 /*
