@@ -1760,15 +1760,15 @@ double ComputeSigmaR::LNLOqgsubRisto(double Q, double x) {
 //*/
 
 
+
 ///===========================================================================================
 /// --- LLL ---  NLO  MASSIVE --- LLL ---------------------
-
-
 
 int integrand_ILdip_massive_LiLogConst(const int *ndim, const double x[], const int *ncomp, double *f, void *userdata) {
     Userdata *dataptr = (Userdata*)userdata;
     double Q=dataptr->Q;
     double xbj=dataptr->xbj;
+    double mf=dataptr->qMass;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
     double z1=x[0];
     double x01=nlodis_config::MAXR*x[1];
@@ -1782,7 +1782,7 @@ int integrand_ILdip_massive_LiLogConst(const int *ndim, const double x[], const 
     double res;
 
     // #TODO
-    res = SKernel*(Optr->ILdip(Q,z1,x01sq))*x01*( alphfac*(0.5*Sq(log(z1/(1-z1))) + regconst ) );
+    res = SKernel*(Optr->ILdip_massive_LiLogConst(Q,z1,x01sq,mf))*x01*( alphfac*(0.5*Sq(log(z1/(1-z1))) + regconst ) );
     if(gsl_finite(res)==1){
         *f=res;
     }else{

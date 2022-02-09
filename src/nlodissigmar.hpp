@@ -443,6 +443,10 @@ int integrand_ILqgsub(const int *ndim, const double x[], const int *ncomp,double
 int integrand_ILqgunsubRisto(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 int integrand_ILqgsubRisto(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 
+int integrand_ILdip_massive_LiLogConst(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ILdip_massive_Iab(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ILdip_massive_Icd(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+
 
 int integrand_ITLOp(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 int integrand_ITLOpMass(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
