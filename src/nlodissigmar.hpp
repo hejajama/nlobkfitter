@@ -407,6 +407,7 @@ public:
     double LNLOqgsub(double Q, double x) ;
     double LNLOqgunsubRisto(double Q, double x) ;
     double LNLOqgsubRisto(double Q, double x) ;
+    double LNLOqgunsub_massive(double Q, double x, bool charm) ;
 
 
     // Transverse
@@ -446,6 +447,7 @@ int integrand_ILqgsubRisto(const int *ndim, const double x[], const int *ncomp,d
 int integrand_ILdip_massive_LiLogConst(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 int integrand_ILdip_massive_Iab(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 int integrand_ILdip_massive_Icd(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ILqgunsub_massive(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 
 
 int integrand_ITLOp(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
