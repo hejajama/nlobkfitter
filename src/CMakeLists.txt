@@ -12,6 +12,7 @@ add_executable(
 	ic_datafile.cpp
 	nlobk_config.cpp
 	nlodissigmar.cpp	
+	nlodissigmar_massiveq.cpp	
 	nlodis_config.cpp
 	helper.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/gitsha1.cpp

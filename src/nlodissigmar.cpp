@@ -1779,11 +1779,12 @@ int integrand_ILdip_massive_LiLogConst(const int *ndim, const double x[], const 
     double alphfac=alphabar*CF/Nc;
     double Xrpdty_lo = Optr->Xrpdty_DIP(xbj, Sq(Q), x01sq);
     double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
-    double regconst = 5.0/2.0 - Sq(M_PI)/6.0;
+    // double regconst = 5.0/2.0 - Sq(M_PI)/6.0;
     double res;
 
     // #TODO rewrite
-    res = SKernel*(ILdip_massive_LiLogConst(Q,z1,x01sq,mf))*x01*( alphfac*(0.5*Sq(log(z1/(1-z1))) + regconst ) );
+    // res = SKernel*(ILdip_massive_LiLogConst(Q,z1,x01sq,mf))*x01*( alphfac*(0.5*Sq(log(z1/(1-z1))) + regconst ) );
+    res = SKernel*(ILdip_massive_LiLogConst(Q,z1,x01sq,mf))*x01*alphfac;
     if(gsl_finite(res)==1){
         *f=res;
     }else{
@@ -1808,11 +1809,12 @@ int integrand_ILdip_massive_Iab(const int *ndim, const double x[], const int *nc
     double alphfac=alphabar*CF/Nc;
     double Xrpdty_lo = Optr->Xrpdty_DIP(xbj, Sq(Q), x01sq);
     double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
-    double regconst = 5.0/2.0 - Sq(M_PI)/6.0;
+    // double regconst = 5.0/2.0 - Sq(M_PI)/6.0;
     double res;
 
     // #TODO rewrite
-    res = SKernel*(ILdip_massive_Iab(Q,z1,x01sq,mf))*x01*( alphfac*(0.5*Sq(log(z1/(1-z1))) + regconst ) );
+    // res = SKernel*(ILdip_massive_Iab(Q,z1,x01sq,mf))*x01*( alphfac*(0.5*Sq(log(z1/(1-z1))) + regconst ) );
+    res = SKernel*(ILdip_massive_Iab(Q,z1,x01sq,mf,xi))*x01*alphfac;
     if(gsl_finite(res)==1){
         *f=res;
     }else{
@@ -1838,11 +1840,12 @@ int integrand_ILdip_massive_Icd(const int *ndim, const double x[], const int *nc
     double alphfac=alphabar*CF/Nc;
     double Xrpdty_lo = Optr->Xrpdty_DIP(xbj, Sq(Q), x01sq);
     double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
-    double regconst = 5.0/2.0 - Sq(M_PI)/6.0;
+    // double regconst = 5.0/2.0 - Sq(M_PI)/6.0;
     double res;
 
     // #TODO rewrite
-    res = SKernel*(ILdip_massive_Icd(Q,z1,x01sq,mf))*x01*( alphfac*(0.5*Sq(log(z1/(1-z1))) + regconst ) );
+    // res = SKernel*(ILdip_massive_Icd(Q,z1,x01sq,mf))*x01*( alphfac*(0.5*Sq(log(z1/(1-z1))) + regconst ) );
+    res = SKernel*(ILdip_massive_Icd(Q,z1,x01sq,mf,xi,intx))*x01*alphfac;
     if(gsl_finite(res)==1){
         *f=res;
     }else{
@@ -1875,6 +1878,10 @@ int integrand_ILqgunsub_massive(const int *ndim, const double x[], const int *nc
     double jac=(1.0-z2min)*(1.0-z1-z2min);
     double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
 
+    double SKernel_dipole = 1.0 - Optr->Sr(x01,Xrpdt);
+    double SKernel_tripole = 1.0 - Optr->SrTripole(x01,Xrpdt,x02,Xrpdt,sqrt(x21sq),Xrpdt);
+
+
     Alphasdata alphasdata;
     alphasdata.x01sq=x01sq;
     alphasdata.x02sq=x02sq;
@@ -1882,7 +1889,10 @@ int integrand_ILqgunsub_massive(const int *ndim, const double x[], const int *nc
     double alphabar=Optr->Alphabar_QG( &alphasdata );
     double alphfac=alphabar*CF/Nc;
 
-    double res =   jac*alphfac*( ILNLOqg_massive(Q,Xrpdt,mf,z1,z2,x01sq,x02sq,x21sq) )/z2*x01*x02;
+    double dipole_term  = SKernel_dipole  * ILNLOqg_massive_dipole_part(Q,mf,z1,z2,x01sq,x02sq,x21sq); // Terms proportional to N_01
+    double tripole_term = SKernel_tripole * ILNLOqg_massive_tripole_part(Q,mf,z1,z2,x01sq,x02sq,x21sq); // Terms proportional to N_012
+
+    double res =   jac*alphfac*( dipole_term + tripole_term )/z2*x01*x02;
 
     if(gsl_finite(res)==1){
         *f=res;
