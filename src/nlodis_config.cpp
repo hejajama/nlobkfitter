@@ -17,6 +17,8 @@ namespace nlodis_config
     double MAXR=50;
     double MINR=1e-6;
 
+    bool USE_MASSES = false;
+
     RunningCouplingDIS RC_DIS;
     SubtractionScheme SUB_SCHEME;
     SubSchemeTermKernel SUB_TERM_KERNEL;

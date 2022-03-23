@@ -82,6 +82,7 @@ public:
     double SigmarLO ( double Q , double xbj, double y) ;
     double SigmarLOmass ( double Q , double xbj, double y, bool charm=false) ;
     double SigmarNLOunsub ( double Q , double xbj, double y) ;
+    double SigmarNLOunsub_massive ( double Q , double xbj, double y, double mf) ;
     double SigmarNLOsub ( double Q , double xbj, double y) ;
     double SigmarNLOunsub_UniformZ2Bound ( double Q , double xbj, double y) ;
     double SigmarNLOsub_UniformZ2Bound ( double Q , double xbj, double y) ;
@@ -96,12 +97,21 @@ public:
     double Structf_TNLOdip ( double Q , double xbj) ;
     double Structf_LNLOdip_z2 ( double Q , double xbj) ;
     double Structf_TNLOdip_z2 ( double Q , double xbj) ;
-    double Structf_LNLOqg_sub ( double Q , double xbj) ;
-    double Structf_TNLOqg_sub ( double Q , double xbj) ;
     double Structf_LNLOqg_unsub ( double Q , double xbj) ;
     double Structf_TNLOqg_unsub ( double Q , double xbj) ;
+    double Structf_LNLOqg_sub ( double Q , double xbj) ;
+    double Structf_TNLOqg_sub ( double Q , double xbj) ;
     double Structf_LNLOsigma3 ( double Q , double xbj) ;
     double Structf_TNLOsigma3 ( double Q , double xbj) ;
+
+    double Structf_LLO_massive ( double Q , double xbj, double mf) ;
+    double Structf_TLO_massive ( double Q , double xbj, double mf) ;
+    double Structf_LNLOdip_massive ( double Q , double xbj, double mf) ;
+    double Structf_TNLOdip_massive ( double Q , double xbj, double mf) ;
+    double Structf_LNLOdip_z2_massive ( double Q , double xbj, double mf) ;
+    double Structf_TNLOdip_z2_massive ( double Q , double xbj, double mf) ;
+    double Structf_LNLOqg_unsub_massive ( double Q , double xbj, double mf) ;
+    double Structf_TNLOqg_unsub_massive ( double Q , double xbj, double mf) ;
 
     double Structf_LFULLNLOunsub ( double Q , double xbj) ; // no dipole term in these 4 for now.
     double Structf_TFULLNLOunsub ( double Q , double xbj) ;
@@ -275,6 +285,9 @@ public:
     AmplitudeLib *ClassScopeDipolePointer;
     double qMass_light, alpha_scaling_C2_, icX0, icX0_bk, icY0, icQ0sqr;
 	double qMass_charm;
+    struct QMasses{
+        double m_u, m_d, m_s, m_c, m_b, m_t;
+    };
     
     // Method and function pointers
     CmptrMemFn AlphabarPTR;
@@ -397,17 +410,18 @@ public:
 
     double LLOp(double Q, double x) ;
     double LLOpMass(double Q, double x, bool charm) ;
+    double LLOp_massive(double Q, double x, double mf) ;
     double LNLOdip(double Q, double x) ;
     double LNLOdip_z2(double Q, double x) ;
-    double LNLOdip_massive_LiLogConst(double Q, double x, bool charm) ;
-    double LNLOdip_massive_Iab(double Q, double x, bool charm) ;
-    double LNLOdip_massive_Icd(double Q, double x, bool charm) ;
+    double LNLOdip_massive_LiLogConst(double Q, double x, double mf) ;
+    double LNLOdip_massive_Iab(double Q, double x, double mf) ;
+    double LNLOdip_massive_Icd(double Q, double x, double mf) ;
     double LNLOqgunsub(double Q, double x) ;
     double LNLOsigma3(double Q, double x) ;
     double LNLOqgsub(double Q, double x) ;
     double LNLOqgunsubRisto(double Q, double x) ;
     double LNLOqgsubRisto(double Q, double x) ;
-    double LNLOqgunsub_massive(double Q, double x, bool charm) ;
+    double LNLOqgunsub_massive(double Q, double x, double mf) ;
 
 
     // Transverse
@@ -421,6 +435,7 @@ public:
 
     double TLOp(double Q, double x) ;
     double TLOpMass(double Q, double x, bool charm) ;
+    double TLOp_massive(double Q, double x, double mf) ;
     double TNLOdip(double Q, double x) ;
     double TNLOdip_z2(double Q, double x) ;
     double TNLOqgunsub(double Q, double x) ;

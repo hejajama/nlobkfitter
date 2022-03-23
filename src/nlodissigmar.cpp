@@ -78,6 +78,34 @@ double ComputeSigmaR::SigmarNLOunsub ( double Q , double xbj, double y) {
     return sigma;
 }
 
+double ComputeSigmaR::SigmarNLOunsub_massive ( double Q , double xbj, double y, double q_mass) {
+    double FLic  = Structf_LLO_massive(Q, icX0, q_mass);
+    double FTic  = Structf_TLO_massive(Q, icX0, q_mass);
+    double FLdip = Structf_LNLOdip_massive(Q, xbj, q_mass);
+    // double FTdip = Structf_TNLOdip_massive(Q, xbj, q_mass); // T MASSIVE TODO
+    double FTdip = 0; // TODO IMPLEMENT
+    double FLqg  = Structf_LNLOqg_unsub_massive(Q, xbj, q_mass);
+    // double FTqg  = Structf_TNLOqg_unsub_massive(Q, xbj, q_mass); // T MASSIVE TODO
+    double FTqg = 0; // TODO IMPLEMENT
+    double FL = FLic + FLdip + FLqg;
+    // double FT = FTic + FTdip + FTqg;
+    double FT = 0;
+    double F2 = FL+FT;
+    double fy = Sq(y)/(1+Sq(1-y));
+    double sigma = F2 - fy*FL;
+
+    // Printing intermediate F2 FL FT
+    cout << "SigmarNLOunsub_massive(Q xbj y mf) sigmar F2 FL FT "  << Q << " "
+                                                                    << xbj << " "
+                                                                    << y << " "
+                                                                    << q_mass << " "
+                                                                    << sigma << " "
+                                                                    << F2 << " "
+                                                                    << FL << " "
+                                                                    << FT << endl;
+    return sigma;
+}
+
 double ComputeSigmaR::SigmarNLOunsub_UniformZ2Bound ( double Q , double xbj, double y) {
     double FLic  = Structf_LLO(Q,icX0);
     double FTic  = Structf_TLO(Q,icX0);
@@ -180,6 +208,18 @@ double ComputeSigmaR::Structf_TLO ( double Q , double xbj ) {
     return FT;
 }
 
+double ComputeSigmaR::Structf_LLO_massive ( double Q , double xbj, double m_f ) {
+    double fac = structurefunfac*Sq(Q);
+    double FL = fac*LLOp_massive(Q, xbj, m_f);
+    return FL;
+}
+
+double ComputeSigmaR::Structf_TLO_massive ( double Q , double xbj, double m_f ) {
+    double fac = structurefunfac*Sq(Q);
+    double FT = fac*TLOp_massive(Q, xbj, m_f);
+    return FT;
+}
+
 double ComputeSigmaR::Structf_LNLOdip ( double Q , double xbj ) {
     double fac = structurefunfac*Sq(Q);
     double FL = fac*LNLOdip( Q , xbj );
@@ -191,6 +231,22 @@ double ComputeSigmaR::Structf_TNLOdip ( double Q , double xbj ) {
     double FT = fac*TNLOdip( Q , xbj );
     return FT;
 }
+
+double ComputeSigmaR::Structf_LNLOdip_massive ( double Q , double xbj, double m_f ) {
+    double fac = structurefunfac*Sq(Q);
+    double lilogconst = LNLOdip_massive_LiLogConst(Q, xbj, m_f);
+    double iab = LNLOdip_massive_Iab(Q, xbj, m_f);
+    double icd = LNLOdip_massive_Icd(Q, xbj, m_f);
+
+    double FL = fac*(lilogconst + iab + icd);
+    return FL;
+}
+
+// double ComputeSigmaR::Structf_TNLOdip_massive ( double Q , double xbj, double m_f ) {
+//     double fac = structurefunfac*Sq(Q);
+//     double FT = fac*TNLOdip_massive( Q , xbj );
+//     return FT;
+// }
 
 double ComputeSigmaR::Structf_LNLOdip_z2 ( double Q , double xbj ) {
     double fac = structurefunfac*Sq(Q);
@@ -216,6 +272,12 @@ double ComputeSigmaR::Structf_LNLOqg_unsub ( double Q , double xbj ) {
     return FL;
 }
 
+double ComputeSigmaR::Structf_LNLOqg_unsub_massive ( double Q , double xbj, double m_f ) {
+    double fac = structurefunfac*Sq(Q);
+    double FL = fac*LNLOqgunsub_massive( Q , xbj, m_f );
+    return FL;
+}
+
 double ComputeSigmaR::Structf_TNLOqg_sub ( double Q , double xbj ) {
     double fac = structurefunfac*Sq(Q);
     double FT = fac*TNLOqgsub( Q , xbj );
@@ -227,6 +289,12 @@ double ComputeSigmaR::Structf_TNLOqg_unsub ( double Q , double xbj ) {
     double FT = fac*TNLOqgunsub( Q , xbj );
     return FT;
 }
+
+// double ComputeSigmaR::Structf_TNLOqg_unsub_massive ( double Q , double xbj, double m_f ) {
+//     double fac = structurefunfac*Sq(Q);
+//     double FT = fac*TNLOqgunsub_massive( Q , xbj, m_f );
+//     return FT;
+// }
 
 double ComputeSigmaR::Structf_LNLOsigma3 ( double Q , double xbj ) {
     double fac = structurefunfac*Sq(Q);
@@ -294,8 +362,12 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     double initialconditionY0  = par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
+    double qMass_u = 0.0023; // GeV, literature value
+    double qMass_d = 0.0048; // GeV, literature value
+    double qMass_s = 0.095; // GeV, literature value
     double qMass_charm = 1.35;
-    bool useMasses = true;
+    double qMass_b = 4.180; // GeV, literature value
+    bool useMasses = nlodis_config::USE_MASSES;
     bool useCharm = false;
 
 
@@ -462,20 +534,34 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
             
             if (computeNLO && !UseSub) // UNSUB SCHEME Full NLO impact factors for reduced cross section
             {
-                if (useBoundLoop){
-                    theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_UniformZ2Bound(Q , xbj , y );
-                    ++calccount;}
-                if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
-                    theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub(Q , xbj , y );
-                    //theory = (fitsigma0)*SigmaComputer.SigmarNLOsubRisto(Q , xbj , y );
-                    ++calccount;}
-                if (UseSigma3){
-                    theory += (fitsigma0)*SigmaComputer.SigmarNLOunsub_sigma3(Q , xbj , y );
-            }
+                if (useMasses){
+                    if (useBoundLoop){
+                        cout << "Z_2 bound dipole term not implemented yet with quark masses. EXIT." << endl; return -1;
+                        // theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_UniformZ2Bound(Q , xbj , y );
+                        ++calccount;}
+                    if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
+                        theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_massive(Q , xbj , y, qMass_light );
+                        ++calccount;}
+                }
+                if (!useMasses){
+                    if (useBoundLoop){
+                        theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_UniformZ2Bound(Q , xbj , y );
+                        ++calccount;}
+                    if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
+                        theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub(Q , xbj , y );
+                        //theory = (fitsigma0)*SigmaComputer.SigmarNLOsubRisto(Q , xbj , y );
+                        ++calccount;}
+                    if (UseSigma3){
+                        theory += (fitsigma0)*SigmaComputer.SigmarNLOunsub_sigma3(Q , xbj , y );
+                        }
+                }
             }
             
             if (computeNLO && UseSub) // SUB SCHEME Full NLO impact factors for reduced cross section
             {
+                if (useMasses){
+                    cout << "SUB SCHEME NOT IMPLEMENTED WITH QUARK MASSES. EXIT." << endl; return -1;
+                }
                 if (useBoundLoop){
                     theory = (fitsigma0)*SigmaComputer.SigmarNLOsub_UniformZ2Bound(Q , xbj , y );
                     ++calccount;}
@@ -1180,6 +1266,23 @@ double ComputeSigmaR::LLOpMass(double Q, double x, bool charm) {
     return fac*2.0*M_PI*nlodis_config::MAXR*integral;
 }
 
+double ComputeSigmaR::LLOp_massive(double Q, double x, double mf) {
+    double integral, error, prob;
+    const int ndim=2;
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xbj=x;
+    userdata.qMass=mf;
+    userdata.ComputerPtr=this;
+
+    // double ef = sumef;
+    double ef = 1; // fractional charges need to be summed over after individual cross sections!
+
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*ef;
+    Cuba(cubamethod,ndim,integrand_ILLOpMass,&userdata,&integral,&error,&prob);
+    return fac*2.0*M_PI*nlodis_config::MAXR*integral;
+}
+
 ///===========================================================================================
 /*
 // --- T T T --- LO -------- T T T --- LO -------- T T T --- LO -----------
@@ -1271,6 +1374,22 @@ double ComputeSigmaR::TLOpMass(double Q, double x, bool charm) {
     return fac*2.0*M_PI*nlodis_config::MAXR*integral;
 }
 
+double ComputeSigmaR::TLOp_massive(double Q, double x, double mf) {
+    double integral, error, prob;
+    const int ndim=2;
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xbj=x;
+    userdata.qMass = mf;
+    userdata.ComputerPtr=this;
+
+    // double ef = sumef;
+    double ef = 1; // fractional charges need to be summed over after individual cross sections!
+
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*ef;
+    Cuba(cubamethod,ndim,integrand_ITLOpMass,&userdata,&integral,&error,&prob);
+    return fac*2.0*M_PI*nlodis_config::MAXR*integral;
+}
 
 ///===========================================================================================
 ///===========================================================================================
@@ -1902,56 +2021,47 @@ int integrand_ILqgunsub_massive(const int *ndim, const double x[], const int *nc
     return 0;
 }
 
-double ComputeSigmaR::LNLOdip_massive_LiLogConst(double Q, double x, bool charm) {
+double ComputeSigmaR::LNLOdip_massive_LiLogConst(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=2;
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
-    if (charm==false)
-        userdata.qMass=qMass_light;
-    else
-        userdata.qMass = qMass_charm;
+    userdata.qMass=mf;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ILdip_massive_LiLogConst,&userdata,&integral,&error,&prob);
     return fac*2.0*M_PI*nlodis_config::MAXR*integral;
 }
 
 
-double ComputeSigmaR::LNLOdip_massive_Iab(double Q, double x, bool charm) {
+double ComputeSigmaR::LNLOdip_massive_Iab(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=3; // One more integral than in the Li & Log & Const terms
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
-    if (charm==false)
-        userdata.qMass=qMass_light;
-    else
-        userdata.qMass = qMass_charm;
+    userdata.qMass=mf;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ILdip_massive_Iab,&userdata,&integral,&error,&prob);
     return fac*2.0*M_PI*nlodis_config::MAXR*integral;
 }
 
-double ComputeSigmaR::LNLOdip_massive_Icd(double Q, double x, bool charm) {
+double ComputeSigmaR::LNLOdip_massive_Icd(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=4; // Two more integrals than in the Li & Log & Const terms
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
-    if (charm==false)
-        userdata.qMass=qMass_light;
-    else
-        userdata.qMass = qMass_charm;
+    userdata.qMass=mf;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ILdip_massive_Icd,&userdata,&integral,&error,&prob);
     return fac*2.0*M_PI*nlodis_config::MAXR*integral;
 }
 
-double ComputeSigmaR::LNLOqgunsub_massive(double Q, double x, bool charm) {
+double ComputeSigmaR::LNLOqgunsub_massive(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=5; // TODO THIS IS MASSLESS DIM, CHECK THE NEW MC DIMENSION
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
@@ -1959,6 +2069,7 @@ double ComputeSigmaR::LNLOqgunsub_massive(double Q, double x, bool charm) {
     userdata.Q=Q;
     userdata.xbj=x;
     userdata.icX0=icX0;
+    userdata.qMass=mf;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ILqgunsub_massive,&userdata,&integral,&error,&prob);
     return 2*fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;

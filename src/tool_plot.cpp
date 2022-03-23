@@ -63,6 +63,8 @@ int main( int argc, char* argv[] )
     gsl_set_error_handler(&ErrHandlerCustom);
 
     // NLO DIS SIGMA_R COMPUTATION CONFIGS
+    nlodis_config::USE_MASSES = true;
+
     nlodis_config::CUBA_EPSREL = 10e-3;
     //nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
     nlodis_config::CUBA_MAXEVAL = 2e7;
@@ -174,7 +176,16 @@ int main( int argc, char* argv[] )
             config::RESUM_RC = config::RESUM_RC_FIXED;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_FIXED;
     } else if (string(argv [3]) == "smallestrc" or string(argv [3]) == "sdrc"){
+            config::RC_LO = config::SMALLEST_LO;
+            config::RC_NLO = config::SMALLEST_NLO;
+            config::RESUM_RC = config::RESUM_RC_SMALLEST;
+            nlodis_config::RC_DIS = nlodis_config::DIS_RC_SMALLEST;
+    } else if (string(argv [3]) == "balitskysmallrc" or string(argv [3]) == "balsdrc"){
+            // Even though this coupling should be more realistic than smallest dipole alone,
+            // the subtraction between the LO and qg terms is not exact. This shortcoming makes
+            // this coupling less than ideal.
             config::RC_LO = config::BALITSKY_LO;
+            config::RC_NLO = config::SMALLEST_NLO;
             config::RESUM_RC = config::RESUM_RC_SMALLEST;
             nlodis_config::RC_DIS = nlodis_config::DIS_RC_SMALLEST;
     } else {cout << helpstring << endl; return -1;}
@@ -209,11 +220,18 @@ int main( int argc, char* argv[] )
                                     and !(config::RESUM_SINGLE_LOG)) << endl
             << "# Use ResumBK (DL,SL==true,KC_NONE): " << ((config::RESUM_DLOG) 
                                     and (config::RESUM_SINGLE_LOG)
-                                    and (config::KINEMATICAL_CONSTRAINT == config::KC_NONE)) << endl
+                                    and (config::KINEMATICAL_CONSTRAINT == config::KC_NONE)
+                                    and (config::NO_K2 == true)) << endl
+            << "# Use NLOBK (DL,SL==true,KC_NONE,NO_K2==false): " << ((config::RESUM_DLOG) 
+                                    and (config::RESUM_SINGLE_LOG)
+                                    and (config::KINEMATICAL_CONSTRAINT == config::KC_NONE)
+                                    and (config::NO_K2 == false)) << endl
             << "# KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
-            << "# Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
-            << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
-            << "# Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
+            << "# Target eta0 RHO shift: " << nlodis_config::TRBK_RHO_PRESC << " (0 TRBK_RHO_DISABLED, 1 TRBK_RHO_QQ0, 2 TRBK_RHO_RQ0)" << endl
+            << "# Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 2 parent_beta, 3 smallest, 4 balitsky, 5 frac, 6 guillaume)" << endl
+            << "# Running Coupling: (RC_NLO):    " << config::RC_NLO << " (0 fc, 1 parent, 2 smallest)" << endl
+            << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 3 smallest, 4 guillaume)" << endl
+            << "# Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 smallest, 3 guillaume)" << endl
             << "# Use NLOimpact: " << useNLO << endl
             << "# Use SUBscheme: " << useSUB << endl
             << "# Use Sigma3: " << useSigma3 << endl
@@ -275,8 +293,12 @@ int main( int argc, char* argv[] )
     double initialconditionY0  = 0; //par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = 1.0; //par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
+    double qMass_u = 0.0023; // GeV, literature value
+    double qMass_d = 0.0048; // GeV, literature value
+    double qMass_s = 0.095; // GeV, literature value
     double qMass_charm = 1.35;
-    bool useMasses = true;
+    double qMass_b = 4.180; // GeV, literature value
+    bool useMasses = nlodis_config::USE_MASSES;
     bool useCharm = false;
 
     cout << "# === Initial parameters ===" << endl;
@@ -476,6 +498,7 @@ int main( int argc, char* argv[] )
     double icQ = 1.0;
     //double icx0 = icx0_bk;
     double icx0 = 0.01;
+    double qmass = qMass_light;
 
     std::vector< std::tuple<int, int> > coordinates;
 
@@ -543,7 +566,7 @@ int main( int argc, char* argv[] )
                 FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
                 FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
                 ++calccount;}
-            if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
+            if (!useBoundLoop && !useMasses){ // the old way, no z2 lower bound in dipole loop term.
                 FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
                 FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
                 FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
@@ -553,6 +576,16 @@ int main( int argc, char* argv[] )
                 FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
                 FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
                 ++calccount;}
+            if (!useBoundLoop && useMasses){ // the old way, no z2 lower bound in dipole loop term.
+                FL_IC = SigmaComputer.Structf_LLO_massive(Q,icx0_bk,qmass);
+                FT_IC = SigmaComputer.Structf_TLO_massive(Q,icx0_bk,qmass);
+                FL_LO = SigmaComputer.Structf_LLO_massive(Q,xbj,qmass);
+                FT_LO = SigmaComputer.Structf_TLO_massive(Q,xbj,qmass);
+                FL_dip = SigmaComputer.Structf_LNLOdip_massive(Q,xbj,qmass);
+                // FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
+                FL_qg  = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qmass);
+                // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+                ++calccount;}
             if (useSigma3){
                 FL_sigma3 = SigmaComputer.Structf_LNLOsigma3(Q,xbj);
                 FT_sigma3 = SigmaComputer.Structf_TNLOsigma3(Q,xbj);
@@ -561,6 +594,10 @@ int main( int argc, char* argv[] )
 
         if (computeNLO && useSUB) // SUB SCHEME Full NLO impact factors for reduced cross section
         {
+            if (useMasses){
+                cout << "Masses not implemented for sub scheme. Quitting." << endl;
+                return 0;
+            }
             if (useBoundLoop){
                 FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
                 FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
@@ -586,10 +623,27 @@ int main( int argc, char* argv[] )
         }
 
         // Output for plotting
-        if(true){
+        if(true && !useMasses){
         #pragma omp critical
         cout    << setw(15) << xbj          << " "
                 << setw(15) << Q*Q          << " "
+                << setw(15) << sigma02*FL_IC        << " "
+                << setw(15) << sigma02*FL_LO        << " "
+                << setw(15) << sigma02*FL_dip       << " "
+                << setw(15) << sigma02*FL_qg        << " "
+                << setw(15) << sigma02*FL_sigma3    << " "
+                << setw(15) << sigma02*FT_IC        << " "
+                << setw(15) << sigma02*FT_LO        << " "
+                << setw(15) << sigma02*FT_dip       << " "
+                << setw(15) << sigma02*FT_qg        << " "
+                << setw(15) << sigma02*FT_sigma3    << " "
+                << endl;
+                }
+        if(true && useMasses){
+        #pragma omp critical
+        cout    << setw(15) << xbj                  << " "
+                << setw(15) << Q*Q                  << " "
+                << setw(15) << qmass                << " "
                 << setw(15) << sigma02*FL_IC        << " "
                 << setw(15) << sigma02*FL_LO        << " "
                 << setw(15) << sigma02*FL_dip       << " "
