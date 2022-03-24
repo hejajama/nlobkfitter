@@ -463,7 +463,7 @@ int main( int argc, char* argv[] )
     cout << "# === Computing Reduced Cross sections ===" << endl;
 
             // Print column titles.
-            if(true){
+            if(!useMasses){
             #pragma omp critical
             cout    << setw(15) << "# xbj"        << " "
                     << setw(15) << "Q^2"          << " "
@@ -471,12 +471,29 @@ int main( int argc, char* argv[] )
                     << setw(15) << "FL_LO"        << " "
                     << setw(15) << "FL_dip"       << " "
                     << setw(15) << "FL_qg"        << " "
-                    << setw(15) << "FL_sigma3"    << " "
+                    << setw(15) << "FL_tot"    << " "
                     << setw(15) << "FT_IC"        << " "
                     << setw(15) << "FT_LO"        << " "
                     << setw(15) << "FT_dip"       << " "
                     << setw(15) << "FT_qg"        << " "
-                    << setw(15) << "FT_sigma3"    << " "
+                    << setw(15) << "FT_tot"    << " "
+                    << endl;
+                    }
+            if(useMasses){
+            #pragma omp critical
+            cout    << setw(15) << "# xbj"        << " "
+                    << setw(15) << "Q^2"          << " "
+                    << setw(15) << "m_f"          << " "
+                    << setw(15) << "FL_IC"        << " "
+                    << setw(15) << "FL_LO"        << " "
+                    << setw(15) << "FL_dip"       << " "
+                    << setw(15) << "FL_qg"        << " "
+                    << setw(15) << "FL_tot"    << " "
+                    << setw(15) << "FT_IC"        << " "
+                    << setw(15) << "FT_LO"        << " "
+                    << setw(15) << "FT_dip"       << " "
+                    << setw(15) << "FT_qg"        << " "
+                    << setw(15) << "FT_tot"    << " "
                     << endl;
                     }
 
@@ -596,7 +613,7 @@ int main( int argc, char* argv[] )
         {
             if (useMasses){
                 cout << "Masses not implemented for sub scheme. Quitting." << endl;
-                return 0;
+                exit(1);
             }
             if (useBoundLoop){
                 FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
@@ -631,12 +648,12 @@ int main( int argc, char* argv[] )
                 << setw(15) << sigma02*FL_LO        << " "
                 << setw(15) << sigma02*FL_dip       << " "
                 << setw(15) << sigma02*FL_qg        << " "
-                << setw(15) << sigma02*FL_sigma3    << " "
+                << setw(15) << sigma02*(FL_IC + FL_dip + FL_qg)    << " "
                 << setw(15) << sigma02*FT_IC        << " "
                 << setw(15) << sigma02*FT_LO        << " "
                 << setw(15) << sigma02*FT_dip       << " "
                 << setw(15) << sigma02*FT_qg        << " "
-                << setw(15) << sigma02*FT_sigma3    << " "
+                << setw(15) << sigma02*(FT_IC + FT_dip + FT_qg)    << " "
                 << endl;
                 }
         if(true && useMasses){
@@ -648,12 +665,12 @@ int main( int argc, char* argv[] )
                 << setw(15) << sigma02*FL_LO        << " "
                 << setw(15) << sigma02*FL_dip       << " "
                 << setw(15) << sigma02*FL_qg        << " "
-                << setw(15) << sigma02*FL_sigma3    << " "
+                << setw(15) << sigma02*(FL_IC + FL_dip + FL_qg)    << " "
                 << setw(15) << sigma02*FT_IC        << " "
                 << setw(15) << sigma02*FT_LO        << " "
                 << setw(15) << sigma02*FT_dip       << " "
                 << setw(15) << sigma02*FT_qg        << " "
-                << setw(15) << sigma02*FT_sigma3    << " "
+                << setw(15) << sigma02*(FT_IC + FT_dip + FT_qg)    << " "
                 << endl;
                 }
     }

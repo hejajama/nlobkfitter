@@ -95,14 +95,14 @@ double ComputeSigmaR::SigmarNLOunsub_massive ( double Q , double xbj, double y, 
     double sigma = F2 - fy*FL;
 
     // Printing intermediate F2 FL FT
-    cout << "SigmarNLOunsub_massive(Q xbj y mf) sigmar F2 FL FT "  << Q << " "
-                                                                    << xbj << " "
-                                                                    << y << " "
-                                                                    << q_mass << " "
-                                                                    << sigma << " "
-                                                                    << F2 << " "
-                                                                    << FL << " "
-                                                                    << FT << endl;
+    // cout << "SigmarNLOunsub_massive(Q xbj y mf) sigmar F2 FL FT "  << Q << " "
+    //                                                                 << xbj << " "
+    //                                                                 << y << " "
+    //                                                                 << q_mass << " "
+    //                                                                 << sigma << " "
+    //                                                                 << F2 << " "
+    //                                                                 << FL << " "
+    //                                                                 << FT << endl;
     return sigma;
 }
 
@@ -536,7 +536,8 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
             {
                 if (useMasses){
                     if (useBoundLoop){
-                        cout << "Z_2 bound dipole term not implemented yet with quark masses. EXIT." << endl; return -1;
+                        cout << "Z_2 bound dipole term not implemented yet with quark masses. EXIT." << endl;
+                        exit(1);
                         // theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_UniformZ2Bound(Q , xbj , y );
                         ++calccount;}
                     if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
@@ -560,7 +561,8 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
             if (computeNLO && UseSub) // SUB SCHEME Full NLO impact factors for reduced cross section
             {
                 if (useMasses){
-                    cout << "SUB SCHEME NOT IMPLEMENTED WITH QUARK MASSES. EXIT." << endl; return -1;
+                    cout << "SUB SCHEME NOT IMPLEMENTED WITH QUARK MASSES. EXIT." << endl;
+                    exit(1);
                 }
                 if (useBoundLoop){
                     theory = (fitsigma0)*SigmaComputer.SigmarNLOsub_UniformZ2Bound(Q , xbj , y );
