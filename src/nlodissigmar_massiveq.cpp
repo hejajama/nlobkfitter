@@ -198,8 +198,8 @@ double ILdip_massive_Icd(double Q, double z1, double x01sq, double mf, double xi
     return dip_res;
 }
 
-double ILNLOqg_massive_dipole_part(double Q, double mf, double z1, double z2, double x01sq, double x02sq, double x21sq) {
-
+double ILNLOqg_massive_dipole_part_symm(double Q, double mf, double z1, double z2, double x01sq, double x02sq, double x21sq) {
+    // This version takes advantage of the symmetry.
 
     double front_factor = 4.0*Sq(Q);
 
@@ -229,7 +229,60 @@ double ILNLOqg_massive_dipole_part(double Q, double mf, double z1, double z2, do
 }
 
 
-double ILNLOqg_massive_tripole_part(double Q, double mf, double z1, double z2, double x01sq, double x02sq, double x21sq) {
+double ILNLOqg_massive_dipole_part(double Q, double mf, double z1, double z2, double x01sq, double x02sq, double x21sq) {
+    // Here the symmetry argument is not applied.
+
+    double front_factor = 4.0*Sq(Q);
+
+    double z0 = 1.0 - z1 - z2;
+    double x20x21 = -0.5*(x01sq - x21sq - x02sq);
+
+    double Qbar_k = Q*sqrt(z1*(1.0-z1));
+    double Qbar_l = Q*sqrt(z0*(1.0-z0));
+    double bessel_inner_fun_k = sqrt( x01sq * ( Sq(Qbar_k) + Sq(mf) ) );
+    double bessel_inner_fun_l = sqrt( x01sq * ( Sq(Qbar_l) + Sq(mf) ) );
+
+
+    double facExp1 = 0.0;
+    if(x02sq/x01sq>1e-8 && x02sq/x01sq<5e2){
+        facExp1 = gsl_sf_exp(-x02sq/(gsl_sf_exp(M_EULER)*x01sq));
+    }else if (x02sq/x01sq<1e-8){
+        facExp1 = 1.0;
+    }else{ facExp1 = 0.0; }
+
+    double facExp2 = 0.0;
+    if(x21sq/x01sq>1e-8 && x21sq/x01sq<5e2){
+        facExp2 = gsl_sf_exp(-x21sq/(gsl_sf_exp(M_EULER)*x01sq));
+    }else if (x21sq/x01sq<1e-8){
+        facExp2 = 1.0;
+    }else{ facExp2 = 0.0; }
+    
+
+    double res1=0;
+    double res2=0;
+    if (bessel_inner_fun_k < 1e-7){
+        // cout << bessel_inner_fun << " " << Q << " " << z1 << " " << x01sq << endl;
+        res1 = 0;
+    }else{
+        res1 = -front_factor * Sq(z1) * ( 2.0*z0*(z0+z2) + Sq(z2) ) * facExp1/ x02sq * Sq(gsl_sf_bessel_K0( bessel_inner_fun_k )) ;
+    }
+
+
+    if (bessel_inner_fun_l < 1e-7){
+        // cout << bessel_inner_fun << " " << Q << " " << z1 << " " << x01sq << endl;
+        res2 = 0;
+    }else{
+        res2 = -front_factor * Sq(z0) * ( 2.0*z1*(z1+z2) + Sq(z2) ) * facExp2/ x21sq * Sq(gsl_sf_bessel_K0( bessel_inner_fun_l )) ;
+    }
+
+    double res = res1 + res2;
+
+    return res;
+}
+
+
+double ILNLOqg_massive_tripole_part_symm(double Q, double mf, double z1, double z2, double x01sq, double x02sq, double x21sq) {
+    // This version takes advantage of the symmetry.
 
     double front_factor = 4.0*Sq(Q);
 
@@ -260,5 +313,43 @@ double ILNLOqg_massive_tripole_part(double Q, double mf, double z1, double z2, d
 
 
     double res = front_factor * ( term1 + term2 + term3 );
+    return res;
+}
+
+double ILNLOqg_massive_tripole_part(double Q, double mf, double z1, double z2, double x01sq, double x02sq, double x21sq) {
+    // Here the symmetry argument is not applied.
+
+    double front_factor = 4.0*Sq(Q);
+
+    double z0 = 1.0 - z1 - z2;
+    double x20x21 = -0.5*(x01sq - x21sq - x02sq);
+
+    double Qbar_k = Q*sqrt(z1*(1.0-z1));
+    double Qbar_l = Q*sqrt(z0*(1.0-z0));
+    double omega_k = z0*z2/(z1*Sq(z0+z2));
+    double omega_l = z1*z2/(z0*Sq(z1+z2));
+    double lambda_k = z1*z2/z0;
+    double lambda_l = z0*z2/z1;
+
+    double x2_k = sqrt(x02sq);
+    double x2_l = sqrt(x21sq);
+    double x3_k = sqrt( Sq(z0) / Sq(z0+z2) * x02sq + x21sq - 2.0 * z0/(z0+z2) *x20x21 );
+    double x3_l = sqrt( Sq(z1) / Sq(z1+z2) * x21sq + x02sq - 2.0 * z1/(z1+z2) *x20x21 );
+
+
+    double term1k = Sq(z1) * ( 2.0*z0 * (z0+z2) + Sq(z2) ) * x02sq / 64.0 * 
+                    Sq(G_qg( 1, 2, Qbar_k, mf, x2_k, x3_k, omega_k, lambda_k )) ;
+
+    double term1l = Sq(z0) * ( 2.0*z1 * (z1+z2) + Sq(z2) ) * x21sq / 64.0 * 
+                    Sq(G_qg( 1, 2, Qbar_l, mf, x2_l, x3_l, omega_l, lambda_l )) ;
+    double term2 = -1.0/32.0 * z1*z0 * (  z0*(1.0-z0) + z1*(1-z1) )* x20x21 * 
+                    G_qg( 1, 2, Qbar_k, mf, x2_k, x3_k, omega_k, lambda_k ) *
+                    G_qg( 1, 2, Qbar_l, mf, x2_l, x3_l, omega_l, lambda_l );
+    double term3 = Sq(mf)/16.0 * Sq(z2)*Sq(z2) * Sq(
+                    z1/(z0+z2) * G_qg( 1, 1, Qbar_k, mf, x2_k, x3_k, omega_k, lambda_k ) -
+                    z0/(z1+z2) * G_qg( 1, 1, Qbar_l, mf, x2_l, x3_l, omega_l, lambda_l ) );
+
+
+    double res = front_factor * ( term1k + term1l + term2 + term3 );
     return res;
 }
