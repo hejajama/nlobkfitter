@@ -2074,7 +2074,7 @@ double ComputeSigmaR::LNLOqgunsub_massive(double Q, double x, double mf) {
     userdata.qMass=mf;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ILqgunsub_massive,&userdata,&integral,&error,&prob);
-    return 2*fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+    return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
 
 
