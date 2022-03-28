@@ -67,7 +67,7 @@ int main( int argc, char* argv[] )
 
     nlodis_config::CUBA_EPSREL = 10e-3;
     //nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
-    nlodis_config::CUBA_MAXEVAL = 2e7;
+    nlodis_config::CUBA_MAXEVAL = 1e7;
     //nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
     //nlodis_config::MINR = 1e-6;
     nlodis_config::MINR = 1e-6;
@@ -85,9 +85,9 @@ int main( int argc, char* argv[] )
     //config::RINTPOINTS = 512/4;
     //config::THETAINTPOINTS = 512/4;
 
-    // config::INTACCURACY = 10e-3;//0.02;
+    config::INTACCURACY = 10e-3;//0.02;
     // config::INTACCURACY = 2e-3;
-    config::INTACCURACY = 0.005; // used in the final fits
+    // config::INTACCURACY = 0.005; // used in the final fits
     //config::MINR = 1e-6;
     config::MINR = 1e-6;
     //config::MAXR = 30;
@@ -521,14 +521,15 @@ int main( int argc, char* argv[] )
 
     // #pragma omp parallel for collapse(2)
     // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
-    for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
+    // for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
+    for (int i=0; i<=20; i+=5)  // Q^2 in [1,100]
     // for (int i=10; i<=20; i+=11)  // Q^2 = 10
     // for (int i=0; i<=1; i++)
     {
         // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
         //for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
-        for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
-        // for (int j=1; j<=9; j+=8)      // xbj = {~1e-2, ~1e-4} // LHEC predictions for x0bk=0.01
+        // for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
+        for (int j=1; j<=9; j+=8)      // xbj = {~1e-2, ~1e-4} // LHEC predictions for x0bk=0.01
         // for (int j=2; j<=8; j+=2)  // xbj = {1e-6} // LHEC predictions for x0bk=0.01
         // for (int j=0; j<=1; j++)
         {
