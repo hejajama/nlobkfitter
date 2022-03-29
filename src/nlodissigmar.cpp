@@ -1895,16 +1895,12 @@ int integrand_ILdip_massive_LiLogConst(const int *ndim, const double x[], const 
     double x01=nlodis_config::MAXR*x[1];
     double x01sq=Sq(x01);
 
-    // #TODO rewrite these as needed for the massive cross sections
-    double alphabar=Optr->Alphabar(x01sq); //2;
+    double alphabar=Optr->Alphabar(x01sq);
     double alphfac=alphabar*CF/Nc;
     double Xrpdty_lo = Optr->Xrpdty_DIP(xbj, Sq(Q), x01sq);
     double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
-    // double regconst = 5.0/2.0 - Sq(M_PI)/6.0;
     double res;
 
-    // #TODO rewrite
-    // res = SKernel*(ILdip_massive_LiLogConst(Q,z1,x01sq,mf))*x01*( alphfac*(0.5*Sq(log(z1/(1-z1))) + regconst ) );
     res = SKernel*(ILdip_massive_LiLogConst(Q,z1,x01sq,mf))*x01*alphfac;
     if(gsl_finite(res)==1){
         *f=res;
@@ -1925,16 +1921,12 @@ int integrand_ILdip_massive_Iab(const int *ndim, const double x[], const int *nc
     double x01sq=Sq(x01);
     double xi=x[2]; // New integration variable in I_ab terms
 
-    // #TODO rewrite these as needed for the massive cross sections
-    double alphabar=Optr->Alphabar(x01sq); //2;
+    double alphabar=Optr->Alphabar(x01sq);
     double alphfac=alphabar*CF/Nc;
     double Xrpdty_lo = Optr->Xrpdty_DIP(xbj, Sq(Q), x01sq);
     double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
-    // double regconst = 5.0/2.0 - Sq(M_PI)/6.0;
     double res;
 
-    // #TODO rewrite
-    // res = SKernel*(ILdip_massive_Iab(Q,z1,x01sq,mf))*x01*( alphfac*(0.5*Sq(log(z1/(1-z1))) + regconst ) );
     res = SKernel*(ILdip_massive_Iab(Q,z1,x01sq,mf,xi))*x01*alphfac;
     if(gsl_finite(res)==1){
         *f=res;
@@ -1954,18 +1946,14 @@ int integrand_ILdip_massive_Icd(const int *ndim, const double x[], const int *nc
     double x01=nlodis_config::MAXR*x[1];
     double x01sq=Sq(x01);
     double xi=x[2]; // 1st new integration variable in I_cd terms
-    double intx=x[3]; // 2nd new integration variable in I_cd terms // TODO rename if this is confusing or hard to read?
+    double intx=x[3]; // 2nd new integration variable in I_cd terms
 
-    // #TODO rewrite these as needed for the massive cross sections
-    double alphabar=Optr->Alphabar(x01sq); //2;
+    double alphabar=Optr->Alphabar(x01sq);
     double alphfac=alphabar*CF/Nc;
     double Xrpdty_lo = Optr->Xrpdty_DIP(xbj, Sq(Q), x01sq);
     double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
-    // double regconst = 5.0/2.0 - Sq(M_PI)/6.0;
     double res;
 
-    // #TODO rewrite
-    // res = SKernel*(ILdip_massive_Icd(Q,z1,x01sq,mf))*x01*( alphfac*(0.5*Sq(log(z1/(1-z1))) + regconst ) );
     res = SKernel*(ILdip_massive_Icd(Q,z1,x01sq,mf,xi,intx))*x01*alphfac;
     if(gsl_finite(res)==1){
         *f=res;
@@ -1987,12 +1975,14 @@ int integrand_ILqgunsub_massive(const int *ndim, const double x[], const int *nc
         *f=0;
         return 0;
     }
-    // TODO implement massive case phase space
+
     double z1=(1.0-z2min)*x[0];
     double z2=((1.0-z1)-z2min)*x[1]+z2min;
     double x01=nlodis_config::MAXR*x[2];
     double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
+    // double y_u = x[5];
+    // double y_t = x[6];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
@@ -2065,7 +2055,8 @@ double ComputeSigmaR::LNLOdip_massive_Icd(double Q, double x, double mf) {
 
 double ComputeSigmaR::LNLOqgunsub_massive(double Q, double x, double mf) {
     double integral, error, prob;
-    const int ndim=5; // TODO THIS IS MASSLESS DIM, CHECK THE NEW MC DIMENSION
+    const int ndim=5; // 5 + 2 deterministic cuhre dimensions from G_qg evaluated inside the integral
+    // const int ndim=7; // MC full phase space
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
     Userdata userdata;
     userdata.Q=Q;
