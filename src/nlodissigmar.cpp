@@ -1981,8 +1981,8 @@ int integrand_ILqgunsub_massive(const int *ndim, const double x[], const int *nc
     double x01=nlodis_config::MAXR*x[2];
     double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
-    // double y_u = x[5];
-    // double y_t = x[6];
+    double y_u = x[5];
+    double y_t = x[6];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
@@ -2001,7 +2001,7 @@ int integrand_ILqgunsub_massive(const int *ndim, const double x[], const int *nc
     double alphfac=alphabar*CF/Nc;
 
     double dipole_term  = SKernel_dipole  * ILNLOqg_massive_dipole_part(Q,mf,z1,z2,x01sq,x02sq,x21sq); // Terms proportional to N_01
-    double tripole_term = SKernel_tripole * ILNLOqg_massive_tripole_part(Q,mf,z1,z2,x01sq,x02sq,x21sq); // Terms proportional to N_012
+    double tripole_term = SKernel_tripole * ILNLOqg_massive_tripole_part(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_u,y_t); // Terms proportional to N_012
 
     double res =   jac*alphfac*( dipole_term + tripole_term )/z2*x01*x02;
 
@@ -2055,8 +2055,8 @@ double ComputeSigmaR::LNLOdip_massive_Icd(double Q, double x, double mf) {
 
 double ComputeSigmaR::LNLOqgunsub_massive(double Q, double x, double mf) {
     double integral, error, prob;
-    const int ndim=5; // 5 + 2 deterministic cuhre dimensions from G_qg evaluated inside the integral
-    // const int ndim=7; // MC full phase space
+    // const int ndim=5; // 5 + 2 deterministic cuhre dimensions from G_qg evaluated inside the integral
+    const int ndim=7; // MC full phase space
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
     Userdata userdata;
     userdata.Q=Q;
