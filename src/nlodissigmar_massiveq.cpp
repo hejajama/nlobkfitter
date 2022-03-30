@@ -321,6 +321,47 @@ double ILNLOqg_massive_dipole_part(double Q, double mf, double z1, double z2, do
 }
 
 
+
+double ILNLOqg_massive_dipole_part_unintegrated(double Q, double mf, double z1, double z2, double x01sq, double x02sq, double x21sq, double y_t1, double y_u1, double y_t2, double y_u2) {
+    // Version for the qg part that should be integrated over 4 variables from 0 to infinity: t_1, u_1, t_2, u_2.
+    // This is the part of qg that is proportional to the dipole amplitude N_01.
+    // The variables y_i are to be integrated over 0 to 1. The Jacobian from the change of variables u_i, t_i -> y_ti, y_ui has been taken into account.
+
+    double front_factor = 4.0*Sq(Q);
+
+    double z0 = 1.0 - z1 - z2;
+    double x20x21 = -0.5*(x01sq - x21sq - x02sq);
+
+    double Qbar_k = Q*sqrt(z1*(1.0-z1));
+    double Qbar_l = Q*sqrt(z0*(1.0-z0));
+
+    
+    double res1=0;
+    double res2=0;
+
+    double jacobian = 1/Sq(y_t1*y_u1*y_t2*y_u2 );
+    double t1 = (1.0-y_t1)/y_t1;
+    double t2 = (1.0-y_t2)/y_t2;
+    double u1 = (1.0-y_u1)/y_u1;
+    double u2 = (1.0-y_u2)/y_u2;
+
+
+    double gtilde_k_1 = exp( -u1*(Sq(Qbar_k)+Sq(mf)) - x01sq/(4.0*u1) - x02sq / (4.0*t1) );
+    double gtilde_k_2 = exp( -u2*(Sq(Qbar_k)+Sq(mf)) - x01sq/(4.0*u2) - x02sq / (4.0*t2) );
+    double gtilde_l_1 = exp( -u1*(Sq(Qbar_l)+Sq(mf)) - x01sq/(4.0*u1) - x21sq / (4.0*t1) );
+    double gtilde_l_2 = exp( -u2*(Sq(Qbar_l)+Sq(mf)) - x01sq/(4.0*u2) - x21sq / (4.0*t2) );
+
+    res1 = -front_factor * Sq(z1) * ( 2.0*z0*(z0+z2) + Sq(z2) ) * x02sq / 64.0 / (u1*u2*Sq(t1)*Sq(t2)) * exp( -x02sq / ( x01sq * exp( M_EULER ) ) ) * gtilde_k_1 * gtilde_k_2 ;
+    
+    res2 = -front_factor * Sq(z0) * ( 2.0*z1*(z1+z2) + Sq(z2) ) * x21sq / 64.0 / (u1*u2*Sq(t1)*Sq(t2)) * exp( -x21sq / ( x01sq * exp( M_EULER ) ) ) * gtilde_l_1 * gtilde_l_2 ;
+
+    double res = jacobian * (res1 + res2) ;
+
+    return res;
+}
+
+
+
 double ILNLOqg_massive_tripole_part_symm(double Q, double mf, double z1, double z2, double x01sq, double x02sq, double x21sq, double y_u, double y_t) {
     // This version takes advantage of the symmetry.
 
@@ -377,6 +418,7 @@ double ILNLOqg_massive_tripole_part(double Q, double mf, double z1, double z2, d
     double x3_l = sqrt( Sq(z1) / Sq(z1+z2) * x21sq + x02sq - 2.0 * z1/(z1+z2) *x20x21 );
 
 
+
     double term1k = Sq(z1) * ( 2.0*z0 * (z0+z2) + Sq(z2) ) * x02sq / 64.0 * 
                     Sq(G_qg( 1, 2, y_u, y_t, Qbar_k, mf, x2_k, x3_k, omega_k, lambda_k )) ;
 
@@ -391,5 +433,59 @@ double ILNLOqg_massive_tripole_part(double Q, double mf, double z1, double z2, d
 
 
     double res = front_factor * ( term1k + term1l + term2 + term3 );
+    return res;
+}
+
+
+double ILNLOqg_massive_tripole_part_unintegrated(double Q, double mf, double z1, double z2, double x01sq, double x02sq, double x21sq, double y_t1, double y_u1, double y_t2, double y_u2) {
+    // Version for the qg part that should be integrated over 4 variables from 0 to infinity: t_1, u_1, t_2, u_2.
+    // This is the part of qg that is proportional to the tripole amplitude N_012.
+    // The variables y_i are to be integrated over 0 to 1. The Jacobian from the change of variables u_i, t_i -> y_ti, y_ui has been taken into account.
+
+    double front_factor = 4.0*Sq(Q);
+
+    double z0 = 1.0 - z1 - z2;
+    double x20x21 = -0.5*(x01sq - x21sq - x02sq);
+
+    double Qbar_k = Q*sqrt(z1*(1.0-z1));
+    double Qbar_l = Q*sqrt(z0*(1.0-z0));
+    double omega_k = z0*z2/(z1*Sq(z0+z2));
+    double omega_l = z1*z2/(z0*Sq(z1+z2));
+    double lambda_k = z1*z2/z0;
+    double lambda_l = z0*z2/z1;
+
+    double x2_k = sqrt(x02sq);
+    double x2_l = sqrt(x21sq);
+    double x3_k = sqrt( Sq(z0) / Sq(z0+z2) * x02sq + x21sq - 2.0 * z0/(z0+z2) *x20x21 );
+    double x3_l = sqrt( Sq(z1) / Sq(z1+z2) * x21sq + x02sq - 2.0 * z1/(z1+z2) *x20x21 );
+
+
+
+    double jacobian = 1/Sq(y_t1*y_u1*y_t2*y_u2 );
+    double t1 = (1.0-y_t1)/y_t1;
+    double t2 = (1.0-y_t2)/y_t2;
+    double u1 = (1.0-y_u1)/y_u1;
+    double u2 = (1.0-y_u2)/y_u2;
+
+    double g_k_1 = exp( -u1*(Sq(Qbar_k)+Sq(mf)) - Sq(x3_k)/(4.0*u1) - lambda_k * omega_k * t1* Sq(mf) - x02sq / (4.0*t1) );
+    double g_k_2 = exp( -u2*(Sq(Qbar_k)+Sq(mf)) - Sq(x3_k)/(4.0*u2) - lambda_k * omega_k * t2* Sq(mf) - x02sq / (4.0*t2) );
+    double g_l_1 = exp( -u1*(Sq(Qbar_l)+Sq(mf)) - Sq(x3_l)/(4.0*u1) - lambda_l * omega_l * t1* Sq(mf) - x21sq / (4.0*t1) );
+    double g_l_2 = exp( -u2*(Sq(Qbar_l)+Sq(mf)) - Sq(x3_l)/(4.0*u2) - lambda_l * omega_l * t2* Sq(mf) - x21sq / (4.0*t2) );
+
+
+
+    double theta_k_1 = u1 / omega_k - t1 ? 1.0 : 0.0;
+    double theta_k_2 = u2 / omega_k - t2 ? 1.0 : 0.0;
+    double theta_l_1 = u1 / omega_l - t1 ? 1.0 : 0.0;
+    double theta_l_2 = u2 / omega_l - t2 ? 1.0 : 0.0;
+
+
+    double term1k = theta_k_1 * theta_k_2 *  Sq(z1) * ( 2.0*z0 * (z0+z2) + Sq(z2) ) * x02sq / 64.0 / ( u1*u2*Sq(t1)*Sq(t2) ) * g_k_1 * g_k_2;
+    double term1l = theta_l_1 * theta_l_2 * Sq(z0) * ( 2.0*z1 * (z1+z2) + Sq(z2) ) * x21sq / 64.0 / ( u1*u2*Sq(t1)*Sq(t2) ) * g_l_1 * g_l_2;
+    double term2 = -theta_k_1 * theta_l_2 * 1.0/32.0 * z1*z0 * (  z0*(1.0-z0) + z1*(1-z1) )* x20x21 / ( u1*u2*Sq(t1)*Sq(t2) ) * g_k_1 * g_l_2 ;
+    double term3 = Sq(mf)/16.0 * Sq(z2)*Sq(z2) / (u1*u2*t1*t2) * ( z1/(z0+z2) * theta_k_1 *  g_k_1 - z0/(z1+z2) * theta_l_1 *  g_l_1 ) * ( z1/(z0+z2) * theta_k_2 *  g_k_2 - z0/(z1+z2) * theta_l_2 * g_l_2 ) ;
+
+
+    double res = front_factor * jacobian *  ( term1k + term1l + term2 + term3 );
     return res;
 }

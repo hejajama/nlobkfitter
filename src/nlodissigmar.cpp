@@ -1981,8 +1981,10 @@ int integrand_ILqgunsub_massive(const int *ndim, const double x[], const int *nc
     double x01=nlodis_config::MAXR*x[2];
     double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
-    double y_u = x[5];
-    double y_t = x[6];
+    double y_t1 = x[5];
+    double y_u1 = x[6];
+    double y_t2 = x[7];
+    double y_u2 = x[8];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
@@ -2000,8 +2002,8 @@ int integrand_ILqgunsub_massive(const int *ndim, const double x[], const int *nc
     double alphabar=Optr->Alphabar_QG( &alphasdata );
     double alphfac=alphabar*CF/Nc;
 
-    double dipole_term  = SKernel_dipole  * ILNLOqg_massive_dipole_part(Q,mf,z1,z2,x01sq,x02sq,x21sq); // Terms proportional to N_01
-    double tripole_term = SKernel_tripole * ILNLOqg_massive_tripole_part(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_u,y_t); // Terms proportional to N_012
+    double dipole_term  = SKernel_dipole  * ILNLOqg_massive_dipole_part_unintegrated(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_t1,y_u1,y_t2,y_u2); // Terms proportional to N_01
+    double tripole_term = SKernel_tripole * ILNLOqg_massive_tripole_part_unintegrated(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_t1,y_u1,y_t2,y_u2); // Terms proportional to N_012
 
     double res =   jac*alphfac*( dipole_term + tripole_term )/z2*x01*x02;
 
