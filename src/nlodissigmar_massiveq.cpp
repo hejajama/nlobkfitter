@@ -182,7 +182,7 @@ double ILdip_massive_LiLogConst(double Q, double z1, double x01sq, double mf) {
         dip_res = 0;
     }else{
         dip_res = 4.0*Sq(Q)*Sq(z1)*Sq(1.0-z1)*Sq(gsl_sf_bessel_K0( bessel_inner_fun )) * 
-        ( 5.0/2.0 - Sq(M_PI)/6.0 + 1.0/2.0 * Sq(log( z1/(1.0-z1) )) + OmegaL_V(Q,z1,mf) + L_dip(Q,z1,mf) );
+        ( 5.0/2.0 - Sq(M_PI)/3.0 + Sq(log( z1/(1.0-z1) )) + OmegaL_V(Q,z1,mf) + L_dip(Q,z1,mf) );
     }   
 
     return dip_res;
