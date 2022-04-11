@@ -49,7 +49,8 @@ void ErrHandlerCustom(const char * reason,
 
     if (gsl_errno == 11) return; // ignore max subdivision errors
     if (gsl_errno == 18) return; // roundoff errors from small r?
-    // if (gsl_errno == 15 or gsl_errno == 16) return;
+    if (gsl_errno == 15) return; // underflow // safe to ignore?
+    // if (gsl_errno == 16) return; // overflow
     // Ugly hack, comes from the edges of the z integral in virtual_photon.cpp
     // Overflows come from IPsat::bint when it is done analytically
     // Hope is that these errors are handled correctly everywhere
@@ -64,10 +65,11 @@ int main( int argc, char* argv[] )
 
     // NLO DIS SIGMA_R COMPUTATION CONFIGS
     nlodis_config::USE_MASSES = true;
+    // nlodis_config::USE_MASSES = false;
 
-    nlodis_config::CUBA_EPSREL = 10e-3;
-    //nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
-    nlodis_config::CUBA_MAXEVAL = 1e7;
+    nlodis_config::CUBA_EPSREL = 2e-3;
+    // nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
+    nlodis_config::CUBA_MAXEVAL = 40e7;
     //nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
     //nlodis_config::MINR = 1e-6;
     nlodis_config::MINR = 1e-6;
@@ -76,7 +78,8 @@ int main( int argc, char* argv[] )
     bool useNLO = true;
     bool computeNLO = useNLO;
     // string cubaMethod = "vegas";
-    string cubaMethod = "suave";
+    // string cubaMethod = "suave";
+    string cubaMethod = "divonne";
 
     config::NO_K2 = true;  // Do not include numerically demanding full NLO part
     config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
@@ -356,33 +359,33 @@ int main( int argc, char* argv[] )
 
     AmplitudeLib* DipoleAmplitude_ptr; // Forward declaration of the dipole object to be initialized from a file or solved data.
     string dipole_basename = "./out/dipoles/dipole";
-    // string dipole_filename = dipole_basename
-    //                          + "_" + string_bk
-    //                          + "_" + string_rc
-    //                          + "_x0bk" + std::to_string(icx0_bk)
-    //                          + "_qs0sqr" + std::to_string(qs0sqr)
-    //                          + "_asC^2" + std::to_string(alphas_scaling)
-    //                          + "_gamma" + std::to_string(anomalous_dimension)
-    //                          + "_ec" + std::to_string(e_c)
-    //                          + "_eta0" + std::to_string(eta0)
-    //                          + "_maxy" + std::to_string(maxy)
-    //                          + "_euler" + std::to_string(config::EULER_METHOD)
-    //                          + "_step" + std::to_string(config::DE_SOLVER_STEP)
-    //                          + "_rpoints" + std::to_string(config::RPOINTS)
-    //                          + "_rminmax" + std::to_string(config::MINR) + "--" + std::to_string(config::MAXR)
-    //                          + "_intacc" + std::to_string(config::INTACCURACY) ;
-    //
-    // generate publishable filenames
-    string bk_name = (string_bk == "trbk") ? "tbk" : string_bk;
-    string rc_name = (string_rc == "sdrc") ? "bal+sd" : "parent";
-    string Y0_valu = (icx0_bk == 1.0) ? "0.00" : std::to_string((int)(std::log(1./icx0_bk) * 100 + .5) / 100.0);
-    Y0_valu.erase(Y0_valu.find_last_of(".") + 3, std::string::npos);
     string dipole_filename = dipole_basename
-                             + "-" + bk_name
-                             + "-" + dataname
-                             + "-" + rc_name
-                             + "-" + Y0_valu
-                             + ".dip";
+                             + "_" + string_bk
+                             + "_" + string_rc
+                             + "_x0bk" + std::to_string(icx0_bk)
+                             + "_qs0sqr" + std::to_string(qs0sqr)
+                             + "_asC^2" + std::to_string(alphas_scaling)
+                             + "_gamma" + std::to_string(anomalous_dimension)
+                             + "_ec" + std::to_string(e_c)
+                             + "_eta0" + std::to_string(eta0)
+                             + "_maxy" + std::to_string(maxy)
+                             + "_euler" + std::to_string(config::EULER_METHOD)
+                             + "_step" + std::to_string(config::DE_SOLVER_STEP)
+                             + "_rpoints" + std::to_string(config::RPOINTS)
+                             + "_rminmax" + std::to_string(config::MINR) + "--" + std::to_string(config::MAXR)
+                             + "_intacc" + std::to_string(config::INTACCURACY) ;
+    
+    // generate publishable filenames
+    // string bk_name = (string_bk == "trbk") ? "tbk" : string_bk;
+    // string rc_name = (string_rc == "sdrc") ? "bal+sd" : "parent";
+    // string Y0_valu = (icx0_bk == 1.0) ? "0.00" : std::to_string((int)(std::log(1./icx0_bk) * 100 + .5) / 100.0);
+    // Y0_valu.erase(Y0_valu.find_last_of(".") + 3, std::string::npos);
+    // string dipole_filename = dipole_basename
+    //                          + "-" + bk_name
+    //                          + "-" + dataname
+    //                          + "-" + rc_name
+    //                          + "-" + Y0_valu
+    //                          + ".dip";
     if (FILE *file = fopen(dipole_filename.c_str(), "r")) {
         cout << "# Previously saved dipole file found: " << dipole_filename << endl;
         DipoleAmplitude_ptr = new AmplitudeLib(dipole_filename);      // read data from existing file.
@@ -396,6 +399,12 @@ int main( int argc, char* argv[] )
     // solver.GetDipole()->Save("./out/dipoles/dipole_lobk_fc_RK_step0.2_rpoints100_rmin1e-6rmax50_INTACC10e-3.dat");
     // cout << "Saved dipole to file, exiting." << endl;
     // exit(0);
+
+    // Just solve dipole everytime:
+    // solver.Solve(maxy);     // Solve up to maxy since specified dipole datafile was not found.
+    // solver.GetDipole()->Save(dipole_filename);
+    // cout << "# Saved dipole to file: "<< dipole_filename << endl;
+    // DipoleAmplitude_ptr = new AmplitudeLib(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
 
     // Give solution to the AmplitudeLib object
     // AmplitudeLib DipoleAmplitude(solver.GetDipole()->GetData(), solver.GetDipole()->GetYvals(), solver.GetDipole()->GetRvals());
@@ -515,21 +524,23 @@ int main( int argc, char* argv[] )
     double icQ = 1.0;
     //double icx0 = icx0_bk;
     double icx0 = 0.01;
-    double qmass = qMass_light;
+    // double qmass = 0.0;
+    double qmass = 1e-3;
+    // double qmass = qMass_light;
 
     std::vector< std::tuple<int, int> > coordinates;
 
     // #pragma omp parallel for collapse(2)
     // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
     // for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
-    for (int i=0; i<=20; i+=5)  // Q^2 in [1,100]
+    for (int i=0; i<=15; i+=5)  // Q^2 in [1,100]
     // for (int i=10; i<=20; i+=11)  // Q^2 = 10
     // for (int i=0; i<=1; i++)
     {
         // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
         //for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
-        // for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
-        for (int j=1; j<=9; j+=8)      // xbj = {~1e-2, ~1e-4} // LHEC predictions for x0bk=0.01
+        for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
+        // for (int j=1; j<=9; j+=8)      // xbj = {~1e-2, ~1e-4} // LHEC predictions for x0bk=0.01
         // for (int j=2; j<=8; j+=2)  // xbj = {1e-6} // LHEC predictions for x0bk=0.01
         // for (int j=0; j<=1; j++)
         {
@@ -554,6 +565,8 @@ int main( int argc, char* argv[] )
         // cout << "Q=" << Q << ", xbj=" << xbj << endl;
         
         double FL_IC=0, FL_LO=0, FL_dip=0, FL_qg=0, FL_sigma3=0;
+        double FL_ICm=0, FL_LOm=0, FL_dipm=0, FL_qgm=0, FL_sigma3m=0;
+        double ratL_IC=0, ratL_LO=0, ratL_dip=0, ratL_qg=0, ratL_sig3=0;
         double FT_IC=0, FT_LO=0, FT_dip=0, FT_qg=0, FT_sigma3=0;
         int calccount=0;
         if (!computeNLO && !useMasses) // Compute reduced cross section using leading order impact factors
@@ -594,15 +607,45 @@ int main( int argc, char* argv[] )
                 FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
                 FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
                 ++calccount;}
+            // if (!useBoundLoop && useMasses){ // the old way, no z2 lower bound in dipole loop term.
+            //     FL_IC = SigmaComputer.Structf_LLO_massive(Q,icx0_bk,qmass);
+            //     FT_IC = SigmaComputer.Structf_TLO_massive(Q,icx0_bk,qmass);
+            //     FL_LO = SigmaComputer.Structf_LLO_massive(Q,xbj,qmass);
+            //     FT_LO = SigmaComputer.Structf_TLO_massive(Q,xbj,qmass);
+            //     FL_dip = SigmaComputer.Structf_LNLOdip_massive(Q,xbj,qmass);
+            //     // FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
+            //     FL_qg  = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qmass);
+            //     // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+            //     ++calccount;}
             if (!useBoundLoop && useMasses){ // the old way, no z2 lower bound in dipole loop term.
-                FL_IC = SigmaComputer.Structf_LLO_massive(Q,icx0_bk,qmass);
-                FT_IC = SigmaComputer.Structf_TLO_massive(Q,icx0_bk,qmass);
-                FL_LO = SigmaComputer.Structf_LLO_massive(Q,xbj,qmass);
-                FT_LO = SigmaComputer.Structf_TLO_massive(Q,xbj,qmass);
-                FL_dip = SigmaComputer.Structf_LNLOdip_massive(Q,xbj,qmass);
+                FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
+                FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
+                FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+                FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
+                FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
                 // FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
-                FL_qg  = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qmass);
-                // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+                FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
+                // // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+                // // cout << "massless done." << endl;
+
+                FL_ICm = SigmaComputer.Structf_LLO_massive(Q,icx0_bk,qmass);
+                // FT_ICm = SigmaComputer.Structf_TLO_massive(Q,icx0_bk,qmass);
+                FL_LOm = SigmaComputer.Structf_LLO_massive(Q,xbj,qmass);
+                // FT_LOm = SigmaComputer.Structf_TLO_massive(Q,xbj,qmass);
+                // cout << "LO massive done." << endl;
+
+                FL_dipm = SigmaComputer.Structf_LNLOdip_massive(Q,xbj,qmass);
+                // FT_dipm = SigmaComputer.Structf_TNLOdip(Q,xbj);
+                // cout << "NLO dip massive done." << endl;
+
+                FL_qgm = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qmass);
+                // FT_qgm  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+                // cout << "NLO qg massive done." << endl;
+
+                ratL_IC = FL_ICm / FL_IC;
+                ratL_LO = FL_LOm / FL_LO;
+                ratL_dip = FL_dipm / FL_dip;
+                ratL_qg = FL_qgm / FL_qg;
                 ++calccount;}
             if (useSigma3){
                 FL_sigma3 = SigmaComputer.Structf_LNLOsigma3(Q,xbj);
@@ -657,21 +700,38 @@ int main( int argc, char* argv[] )
                 << setw(15) << sigma02*(FT_IC + FT_dip + FT_qg)    << " "
                 << endl;
                 }
+        // if(true && useMasses){
+        // #pragma omp critical
+        // cout    << setw(15) << xbj                  << " "
+        //         << setw(15) << Q*Q                  << " "
+        //         << setw(15) << qmass                << " "
+        //         << setw(15) << sigma02*FL_IC        << " "
+        //         << setw(15) << sigma02*FL_LO        << " "
+        //         << setw(15) << sigma02*FL_dip       << " "
+        //         << setw(15) << sigma02*FL_qg        << " "
+        //         << setw(15) << sigma02*(FL_IC + FL_dip + FL_qg)    << " "
+        //         << setw(15) << sigma02*FT_IC        << " "
+        //         << setw(15) << sigma02*FT_LO        << " "
+        //         << setw(15) << sigma02*FT_dip       << " "
+        //         << setw(15) << sigma02*FT_qg        << " "
+        //         << setw(15) << sigma02*(FT_IC + FT_dip + FT_qg)    << " "
+        //         << endl;
+        //         }
         if(true && useMasses){
         #pragma omp critical
         cout    << setw(15) << xbj                  << " "
                 << setw(15) << Q*Q                  << " "
                 << setw(15) << qmass                << " "
-                << setw(15) << sigma02*FL_IC        << " "
-                << setw(15) << sigma02*FL_LO        << " "
-                << setw(15) << sigma02*FL_dip       << " "
-                << setw(15) << sigma02*FL_qg        << " "
-                << setw(15) << sigma02*(FL_IC + FL_dip + FL_qg)    << " "
-                << setw(15) << sigma02*FT_IC        << " "
-                << setw(15) << sigma02*FT_LO        << " "
-                << setw(15) << sigma02*FT_dip       << " "
-                << setw(15) << sigma02*FT_qg        << " "
-                << setw(15) << sigma02*(FT_IC + FT_dip + FT_qg)    << " "
+                << setw(15) << ratL_IC        << " "
+                << setw(15) << ratL_LO        << " "
+                << setw(15) << ratL_dip       << " "
+                << setw(15) << ratL_qg        << " "
+                << setw(15) << (FL_ICm + FL_dipm + FL_qgm)/(FL_IC + FL_dip + FL_qg)    << " "
+                // << setw(15) << sigma02*FT_IC        << " "
+                // << setw(15) << sigma02*FT_LO        << " "
+                // << setw(15) << sigma02*FT_dip       << " "
+                // << setw(15) << sigma02*FT_qg        << " "
+                // << setw(15) << sigma02*(FT_IC + FT_dip + FT_qg)    << " "
                 << endl;
                 }
     }

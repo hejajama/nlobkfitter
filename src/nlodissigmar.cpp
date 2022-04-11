@@ -238,6 +238,7 @@ double ComputeSigmaR::Structf_LNLOdip_massive ( double Q , double xbj, double m_
     double iab = LNLOdip_massive_Iab(Q, xbj, m_f);
     double icd = LNLOdip_massive_Icd(Q, xbj, m_f);
 
+    // cout << "LNLOdip raw lilog iab icd: " << lilogconst << " " << iab << " " << icd << endl;
     double FL = fac*(lilogconst + iab + icd);
     return FL;
 }
@@ -686,7 +687,7 @@ void Cuba(string method, int ndim, integrand_t integrand,
     if(ndim==1) ndim=2;
     // Divonne-specific arguments
     int key1=1*47, key2=1, key3=1, maxpass=5, ngiven=0, nextra=0;
-    double border=1e-6, maxchisq=10, mindeviation=0.25;
+    double border=1e-8, maxchisq=10, mindeviation=0.25;
     Divonne(ndim,ncomp,integrand,userdata,nvec,nlodis_config::CUBA_EPSREL,
         cuba_config::epsabs,cuba_config::verbose,seed,mineval,
         nlodis_config::CUBA_MAXEVAL,key1,key2,key3,maxpass,border,maxchisq,
@@ -712,6 +713,7 @@ void Cuba(string method, int ndim, integrand_t integrand,
 // HELPERS
 double ComputeSigmaR::Sr(double r, double x) {
     double Srx;//, Nrx;
+    // cout << "Sr r x: " << r << " " << x << endl;
     if(r<nlodis_config::MINR){
         Srx = 1.;
     }else if(r>nlodis_config::MAXR-1e-7){
@@ -1277,8 +1279,8 @@ double ComputeSigmaR::LLOp_massive(double Q, double x, double mf) {
     userdata.qMass=mf;
     userdata.ComputerPtr=this;
 
-    // double ef = sumef;
-    double ef = 1; // fractional charges need to be summed over after individual cross sections!
+    double ef = sumef;
+    // double ef = 1; // fractional charges need to be summed over after individual cross sections!
 
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*ef;
     Cuba(cubamethod,ndim,integrand_ILLOpMass,&userdata,&integral,&error,&prob);
@@ -1385,8 +1387,8 @@ double ComputeSigmaR::TLOp_massive(double Q, double x, double mf) {
     userdata.qMass = mf;
     userdata.ComputerPtr=this;
 
-    // double ef = sumef;
-    double ef = 1; // fractional charges need to be summed over after individual cross sections!
+    double ef = sumef;
+    // double ef = 1; // fractional charges need to be summed over after individual cross sections!
 
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*ef;
     Cuba(cubamethod,ndim,integrand_ITLOpMass,&userdata,&integral,&error,&prob);
@@ -1991,6 +1993,12 @@ int integrand_ILqgunsub_massive(const int *ndim, const double x[], const int *nc
     double jac=(1.0-z2min)*(1.0-z1-z2min);
     double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
 
+    if (isnan(x01) or isnan(x02) or isnan(sqrt(x21sq))){
+        cout << x01 << " " << Xrpdt << " " << x02 << " " << Xrpdt << " " << sqrt(x21sq) << " " << Xrpdt << endl; 
+        cout << x[0] << " " << x[1] << " " << x[2] << " " << x[3] << " " << x[4] << " " << x[5] << " " << x[6] << " " << x[7] << " " << x[8] << endl;
+        *f=0;
+        return 0;
+    }
     double SKernel_dipole = 1.0 - Optr->Sr(x01,Xrpdt);
     double SKernel_tripole = 1.0 - Optr->SrTripole(x01,Xrpdt,x02,Xrpdt,sqrt(x21sq),Xrpdt);
 
@@ -2057,8 +2065,8 @@ double ComputeSigmaR::LNLOdip_massive_Icd(double Q, double x, double mf) {
 
 double ComputeSigmaR::LNLOqgunsub_massive(double Q, double x, double mf) {
     double integral, error, prob;
-    // const int ndim=5; // 5 + 2 deterministic cuhre dimensions from G_qg evaluated inside the integral
-    const int ndim=7; // MC full phase space
+    // const int ndim=5; // 5 + 2*2 deterministic cuhre dimensions from G_qg*G_qg evaluated inside the integral
+    const int ndim=9; // MC full phase space
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
     Userdata userdata;
     userdata.Q=Q;

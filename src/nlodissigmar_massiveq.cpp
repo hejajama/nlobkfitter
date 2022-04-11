@@ -345,6 +345,13 @@ double ILNLOqg_massive_dipole_part_unintegrated(double Q, double mf, double z1, 
     double u1 = (1.0-y_u1)/y_u1;
     double u2 = (1.0-y_u2)/y_u2;
 
+    // double intmax = 50.0;
+    // double jacobian = intmax*intmax*intmax*intmax;
+    // double t1 = intmax*y_t1;
+    // double t2 = intmax*y_t2;
+    // double u1 = intmax*y_u1;
+    // double u2 = intmax*y_u2;
+
 
     double gtilde_k_1 = exp( -u1*(Sq(Qbar_k)+Sq(mf)) - x01sq/(4.0*u1) - x02sq / (4.0*t1) );
     double gtilde_k_2 = exp( -u2*(Sq(Qbar_k)+Sq(mf)) - x01sq/(4.0*u2) - x02sq / (4.0*t2) );
@@ -467,6 +474,13 @@ double ILNLOqg_massive_tripole_part_unintegrated(double Q, double mf, double z1,
     double u1 = (1.0-y_u1)/y_u1;
     double u2 = (1.0-y_u2)/y_u2;
 
+    // double intmax = 50.0;
+    // double jacobian = intmax*intmax*intmax*intmax;
+    // double t1 = intmax*y_t1;
+    // double t2 = intmax*y_t2;
+    // double u1 = intmax*y_u1;
+    // double u2 = intmax*y_u2;
+
     double g_k_1 = exp( -u1*(Sq(Qbar_k)+Sq(mf)) - Sq(x3_k)/(4.0*u1) - lambda_k * omega_k * t1* Sq(mf) - x02sq / (4.0*t1) );
     double g_k_2 = exp( -u2*(Sq(Qbar_k)+Sq(mf)) - Sq(x3_k)/(4.0*u2) - lambda_k * omega_k * t2* Sq(mf) - x02sq / (4.0*t2) );
     double g_l_1 = exp( -u1*(Sq(Qbar_l)+Sq(mf)) - Sq(x3_l)/(4.0*u1) - lambda_l * omega_l * t1* Sq(mf) - x21sq / (4.0*t1) );
@@ -474,10 +488,10 @@ double ILNLOqg_massive_tripole_part_unintegrated(double Q, double mf, double z1,
 
 
 
-    double theta_k_1 = u1 / omega_k - t1 ? 1.0 : 0.0;
-    double theta_k_2 = u2 / omega_k - t2 ? 1.0 : 0.0;
-    double theta_l_1 = u1 / omega_l - t1 ? 1.0 : 0.0;
-    double theta_l_2 = u2 / omega_l - t2 ? 1.0 : 0.0;
+    double theta_k_1 = (u1 / omega_k - t1 > 0.0) ? 1.0 : 0.0;
+    double theta_k_2 = (u2 / omega_k - t2 > 0.0) ? 1.0 : 0.0;
+    double theta_l_1 = (u1 / omega_l - t1 > 0.0) ? 1.0 : 0.0;
+    double theta_l_2 = (u2 / omega_l - t2 > 0.0) ? 1.0 : 0.0;
 
 
     double term1k = theta_k_1 * theta_k_2 *  Sq(z1) * ( 2.0*z0 * (z0+z2) + Sq(z2) ) * x02sq / 64.0 / ( u1*u2*Sq(t1)*Sq(t2) ) * g_k_1 * g_k_2;
