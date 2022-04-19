@@ -18,4 +18,9 @@ double ILNLOqg_massive_tripole_part_symm(double Q, double mf, double z1, double 
 double ILNLOqg_massive_dipole_part_unintegrated(double Q, double mf, double z1, double z2, double x01sq, double x02sq, double x21sq, double y_t1, double y_u1, double y_t2, double y_u2);
 double ILNLOqg_massive_tripole_part_unintegrated(double Q, double mf, double z1, double z2, double x01sq, double x02sq, double x21sq, double y_t1, double y_u1, double y_t2, double y_u2);
 
+double ILNLOqg_massive_dipole_part_I1(double Q, double mf, double z1, double z2, double x01sq, double x02sq, double x21sq);
+double ILNLOqg_massive_tripole_part_I1(double Q, double mf, double z1, double z2, double x01sq, double x02sq, double x21sq);
+double ILNLOqg_massive_tripole_part_I2(double Q, double mf, double z1, double z2, double x01sq, double x02sq, double x21sq, double y_t, double y_u);
+double ILNLOqg_massive_tripole_part_I3(double Q, double mf, double z1, double z2, double x01sq, double x02sq, double x21sq, double y_t1, double y_u1, double y_t2, double y_u2);
+
 #endif // _NLODIS_SIGMAR_MASSIVE_H
