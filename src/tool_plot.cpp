@@ -67,19 +67,19 @@ int main( int argc, char* argv[] )
     nlodis_config::USE_MASSES = true;
     // nlodis_config::USE_MASSES = false;
 
-    nlodis_config::CUBA_EPSREL = 2e-3;
+    nlodis_config::CUBA_EPSREL = 1e-3;
     // nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
-    nlodis_config::CUBA_MAXEVAL = 40e7;
+    nlodis_config::CUBA_MAXEVAL = 2e7;
     //nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
     //nlodis_config::MINR = 1e-6;
-    nlodis_config::MINR = 1e-6;
-    nlodis_config::MAXR = 30;
+    nlodis_config::MINR = 1e-8;
+    nlodis_config::MAXR = 50;
     nlodis_config::PRINTDATA = true;
     bool useNLO = true;
     bool computeNLO = useNLO;
     // string cubaMethod = "vegas";
-    // string cubaMethod = "suave";
-    string cubaMethod = "divonne";
+    string cubaMethod = "suave";
+    // string cubaMethod = "divonne";
 
     config::NO_K2 = true;  // Do not include numerically demanding full NLO part
     config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
@@ -92,9 +92,9 @@ int main( int argc, char* argv[] )
     // config::INTACCURACY = 2e-3;
     // config::INTACCURACY = 0.005; // used in the final fits
     //config::MINR = 1e-6;
-    config::MINR = 1e-6;
+    config::MINR = 1e-8;
     //config::MAXR = 30;
-    config::MAXR = 30;
+    config::MAXR = 50;
     //config::RPOINTS = 100;
     config::RPOINTS = 100;
     config::DE_SOLVER_STEP = 0.4; // Rungekutta step

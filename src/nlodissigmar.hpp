@@ -422,6 +422,9 @@ public:
     double LNLOqgunsubRisto(double Q, double x) ;
     double LNLOqgsubRisto(double Q, double x) ;
     double LNLOqgunsub_massive(double Q, double x, double mf) ;
+    double LNLOqgunsub_massive_I1(double Q, double x, double mf) ;
+    double LNLOqgunsub_massive_I2(double Q, double x, double mf) ;
+    double LNLOqgunsub_massive_I3(double Q, double x, double mf) ;
 
 
     // Transverse
@@ -463,6 +466,9 @@ int integrand_ILdip_massive_LiLogConst(const int *ndim, const double x[], const 
 int integrand_ILdip_massive_Iab(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 int integrand_ILdip_massive_Icd(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 int integrand_ILqgunsub_massive(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ILqgunsub_massive_I1(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ILqgunsub_massive_I2(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ILqgunsub_massive_I3(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 
 
 int integrand_ITLOp(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
