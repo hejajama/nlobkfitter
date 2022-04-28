@@ -279,6 +279,8 @@ double ComputeSigmaR::Structf_LNLOqg_unsub_massive ( double Q , double xbj, doub
     double FL_I1 = LNLOqgunsub_massive_I1( Q , xbj, m_f );
     double FL_I2 = LNLOqgunsub_massive_I2( Q , xbj, m_f );
     double FL_I3 = LNLOqgunsub_massive_I3( Q , xbj, m_f );
+
+    cout << "LNLOqg raw I1 I2 I3: " << FL_I1 << " " << FL_I2 << " " << FL_I3 << endl;
     return fac*(FL_I1 + FL_I2 + FL_I3); // FL_tot
 }
 
@@ -2062,7 +2064,7 @@ int integrand_ILqgunsub_massive_I1(const int *ndim, const double x[], const int 
     double dipole_term  = SKernel_dipole  * ILNLOqg_massive_dipole_part_I1(Q,mf,z1,z2,x01sq,x02sq,x21sq); // Terms proportional to N_01
     double tripole_term = SKernel_tripole * ILNLOqg_massive_tripole_part_I1(Q,mf,z1,z2,x01sq,x02sq,x21sq); // Terms proportional to N_012
 
-    double res =   jac*alphfac*( tripole_term )/z2*x01*x02;
+    double res =   jac*alphfac*( dipole_term + tripole_term )/z2*x01*x02;
 
     if(gsl_finite(res)==1){
         *f=res;
