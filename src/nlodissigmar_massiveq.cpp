@@ -525,9 +525,10 @@ double ILNLOqg_massive_tripole_part_I1(double Q, double mf, double z1, double z2
 
     double term_k = 1.0/x02sq * Sq(z1) * ( 2.0*z0*(z0+z2) +Sq(z2) ) * Sq( gsl_sf_bessel_K0( sqrt( Sq(Qbar_k) + Sq(mf) ) *sqrt( Sq(x3_k) + omega_k * x02sq ) )  );
     double term_l = 1.0/x21sq * Sq(z0) * ( 2.0*z1*(z1+z2) +Sq(z2) ) * Sq( gsl_sf_bessel_K0( sqrt( Sq(Qbar_l) + Sq(mf) ) *sqrt( Sq(x3_l) + omega_l * x21sq ) )  );
+    double term_kl = -2.0 * z0 *z1 * ( z0*(1.0-z0) + z1*(1.0-z1) ) * x20x21 / (x02sq * x21sq) * gsl_sf_bessel_K0( sqrt( Sq(Qbar_k) + Sq(mf)) * sqrt(Sq(x3_k) + omega_k * x02sq) ) * gsl_sf_bessel_K0( sqrt( Sq(Qbar_l) + Sq(mf)) * sqrt(Sq(x3_l) + omega_l * x21sq) );
 
 
-    double res = front_factor * ( term_k + term_l );
+    double res = front_factor * ( term_k + term_l + term_kl );
     return res;
 }
 
@@ -537,16 +538,24 @@ double ILNLOqg_massive_dipole_part_I1(double Q, double mf, double z1, double z2,
     // sigma_qg divided into three parts. This part has no additional integrals. Only contains the part proportional to N_01
 
     double front_factor = 4.0*Sq(Q);
+    double x20x21 = -0.5*(x01sq - x21sq - x02sq);
 
     double z0 = 1-z1-z2;
 
     double Qbar_k = Q*sqrt(z1*(1.0-z1));
     double Qbar_l = Q*sqrt(z0*(1.0-z0));
+    double omega_k = z0*z2/(z1*Sq(z0+z2));
+    double omega_l = z1*z2/(z0*Sq(z1+z2));
+    double lambda_k = z1*z2/z0;
+    double lambda_l = z0*z2/z1;
+
+    double x3_k = sqrt( Sq(z0) / Sq(z0+z2) * x02sq + x21sq - 2.0 * z0/(z0+z2) *x20x21 );
+    double x3_l = sqrt( Sq(z1) / Sq(z1+z2) * x21sq + x02sq - 2.0 * z1/(z1+z2) *x20x21 );
+
 
 
     double term_k = -1.0/x02sq * Sq(z1) * ( 2.0*z0*(z0+z2) +Sq(z2) ) * exp( -x02sq / x01sq / exp(M_EULER) ) * Sq( gsl_sf_bessel_K0( sqrt( Sq(Qbar_k) + Sq(mf) ) * sqrt(x01sq) )  );
     double term_l = -1.0/x21sq * Sq(z0) * ( 2.0*z1*(z1+z2) +Sq(z2) ) * exp( -x21sq / x01sq / exp(M_EULER) ) * Sq( gsl_sf_bessel_K0( sqrt( Sq(Qbar_l) + Sq(mf) ) * sqrt(x01sq) )  );
-
 
     double res = front_factor * ( term_k + term_l );
     return res;
@@ -582,9 +591,12 @@ double ILNLOqg_massive_tripole_part_I2(double Q, double mf, double z1, double z2
 
     double term_k = Sq(z1) * ( 2.0*z0*(z0+z2) +Sq(z2) ) * 1.0/(4.0*Sq(t_k)) * 1/(omega_k*Sq(y_u)) * g_bar_k * gsl_sf_bessel_K0( sqrt( Sq(Qbar_k) + Sq(mf) ) *sqrt( Sq(x3_k) + omega_k * x02sq )   );
     double term_l = Sq(z0) * ( 2.0*z1*(z1+z2) +Sq(z2) ) * 1.0/(4.0*Sq(t_l)) * 1/(omega_l*Sq(y_u)) * g_bar_l * gsl_sf_bessel_K0( sqrt( Sq(Qbar_l) + Sq(mf) ) *sqrt( Sq(x3_l) + omega_l * x21sq )   );
+    double term_kl = -1.0/4.0 * z0*z1 * ( z0*(1.0-z0) + z1*(1.0-z1) ) * x20x21 / Sq(y_u) * (
+        1.0/( x21sq * Sq(t_k) * omega_k ) * g_bar_k * gsl_sf_bessel_K0( sqrt( Sq(Qbar_l) + Sq(mf) ) *sqrt( Sq(x3_l) + omega_l * x21sq ))
+        + 1.0/( x02sq * Sq(t_l) * omega_l ) * g_bar_l * gsl_sf_bessel_K0( sqrt( Sq(Qbar_k) + Sq(mf) ) *sqrt( Sq(x3_k) + omega_k * x02sq ))
+    );
 
-
-    double res = front_factor * ( term_k + term_l );
+    double res = front_factor * ( term_k + term_l + term_kl );
     return res;
 }
 
@@ -627,7 +639,7 @@ double ILNLOqg_massive_tripole_part_I3(double Q, double mf, double z1, double z2
 
     double term_k = Sq(z1) * ( 2.0*z0*(z0+z2) +Sq(z2) ) * x02sq/64.0 / ( Sq(t_k1*t_k2 * y_u1 * y_u2 * omega_k) ) *g_bar_k1 * g_bar_k2 ;
     double term_l = Sq(z0) * ( 2.0*z1*(z1+z2) +Sq(z2) ) * x21sq/64.0 / ( Sq(t_l1*t_l2 * y_u1 * y_u2 * omega_l) ) *g_bar_l1 * g_bar_l2 ;
-    double term_kl = -1.0/32.0 * z1*z0 * ( z1*(1.0-z1) + z0*(1.0-z0) ) * x20x21 / ( Sq( t_k1 * t_l2 * y_u1 * y_u2 ) *omega_k * omega_l ) * g_k1 * g_l2;
+    double term_kl = -1.0/32.0 * z1*z0 * ( z1*(1.0-z1) + z0*(1.0-z0) ) * x20x21 / ( Sq( t_k1 * t_l2 * y_u1 * y_u2 ) *omega_k * omega_l ) * g_bar_k1 * g_bar_l2;
     double term_mf = Sq(mf)/16.0 * Sq(z2) * Sq(z2) / ( y_t1 * y_t2 * u1 * u2 * Sq( y_u1 * y_u2 ) ) * (  
         Sq(z1/(z0+z2)) * g_k1 * g_k2 + Sq( z0/(z1+z2) ) * g_l1 * g_l2 - 2.0 * z0/(z1+z2) * z1/(z0+z2) * g_k1 * g_l2
     );
