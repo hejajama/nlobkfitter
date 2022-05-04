@@ -69,12 +69,12 @@ int main( int argc, char* argv[] )
 
     nlodis_config::CUBA_EPSREL = 1e-4;
     // nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
-    nlodis_config::CUBA_MAXEVAL = 10e7;
+    nlodis_config::CUBA_MAXEVAL = 4e8;
     //nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
-    //nlodis_config::MINR = 1e-6;
-    nlodis_config::MINR = 1e-7;
-    // nlodis_config::MAXR = 30;
-    nlodis_config::MAXR = 25;
+    nlodis_config::MINR = 1e-6;
+    // nlodis_config::MINR = 1e-7;
+    nlodis_config::MAXR = 30;
+    // nlodis_config::MAXR = 25;
     nlodis_config::PRINTDATA = true;
     bool useNLO = true;
     bool computeNLO = useNLO;
@@ -302,6 +302,8 @@ int main( int argc, char* argv[] )
     double qMass_s = 0.095; // GeV, literature value
     double qMass_charm = 1.35;
     double qMass_b = 4.180; // GeV, literature value
+    // std::tuple<float, float, float, float, float> qMass_all;
+    double qMasses_tuple [5] = {qMass_u, qMass_d, qMass_s, qMass_charm, qMass_b};
     bool useMasses = nlodis_config::USE_MASSES;
     bool useCharm = false;
 
@@ -526,27 +528,29 @@ int main( int argc, char* argv[] )
     //double icx0 = icx0_bk;
     double icx0 = 0.01;
     // double qmass = 0.0;
-    double qmass = 1e-3;
+    // double qmass = 1e-3;
     // double qmass = qMass_light;
 
-    std::vector< std::tuple<int, int> > coordinates;
+    std::vector< std::tuple<int, int, int> > coordinates;
 
-    // #pragma omp parallel for collapse(2)
-    // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
-    // for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
-    for (int i=0; i<=20; i+=10)  // Q^2 in [1,100]
-    // for (int i=10; i<=20; i+=11)  // Q^2 = 10
-    // for (int i=0; i<=1; i++)
-    {
-        // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
-        //for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
-        for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
-        // for (int j=1; j<=9; j+=8)      // xbj = {~1e-2, ~1e-4} // LHEC predictions for x0bk=0.01
-        // for (int j=2; j<=8; j+=2)  // xbj = {1e-6} // LHEC predictions for x0bk=0.01
-        // for (int j=0; j<=1; j++)
+    for (int k=0; k<5; k+=1){
+        // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
+        // for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
+        // for (int i=0; i<=20; i+=10)  // Q^2 in [1,100]
+        for (int i=1; i<=17; i+=4)  // Q^2 in [1,100]
+        // for (int i=10; i<=20; i+=11)  // Q^2 = 10
+        // for (int i=0; i<=1; i++)
         {
-            if (!((i == 0 or i == 17) or (j == 1 or j == 4 or j == 9 or j == 12 or j == 17))) { continue; }
-            coordinates.emplace_back(i,j);
+            // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
+            //for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
+            for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
+            // for (int j=1; j<=9; j+=8)      // xbj = {~1e-2, ~1e-4} // LHEC predictions for x0bk=0.01
+            // for (int j=2; j<=8; j+=2)  // xbj = {1e-6} // LHEC predictions for x0bk=0.01
+            // for (int j=0; j<=1; j++)
+            {
+                if (!((i == 0 or i == 17) or (j == 1 or j == 4 or j == 9 or j == 12 or j == 17))) { continue; }
+                coordinates.emplace_back(i,j,k);
+            }
         }
     }
 
@@ -555,12 +559,13 @@ int main( int argc, char* argv[] )
     //for (auto co : coordinates)
     // for (auto co = coordinates.begin(); co != coordinates.end(); ++co)
         {
-        int i,j;
-        std::tie(i,j) = coordinates[k];
+        int i,j,l;
+        std::tie(i,j,l) = coordinates[k];
 
         if (j==0 and cubaMethod=="suave"){continue;}
         double Q = 1.0*pow(10,(double)i/20.0);
         double xbj = icx0/pow(10,(double)j/4.0);
+        double qmass = qMasses_tuple[l];
         // double xbj = 0.1/pow(10,(double)j/4.0); // TODO NOTE: modify xbj upper limit for Heikki & Jani F2 testing 
         // #pragma omp critical
         // cout << "Q=" << Q << ", xbj=" << xbj << endl;
@@ -569,6 +574,7 @@ int main( int argc, char* argv[] )
         double FL_ICm=0, FL_LOm=0, FL_dipm=0, FL_qgm=0, FL_sigma3m=0;
         double ratL_IC=0, ratL_LO=0, ratL_dip=0, ratL_qg=0, ratL_sig3=0;
         double FT_IC=0, FT_LO=0, FT_dip=0, FT_qg=0, FT_sigma3=0;
+        double FT_ICm=0, FT_LOm=0, FT_dipm=0, FT_qgm=0, FT_sigma3m=0;
         int calccount=0;
         if (!computeNLO && !useMasses) // Compute reduced cross section using leading order impact factors
         {
@@ -619,34 +625,28 @@ int main( int argc, char* argv[] )
             //     // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
             //     ++calccount;}
             if (!useBoundLoop && useMasses){ // the old way, no z2 lower bound in dipole loop term.
-                FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
-                FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
-                FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
-                FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
-                FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
+                // FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
+                // FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
+                // FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+                // FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
+                // FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
                 // FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
-                FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
-                // // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
-                // // cout << "massless done." << endl;
+                // FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
+                // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
 
                 FL_ICm = SigmaComputer.Structf_LLO_massive(Q,icx0_bk,qmass);
                 // FT_ICm = SigmaComputer.Structf_TLO_massive(Q,icx0_bk,qmass);
                 FL_LOm = SigmaComputer.Structf_LLO_massive(Q,xbj,qmass);
                 // FT_LOm = SigmaComputer.Structf_TLO_massive(Q,xbj,qmass);
-                // cout << "LO massive done." << endl;
-
                 FL_dipm = SigmaComputer.Structf_LNLOdip_massive(Q,xbj,qmass);
                 // FT_dipm = SigmaComputer.Structf_TNLOdip(Q,xbj);
-                // cout << "NLO dip massive done." << endl;
-
                 FL_qgm = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qmass);
                 // FT_qgm  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
-                // cout << "NLO qg massive done." << endl;
 
-                ratL_IC = FL_ICm / FL_IC;
-                ratL_LO = FL_LOm / FL_LO;
-                ratL_dip = FL_dipm / FL_dip;
-                ratL_qg = FL_qgm / FL_qg;
+                // ratL_IC = FL_ICm / FL_IC;
+                // ratL_LO = FL_LOm / FL_LO;
+                // ratL_dip = FL_dipm / FL_dip;
+                // ratL_qg = FL_qgm / FL_qg;
                 ++calccount;}
             if (useSigma3){
                 FL_sigma3 = SigmaComputer.Structf_LNLOsigma3(Q,xbj);
@@ -685,7 +685,7 @@ int main( int argc, char* argv[] )
         }
 
         // Output for plotting
-        if(true && !useMasses){
+        if(!useMasses){
         #pragma omp critical
         cout    << setw(15) << xbj          << " "
                 << setw(15) << Q*Q          << " "
@@ -701,40 +701,40 @@ int main( int argc, char* argv[] )
                 << setw(15) << sigma02*(FT_IC + FT_dip + FT_qg)    << " "
                 << endl;
                 }
+        if(useMasses){
+        #pragma omp critical
+        cout    << setw(15) << xbj                  << " "
+                << setw(15) << Q*Q                  << " "
+                << setw(15) << qmass                << " "
+                << setw(15) << sigma02*FL_ICm        << " "
+                << setw(15) << sigma02*FL_LOm        << " "
+                << setw(15) << sigma02*FL_dipm       << " "
+                << setw(15) << sigma02*FL_qgm        << " "
+                << setw(15) << sigma02*(FL_ICm + FL_dipm + FL_qgm)    << " "
+                << setw(15) << sigma02*FT_ICm        << " "
+                << setw(15) << sigma02*FT_LOm        << " "
+                << setw(15) << sigma02*FT_dipm       << " "
+                << setw(15) << sigma02*FT_qgm        << " "
+                << setw(15) << sigma02*(FT_ICm + FT_dipm + FT_qgm)    << " "
+                << endl;
+                }
         // if(true && useMasses){
         // #pragma omp critical
         // cout    << setw(15) << xbj                  << " "
         //         << setw(15) << Q*Q                  << " "
         //         << setw(15) << qmass                << " "
-        //         << setw(15) << sigma02*FL_IC        << " "
-        //         << setw(15) << sigma02*FL_LO        << " "
-        //         << setw(15) << sigma02*FL_dip       << " "
-        //         << setw(15) << sigma02*FL_qg        << " "
-        //         << setw(15) << sigma02*(FL_IC + FL_dip + FL_qg)    << " "
-        //         << setw(15) << sigma02*FT_IC        << " "
-        //         << setw(15) << sigma02*FT_LO        << " "
-        //         << setw(15) << sigma02*FT_dip       << " "
-        //         << setw(15) << sigma02*FT_qg        << " "
-        //         << setw(15) << sigma02*(FT_IC + FT_dip + FT_qg)    << " "
+        //         << setw(15) << ratL_IC        << " "
+        //         << setw(15) << ratL_LO        << " "
+        //         << setw(15) << ratL_dip       << " "
+        //         << setw(15) << ratL_qg        << " "
+        //         << setw(15) << (FL_ICm + FL_dipm + FL_qgm)/(FL_IC + FL_dip + FL_qg)    << " "
+        //         // << setw(15) << sigma02*FT_IC        << " "
+        //         // << setw(15) << sigma02*FT_LO        << " "
+        //         // << setw(15) << sigma02*FT_dip       << " "
+        //         // << setw(15) << sigma02*FT_qg        << " "
+        //         // << setw(15) << sigma02*(FT_IC + FT_dip + FT_qg)    << " "
         //         << endl;
         //         }
-        if(true && useMasses){
-        #pragma omp critical
-        cout    << setw(15) << xbj                  << " "
-                << setw(15) << Q*Q                  << " "
-                << setw(15) << qmass                << " "
-                << setw(15) << ratL_IC        << " "
-                << setw(15) << ratL_LO        << " "
-                << setw(15) << ratL_dip       << " "
-                << setw(15) << ratL_qg        << " "
-                << setw(15) << (FL_ICm + FL_dipm + FL_qgm)/(FL_IC + FL_dip + FL_qg)    << " "
-                // << setw(15) << sigma02*FT_IC        << " "
-                // << setw(15) << sigma02*FT_LO        << " "
-                // << setw(15) << sigma02*FT_dip       << " "
-                // << setw(15) << sigma02*FT_qg        << " "
-                // << setw(15) << sigma02*(FT_IC + FT_dip + FT_qg)    << " "
-                << endl;
-                }
     }
     // cout << "End was reached." << endl;
     return 0;

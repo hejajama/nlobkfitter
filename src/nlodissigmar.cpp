@@ -280,7 +280,7 @@ double ComputeSigmaR::Structf_LNLOqg_unsub_massive ( double Q , double xbj, doub
     double FL_I2 = LNLOqgunsub_massive_I2( Q , xbj, m_f );
     double FL_I3 = LNLOqgunsub_massive_I3( Q , xbj, m_f );
 
-    cout << "LNLOqg raw I1 I2 I3: " << FL_I1 << " " << FL_I2 << " " << FL_I3 << endl;
+    // cout << "LNLOqg raw I1 I2 I3: " << FL_I1 << " " << FL_I2 << " " << FL_I3 << endl;
     return fac*(FL_I1 + FL_I2 + FL_I3); // FL_tot
 }
 
