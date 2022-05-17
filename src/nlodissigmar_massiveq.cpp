@@ -34,6 +34,133 @@ double OmegaL_V( double Q, double z, double mf ) {
 }
 
 
+double OmegaT_V_unsymmetric( double Q, double z, double mf ) {
+    // The first part of Omega^T_V(gamma; z) function that appears in the transverse NLOdip part.
+    // Omega^T_V(gamma; z) = Omega^T_V_unsymmetric(gamma; z) + Omega^T_V_unsymmetric(gamma; 1-z)
+    double gamma = sqrt( 1.0 + 4.0 * Sq(mf/Q) );
+    double res = (1.0+1.0/(2.0*z)) * ( log(1.0-z) + gamma * log( (1.0+gamma)/(1.0+gamma-2.0*z) ) )
+    - 1.0/(2.0*z) * ( (z + 0.5 ) * (1.0-gamma) + Sq(mf)/Sq(Q) ) * log( ( z*(1.0-z)*Sq(Q)+Sq(mf) )/Sq(mf) ) ;
+
+    return res;
+}
+
+
+double OmegaT_N_unsymmetric( double Q, double z, double mf ) {
+    // The first part of Omega^T_V(gamma; z) function that appears in the transverse NLOdip part.
+    // Omega^T_N(gamma; z) = Omega^T_N_unsymmetric(gamma; z) - Omega^T_N_unsymmetric(gamma; 1-z)
+    double gamma = sqrt( 1.0 + 4.0 * Sq(mf/Q) );
+    double res = (1.0+z-2.0*Sq(z))/z * ( log(1.0-z) + gamma * log( (1.0+gamma)/(1.0+gamma-2.0*z) ) ) 
+    + (1.0-z)/z * ( (0.5+z)*(gamma-1.0) - Sq(mf)/Sq(Q) ) * log(  (z*(1.0-z)*Sq(Q)+Sq(mf))/Sq(mf)) ;
+
+    return res;
+}
+
+
+double IT_V1_unsymmetric( double Q, double z, double mf, double r, double xi ) {
+    // The first part of the unintegrated I^T_V1 function that appears in the transverse NLOdip part.
+    // I^T_V1 = I^T_V1_unsymmetric(z) + I^T_V1_unsymmetric(1-z)
+    // Note that this has to be integrated over xi from 0 to 1.
+
+    double kappa_z = sqrt( z*(1.0-z)*Sq(Q) + Sq(mf) );
+
+    double term1 = 1.0/xi * ( 2.0*log(xi)/(1.0-xi) - (1.0+xi)/2.0 ) * ( sqrt( Sq(kappa_z) + xi/(1.0-xi) * (1.0-z) * Sq(mf)) * gsl_sf_bessel_K1( r*sqrt(Sq(kappa_z) + xi/(1.0-xi) *(1.0-z)* Sq(mf)) ) - kappa_z * gsl_sf_bessel_K1( r*kappa_z ) );
+    double term2 = -( log(xi)/Sq(1.0-xi) + z/(1.0-xi) + z/2.0 ) * (1.0-z)*Sq(mf)/sqrt( Sq(kappa_z) + xi/(1.0-xi) * (1.0-z) *Sq(mf) ) * gsl_sf_bessel_K1( r*sqrt( Sq(kappa_z) + xi/(1.0-xi) * (1.0-z) *Sq(mf) ) );
+
+    double res = term1 + term2;
+
+    return res;
+
+}
+
+
+double IT_VMS1_unsymmetric( double Q, double z, double mf, double r, double xi ) {
+    // The first part of the unintegrated I^T_VMS1 function that appears in the transverse NLOdip part.
+    // I^T_VMS1 = I^T_VMS1_unsymmetric(z) + I^T_VMS1_unsymmetric(1-z)
+    // Note that this has to be integrated over xi from 0 to 1.
+
+    double kappa_z = sqrt( z*(1.0-z)*Sq(Q) + Sq(mf) );
+
+    double term1 = 1.0/xi * (2.0 * log(xi)/(1.0-xi) - (1.0+xi)/(2.0)) * ( gsl_sf_bessel_K0( r*sqrt( Sq(kappa_z) + xi/(1.0-xi) * (1.0-z) *Sq(mf) ) ) - gsl_sf_bessel_K0(r*kappa_z) );
+    double term2 = ( -3.0/2.0 * (1.0-z)/(1.0-xi) + (1.0-z)/2.0 ) * gsl_sf_bessel_K0( r* sqrt(Sq(kappa_z) + xi/(1.0-xi) * (1-z) *Sq(mf)) );
+
+    double res = term1 + term2;
+
+    return res;
+
+}
+
+
+double IT_V2_unsymmetric( double Q, double z, double mf, double r, double y_chi, double y_u ) {
+    // The first part of the unintegrated I^T_V2 function that appears in the transverse NLOdip part.
+    // I^T_V2 = I^T_V2_unsymmetric(z) + I^T_V2_unsymmetric(1-z)
+    // Note that this has to be integrated over y_chi and y_u, both from 0 to 1.
+
+    double chi = z * y_chi;
+    double u = (1.0-y_u)/y_u;
+
+    double kappa_z = sqrt( z*(1.0-z)*Sq(Q) + Sq(mf) );
+    double kappa_chi = sqrt( chi*(1.0-chi)*Sq(Q) + Sq(mf) );
+
+    double term1 = - 1.0/(1.0-chi) * 1.0/(u*(u+1.0)) * Sq(mf)/Sq(kappa_chi) * ( 2.0*chi + Sq(  u/(u+1.0)) * 1.0/z * (z-chi) * (1.0-2.0*chi) ) * ( sqrt(Sq(kappa_z) + u*(1.0-z)/(1.0-chi)*Sq(kappa_chi)) * gsl_sf_bessel_K1(r*sqrt( Sq(kappa_z) + u*(1.0-z)/(1.0-chi)*Sq(kappa_chi) )) - kappa_z *gsl_sf_bessel_K1(r* kappa_z) );
+    double term2 = -1.0/Sq(1.0-chi) * 1.0/(u+1.0) * (z-chi) * ( 1.0 - 2.0*u/(1.0+u)*(z-chi) + Sq(u/(u+1.0)) *1.0/z * Sq(z-chi) ) * Sq(mf)/sqrt( Sq(kappa_z) + u *(1.0-z)/(1.0-chi) * Sq(kappa_chi)) * gsl_sf_bessel_K1( r* sqrt( Sq(kappa_z) + u *(1.0-z)/(1.0-chi) * Sq(kappa_chi) ) );
+
+    double jacobian = z / Sq(y_u);
+
+    double res = jacobian * (term1 + term2);
+
+    return res;
+
+
+}
+double IT_VMS2_unsymmetric( double Q, double z, double mf, double r, double y_chi, double y_u ) {
+    // The first part of the unintegrated I^T_VMS2 function that appears in the transverse NLOdip part.
+    // I^T_VMS2 = I^T_VMS2_unsymmetric(z) + I^T_VMS2_unsymmetric(1-z)
+    // Note that this has to be integrated over y_chi and y_u, both from 0 to 1.
+
+    double chi = z * y_chi;
+    double u = (1.0-y_u)/y_u;
+
+    double kappa_z = sqrt( z*(1.0-z)*Sq(Q) + Sq(mf) );
+    double kappa_chi = sqrt( chi*(1.0-chi)*Sq(Q) + Sq(mf) );
+
+    double term1 = 1.0/(1.0-chi) * 1.0/Sq(u+1.0) * (-z - u/(1.0+u) * (z + u*chi)/z * (chi-(1.0-z))) * gsl_sf_bessel_K0(r * sqrt( Sq(kappa_z) + u*(1.0-z)/(1.0-chi) *Sq(kappa_chi) ));
+    double term2 = 1.0/(u+1.0)/Sq(u+1.0) * ( Sq(kappa_z)/Sq(kappa_chi) * (1.0 + u * chi*(1.0-chi) / ( z*(1.0-z) )) - Sq(mf)/Sq(kappa_chi) * chi/(1.0-chi) * (2.0 *Sq(1.0+u)/u + u/(z*(1.0-z)) *Sq(z-chi) ) ) * ( gsl_sf_bessel_K0( r *sqrt( Sq(kappa_z) + u* (1.0-z)/(1.0-chi) *Sq(kappa_chi)) ) - gsl_sf_bessel_K0(r* kappa_z) );
+
+    double jacobian = z / Sq(y_u);
+
+    double res = jacobian * (term1 + term2);
+
+    return res;
+
+}
+
+
+double IT_N_unsymmetric( double Q, double z, double mf, double r, double y_chi, double y_u ) {
+    // The first part of the unintegrated I^T_N function that appears in the transverse NLOdip part.
+    // I^T_N = I^T_N_unsymmetric(z) - I^T_N_unsymmetric(1-z)
+    // Note that this has to be integrated over y_chi and y_u, both from 0 to 1.
+
+    double chi = z * y_chi;
+    double u = (1.0-y_u)/y_u;
+
+    double kappa_z = sqrt( z*(1.0-z)*Sq(Q) + Sq(mf) );
+    double kappa_chi = sqrt( chi*(1.0-chi)*Sq(Q) + Sq(mf) );
+
+    double term1 = 2.0*(1.0-z)/z * 1.0/Sq(u+1.0)/(u+1.0) * ( (2.0+u)*u*z + Sq(u)*chi ) * sqrt( Sq(kappa_z) + u*(1.0-z)/(1.0-chi) * Sq(kappa_chi) ) * gsl_sf_bessel_K1( r* sqrt( Sq(kappa_z) + u*(1.0-z)/(1.0-chi) *Sq(kappa_chi) ) );
+    double term2 = 2.0*(1.0-z)/z * 1.0/Sq(u+1.0)/(u+1.0) * Sq(mf)/Sq(kappa_chi) * ( z/(1.0-z) + chi/(1.0-chi) * (u-2.0*z-2.0*u*chi) ) * ( sqrt( Sq(kappa_z) + u*(1.0-z)/(1.0-chi)*Sq(kappa_chi)) * gsl_sf_bessel_K1( r * sqrt( Sq(kappa_z) + u*(1.0-z)/(1.0-chi) *Sq(kappa_chi) ) ) - kappa_z * gsl_sf_bessel_K1( r* kappa_z ) );
+
+    double jacobian = z / Sq(y_u);
+
+    double res = jacobian * (term1 + term2);
+
+    return res;
+
+}
+
+
+
+
+
 struct G_qg_params{
     // Parameters for G_qg integration.
     int a, b;
@@ -170,7 +297,7 @@ double G_qg(int a, int b, double y_u, double y_t, double Qbar, double mf, double
 }
 
 
-// --------------------------- INTEGRANDS ---------------------------------
+// --------------------------- LONGITUDINAL INTEGRANDS ---------------------------------
 
 
 double ILdip_massive_LiLogConst(double Q, double z1, double x01sq, double mf) {
@@ -648,3 +775,63 @@ double ILNLOqg_massive_tripole_part_I3(double Q, double mf, double z1, double z2
     double res = front_factor * ( term_k + term_l + term_kl + term_mf );
     return res;
 }
+
+
+
+
+// --------------------------- TRANSVERSE INTEGRANDS ---------------------------------
+
+
+double ITdip_massive_0(double Q, double z1, double x01sq, double mf) {
+
+    double x01 = sqrt( x01sq );
+
+    double kappa_z = sqrt( z1*(1.0-z1)*Sq(Q) + Sq(mf) );
+
+    double term1 = Sq( kappa_z * gsl_sf_bessel_K1( x01 *kappa_z ) ) * ( ( Sq(z1) + Sq(1.0-z1) ) * ( 5.0/2.0 - Sq(M_PI)/3.0 + Sq( log(z1/(1.0-z1)) ) + OmegaT_V_unsymmetric(Q, z1, mf) + OmegaT_V_unsymmetric(Q, 1.0-z1, mf) + L_dip(Q,z1,mf)  ) + (2.0*z1-1.0)/2.0 * (OmegaT_N_unsymmetric(Q, z1, mf)-OmegaT_N_unsymmetric(Q, 1.0-z1, mf) ) );
+    double term2 = Sq( mf * gsl_sf_bessel_K0( x01 *kappa_z ) ) * ( 3.0 -Sq(M_PI)/3.0 + Sq(log(z1/(1.0-z1))) + OmegaT_V_unsymmetric(Q, z1, mf) + OmegaT_V_unsymmetric(Q, 1.0-z1, mf) + L_dip( Q, z1, mf )  );
+
+    double res= term1 + term2;
+
+    return res;
+
+}
+
+
+double ITdip_massive_1(double Q, double z1, double x01sq, double mf, double xi)  {
+    // One additional integral: xi from 0 to 1.
+
+    double x01 = sqrt( x01sq );
+
+    double kappa_z = sqrt( z1*(1.0-z1)*Sq(Q) + Sq(mf) );
+
+    double term1 = kappa_z * gsl_sf_bessel_K1( x01 * kappa_z) * ( Sq(z1) + Sq(1.0-z1) ) * (IT_V1_unsymmetric(Q, z1, mf, x01, xi) + IT_V1_unsymmetric(Q, 1.0-z1, mf, x01, xi) );
+    double term2 = Sq(mf) * gsl_sf_bessel_K0( x01 * kappa_z ) * (IT_VMS1_unsymmetric(Q, z1, mf, x01, xi) + IT_VMS1_unsymmetric(Q, 1.0-z1, mf, x01, xi) );
+
+    double res= term1 + term2;
+
+    return res;
+
+}
+
+double ITdip_massive_2(double Q, double z1, double x01sq, double mf, double y_chi, double y_u) {
+    // Two additional integrals: y_chi and y_u, both from 0 to 1
+
+
+    double x01 = sqrt( x01sq );
+
+    double kappa_z = sqrt( z1*(1.0-z1)*Sq(Q) + Sq(mf) );
+
+    double term1 = kappa_z * gsl_sf_bessel_K1( x01 * kappa_z) * ( 
+        ( Sq(z1) + Sq(1.0-z1) ) * (IT_V2_unsymmetric(Q, z1, mf, x01, y_chi, y_u) + IT_V2_unsymmetric(Q, 1.0-z1, mf, x01, y_chi, y_u) )   
+        +  (2.0*z1-1.0)/2.0 * (IT_N_unsymmetric(Q, z1, mf, x01, y_chi, y_u) - IT_N_unsymmetric(Q, 1.0-z1, mf, x01, y_chi, y_u) ) );
+    double term2 = Sq(mf) * gsl_sf_bessel_K0( x01 * kappa_z ) * (IT_VMS2_unsymmetric(Q, z1, mf, x01, y_chi, y_u) + IT_VMS2_unsymmetric(Q, 1.0-z1, mf, x01, y_chi, y_u) );
+
+    double res= term1 + term2;
+
+    return res;
+
+}
+
+
+
