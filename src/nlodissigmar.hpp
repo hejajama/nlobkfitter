@@ -449,7 +449,6 @@ public:
     double TNLOqgsub(double Q, double x) ;
     double TNLOqgunsubRisto(double Q, double x) ;
     double TNLOqgsubRisto(double Q, double x) ;
-    double TNLOqgunsub_massive_dipoleI0(double Q, double x, double mf) ;
     double TNLOqgunsub_massive_I1(double Q, double x, double mf) ;
     double TNLOqgunsub_massive_I2(double Q, double x, double mf) ;
     double TNLOqgunsub_massive_I3(double Q, double x, double mf) ;

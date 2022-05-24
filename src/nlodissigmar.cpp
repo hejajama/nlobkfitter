@@ -82,14 +82,11 @@ double ComputeSigmaR::SigmarNLOunsub_massive ( double Q , double xbj, double y, 
     double FLic  = Structf_LLO_massive(Q, icX0, q_mass);
     double FTic  = Structf_TLO_massive(Q, icX0, q_mass);
     double FLdip = Structf_LNLOdip_massive(Q, xbj, q_mass);
-    // double FTdip = Structf_TNLOdip_massive(Q, xbj, q_mass); // T MASSIVE TODO
-    double FTdip = 0; // TODO IMPLEMENT
+    double FTdip = Structf_TNLOdip_massive(Q, xbj, q_mass);
     double FLqg  = Structf_LNLOqg_unsub_massive(Q, xbj, q_mass);
-    // double FTqg  = Structf_TNLOqg_unsub_massive(Q, xbj, q_mass); // T MASSIVE TODO
-    double FTqg = 0; // TODO IMPLEMENT
+    double FTqg  = Structf_TNLOqg_unsub_massive(Q, xbj, q_mass);
     double FL = FLic + FLdip + FLqg;
-    // double FT = FTic + FTdip + FTqg;
-    double FT = 0;
+    double FT = FTic + FTdip + FTqg;
     double F2 = FL+FT;
     double fy = Sq(y)/(1+Sq(1-y));
     double sigma = F2 - fy*FL;
@@ -245,11 +242,11 @@ double ComputeSigmaR::Structf_LNLOdip_massive ( double Q , double xbj, double m_
 
 double ComputeSigmaR::Structf_TNLOdip_massive ( double Q , double xbj, double m_f ) {
     double fac = structurefunfac*Sq(Q);
-    double ft_dip_0 = 
-    double ft_dip_1 = 
-    double ft_dip_2 = 
+    double ft_dip_0 = TNLOdip_massive_I1(Q, xbj, m_f);
+    double ft_dip_1 = TNLOdip_massive_I2(Q, xbj, m_f);
+    double ft_dip_2 = TNLOdip_massive_I3(Q, xbj, m_f);
     
-    double FT = fac*
+    double FT = fac*(ft_dip_0 + ft_dip_1 + ft_dip_2);
     return FT;
 }
 
@@ -300,11 +297,14 @@ double ComputeSigmaR::Structf_TNLOqg_unsub ( double Q , double xbj ) {
     return FT;
 }
 
-// double ComputeSigmaR::Structf_TNLOqg_unsub_massive ( double Q , double xbj, double m_f ) {
-//     double fac = structurefunfac*Sq(Q);
-//     double FT = fac*TNLOqgunsub_massive( Q , xbj, m_f );
-//     return FT;
-// }
+double ComputeSigmaR::Structf_TNLOqg_unsub_massive ( double Q , double xbj, double m_f ) {
+    double fac = structurefunfac*Sq(Q);
+    double sig_I1 = TNLOqgunsub_massive_I1(Q, xbj, m_f);
+    double sig_I2 = TNLOqgunsub_massive_I2(Q, xbj, m_f);
+    double sig_I3 = TNLOqgunsub_massive_I3(Q, xbj, m_f);
+    double FT = fac*(sig_I1 + sig_I2 + sig_I3);
+    return FT;
+}
 
 double ComputeSigmaR::Structf_LNLOsigma3 ( double Q , double xbj ) {
     double fac = structurefunfac*Sq(Q);
