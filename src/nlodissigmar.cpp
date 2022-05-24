@@ -243,11 +243,15 @@ double ComputeSigmaR::Structf_LNLOdip_massive ( double Q , double xbj, double m_
     return FL;
 }
 
-// double ComputeSigmaR::Structf_TNLOdip_massive ( double Q , double xbj, double m_f ) {
-//     double fac = structurefunfac*Sq(Q);
-//     double FT = fac*TNLOdip_massive( Q , xbj );
-//     return FT;
-// }
+double ComputeSigmaR::Structf_TNLOdip_massive ( double Q , double xbj, double m_f ) {
+    double fac = structurefunfac*Sq(Q);
+    double ft_dip_0 = 
+    double ft_dip_1 = 
+    double ft_dip_2 = 
+    
+    double FT = fac*
+    return FT;
+}
 
 double ComputeSigmaR::Structf_LNLOdip_z2 ( double Q , double xbj ) {
     double fac = structurefunfac*Sq(Q);
@@ -1998,12 +2002,12 @@ int integrand_ILqgunsub_massive(const int *ndim, const double x[], const int *nc
     double jac=(1.0-z2min)*(1.0-z1-z2min);
     double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
 
-    if (isnan(x01) or isnan(x02) or isnan(sqrt(x21sq))){
-        cout << x01 << " " << Xrpdt << " " << x02 << " " << Xrpdt << " " << sqrt(x21sq) << " " << Xrpdt << endl; 
-        cout << x[0] << " " << x[1] << " " << x[2] << " " << x[3] << " " << x[4] << " " << x[5] << " " << x[6] << " " << x[7] << " " << x[8] << endl;
-        *f=0;
-        return 0;
-    }
+    // if (isnan(x01) or isnan(x02) or isnan(sqrt(x21sq))){
+    //     cout << x01 << " " << Xrpdt << " " << x02 << " " << Xrpdt << " " << sqrt(x21sq) << " " << Xrpdt << endl; 
+    //     cout << x[0] << " " << x[1] << " " << x[2] << " " << x[3] << " " << x[4] << " " << x[5] << " " << x[6] << " " << x[7] << " " << x[8] << endl;
+    //     *f=0;
+    //     return 0;
+    // }
     double SKernel_dipole = 1.0 - Optr->Sr(x01,Xrpdt);
     double SKernel_tripole = 1.0 - Optr->SrTripole(x01,Xrpdt,x02,Xrpdt,sqrt(x21sq),Xrpdt);
 
@@ -2148,12 +2152,12 @@ int integrand_ILqgunsub_massive_I3(const int *ndim, const double x[], const int 
     double jac=(1.0-z2min)*(1.0-z1-z2min);
     double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
 
-    if (isnan(x01) or isnan(x02) or isnan(sqrt(x21sq))){
-        cout << x01 << " " << Xrpdt << " " << x02 << " " << Xrpdt << " " << sqrt(x21sq) << " " << Xrpdt << endl; 
-        cout << x[0] << " " << x[1] << " " << x[2] << " " << x[3] << " " << x[4] << " " << x[5] << " " << x[6] << " " << x[7] << " " << x[8] << endl;
-        *f=0;
-        return 0;
-    }
+    // if (isnan(x01) or isnan(x02) or isnan(sqrt(x21sq))){
+    //     cout << x01 << " " << Xrpdt << " " << x02 << " " << Xrpdt << " " << sqrt(x21sq) << " " << Xrpdt << endl; 
+    //     cout << x[0] << " " << x[1] << " " << x[2] << " " << x[3] << " " << x[4] << " " << x[5] << " " << x[6] << " " << x[7] << " " << x[8] << endl;
+    //     *f=0;
+    //     return 0;
+    // }
     double SKernel_tripole = 1.0 - Optr->SrTripole(x01,Xrpdt,x02,Xrpdt,sqrt(x21sq),Xrpdt);
 
 
@@ -2753,5 +2757,108 @@ double ComputeSigmaR::TNLOqgsubRisto(double Q, double x) {
     Cuba(cubamethod,ndim,integrand_ITqgsubRisto,&userdata,&integral,&error,&prob);
     return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
+
+
+///===========================================================================================
+/// --- TTT ---  NLO  MASSIVE --- TTT ---------------------
+
+double ComputeSigmaR::TNLOdip_massive_I1(double Q, double x, double mf) {
+    double integral, error, prob;
+    const int ndim=2;
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xbj=x;
+    userdata.qMass=mf;
+    userdata.ComputerPtr=this;
+    Cuba(cubamethod,ndim,integrand_ITdip_massive_I1,&userdata,&integral,&error,&prob);
+    return fac*2.0*M_PI*nlodis_config::MAXR*integral;
+}
+
+
+double ComputeSigmaR::TNLOdip_massive_I2(double Q, double x, double mf) {
+    double integral, error, prob;
+    const int ndim=3; // One more integral than in the Li & Log & Const terms
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xbj=x;
+    userdata.qMass=mf;
+    userdata.ComputerPtr=this;
+    Cuba(cubamethod,ndim,integrand_ITdip_massive_I2,&userdata,&integral,&error,&prob);
+    return fac*2.0*M_PI*nlodis_config::MAXR*integral;
+}
+
+double ComputeSigmaR::TNLOdip_massive_I3(double Q, double x, double mf) {
+    double integral, error, prob;
+    const int ndim=4; // Two more integrals than in the Li & Log & Const terms
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xbj=x;
+    userdata.qMass=mf;
+    userdata.ComputerPtr=this;
+    Cuba(cubamethod,ndim,integrand_ITdip_massive_I3,&userdata,&integral,&error,&prob);
+    return fac*2.0*M_PI*nlodis_config::MAXR*integral;
+}
+
+
+// ----- qqbarg contribution -----
+double ComputeSigmaR::TNLOqgunsub_massive_dipoleI0(double Q, double x, double mf) {
+    double integral, error, prob;
+    const int ndim=5; 
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xbj=x;
+    userdata.icX0=icX0;
+    userdata.qMass=mf;
+    userdata.ComputerPtr=this;
+    Cuba(cubamethod,ndim,integrand_ITqgunsub_massive_dipoleI0,&userdata,&integral,&error,&prob);
+    return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+}
+
+double ComputeSigmaR::TNLOqgunsub_massive_I1(double Q, double x, double mf) {
+    double integral, error, prob;
+    const int ndim=5; 
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xbj=x;
+    userdata.icX0=icX0;
+    userdata.qMass=mf;
+    userdata.ComputerPtr=this;
+    Cuba(cubamethod,ndim,integrand_ITqgunsub_massive_tripoleI1,&userdata,&integral,&error,&prob);
+    return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+}
+
+double ComputeSigmaR::TNLOqgunsub_massive_I2(double Q, double x, double mf) {
+    double integral, error, prob;
+    const int ndim=7; // MC 5+2 phase space
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xbj=x;
+    userdata.icX0=icX0;
+    userdata.qMass=mf;
+    userdata.ComputerPtr=this;
+    Cuba(cubamethod,ndim,integrand_ITqgunsub_massive_tripoleI2,&userdata,&integral,&error,&prob);
+    return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+}
+
+double ComputeSigmaR::TNLOqgunsub_massive_I3(double Q, double x, double mf) {
+    double integral, error, prob;
+    const int ndim=9; // MC full 5+2+2 phase space
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xbj=x;
+    userdata.icX0=icX0;
+    userdata.qMass=mf;
+    userdata.ComputerPtr=this;
+    Cuba(cubamethod,ndim,integrand_ITqgunsub_massive_tripoleI3,&userdata,&integral,&error,&prob);
+    return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+}
+
 
 //*/
