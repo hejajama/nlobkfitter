@@ -738,11 +738,11 @@ int main( int argc, char* argv[] )
                 << setw(15) << ratL_dip       << " "
                 << setw(15) << ratL_qg        << " "
                 << setw(15) << (FL_ICm + FL_dipm + FL_qgm)/(FL_IC + FL_dip + FL_qg)    << " "
-                // << setw(15) << sigma02*FT_IC        << " "
-                // << setw(15) << sigma02*FT_LO        << " "
-                // << setw(15) << sigma02*FT_dip       << " "
-                // << setw(15) << sigma02*FT_qg        << " "
-                // << setw(15) << sigma02*(FT_IC + FT_dip + FT_qg)    << " "
+                << setw(15) << ratT_IC        << " "
+                << setw(15) << ratT_LO        << " "
+                << setw(15) << ratT_dip       << " "
+                << setw(15) << ratT_qg        << " "
+                << setw(15) << (FT_ICm + FT_dipm + FT_qgm)/(FT_IC + FT_dip + FT_qg)    << " "
                 << endl;
                 }
     }

@@ -441,11 +441,18 @@ public:
     double TLOp_massive(double Q, double x, double mf) ;
     double TNLOdip(double Q, double x) ;
     double TNLOdip_z2(double Q, double x) ;
+    double TNLOdip_massive_I1(double Q, double x, double mf) ;
+    double TNLOdip_massive_I2(double Q, double x, double mf) ;
+    double TNLOdip_massive_I3(double Q, double x, double mf) ;
     double TNLOqgunsub(double Q, double x) ;
     double TNLOsigma3(double Q, double x) ;
     double TNLOqgsub(double Q, double x) ;
     double TNLOqgunsubRisto(double Q, double x) ;
     double TNLOqgsubRisto(double Q, double x) ;
+    double TNLOqgunsub_massive_dipoleI0(double Q, double x, double mf) ;
+    double TNLOqgunsub_massive_I1(double Q, double x, double mf) ;
+    double TNLOqgunsub_massive_I2(double Q, double x, double mf) ;
+    double TNLOqgunsub_massive_I3(double Q, double x, double mf) ;
 };
 
 
@@ -480,6 +487,13 @@ int integrand_ITsigma3(const int *ndim, const double x[], const int *ncomp,doubl
 int integrand_ITqgsub(const int *ndim, const double x[], const int *ncomp, double *f, void *userdata) ;
 int integrand_ITqgunsubRisto(const int *ndim, const double x[], const int *ncomp, double *f, void *userdata) ;
 int integrand_ITqgsubRisto(const int *ndim, const double x[], const int *ncomp, double *f, void *userdata) ;
+
+int integrand_ITdip_massive_I1(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ITdip_massive_I2(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ITdip_massive_I3(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ITqgunsub_massive_I1(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ITqgunsub_massive_I2(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ITqgunsub_massive_I3(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 
 string PrintVector(vector<double> v);
 
