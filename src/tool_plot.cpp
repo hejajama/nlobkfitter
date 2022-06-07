@@ -303,8 +303,8 @@ int main( int argc, char* argv[] )
     double qMass_charm = 1.35;
     double qMass_b = 4.180; // GeV, literature value
     // std::tuple<float, float, float, float, float> qMass_all;
-    // double qMasses_tuple [5] = {qMass_u, qMass_d, qMass_s, qMass_charm, qMass_b};
-    double qMasses_tuple [1] = {0.001};
+    double qMasses_tuple [5] = {qMass_u, qMass_d, qMass_s, qMass_charm, qMass_b};
+    // double qMasses_tuple [1] = {0.001};
     bool useMasses = nlodis_config::USE_MASSES;
     bool useCharm = false;
 
@@ -534,8 +534,10 @@ int main( int argc, char* argv[] )
 
     std::vector< std::tuple<int, int, int> > coordinates;
 
-    // for (int k=0; k<5; k+=1){
-    for (int k=0; k<1; k+=1){
+    for (int k=0; k<5; k+=1) // real masses
+    // for (int k=0; k<1; k+=1) // one mass bin
+    // for (int k=0; k<10; k+=1) // masses over a range instead of real masses
+    {
         // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
         // for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
         // for (int i=0; i<=20; i+=10)  // Q^2 in [1,100]
@@ -546,6 +548,7 @@ int main( int argc, char* argv[] )
             // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
             //for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
             for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
+            // for (int j=9; j<=10; j+=8)  // xbj = {~1e-4}
             // for (int j=1; j<=9; j+=8)      // xbj = {~1e-2, ~1e-4} // LHEC predictions for x0bk=0.01
             // for (int j=2; j<=8; j+=2)  // xbj = {1e-6} // LHEC predictions for x0bk=0.01
             // for (int j=0; j<=1; j++)
@@ -568,6 +571,8 @@ int main( int argc, char* argv[] )
         double Q = 1.0*pow(10,(double)i/20.0);
         double xbj = icx0/pow(10,(double)j/4.0);
         double qmass = qMasses_tuple[l];
+        // double qmass = 0.;
+        // double qmass = 0.001 + (qMass_b - 0.001)/9.*(double)l; // masses over a range up to bottom mass
         // double xbj = 0.1/pow(10,(double)j/4.0); // TODO NOTE: modify xbj upper limit for Heikki & Jani F2 testing 
         // #pragma omp critical
         // cout << "Q=" << Q << ", xbj=" << xbj << endl;
@@ -629,14 +634,24 @@ int main( int argc, char* argv[] )
             //     ++calccount;}
             if (!useBoundLoop && useMasses){
                 // massless structure functions
-                FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
-                FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
-                FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
-                FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
-                FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
-                FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
-                FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
-                FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+                // FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
+                // FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
+                // FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+                // FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
+                // FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
+                // FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
+                // FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
+                // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+
+                // massless computation for massive data format
+                // FL_ICm = SigmaComputer.Structf_LLO(Q,icx0_bk);
+                // FT_ICm = SigmaComputer.Structf_TLO(Q,icx0_bk);
+                // FL_LOm = SigmaComputer.Structf_LLO(Q,xbj);
+                // FT_LOm = SigmaComputer.Structf_TLO(Q,xbj);
+                // FL_dipm = SigmaComputer.Structf_LNLOdip(Q,xbj);
+                // FT_dipm = SigmaComputer.Structf_TNLOdip(Q,xbj);
+                // FL_qgm  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
+                // FT_qgm  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
 
                 // Massive structure functions
                 FL_ICm = SigmaComputer.Structf_LLO_massive(Q,icx0_bk,qmass);
@@ -648,14 +663,14 @@ int main( int argc, char* argv[] )
                 FL_qgm = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qmass);
                 FT_qgm  = SigmaComputer.Structf_TNLOqg_unsub_massive(Q,xbj,qmass);
 
-                ratL_IC = FL_ICm / FL_IC;
-                ratL_LO = FL_LOm / FL_LO;
-                ratL_dip = FL_dipm / FL_dip;
-                ratL_qg = FL_qgm / FL_qg;
-                ratT_IC = FT_ICm / FT_IC;
-                ratT_LO = FT_LOm / FT_LO;
-                ratT_dip = FT_dipm / FT_dip;
-                ratT_qg = FT_qgm / FT_qg;
+                // ratL_IC = FL_ICm / FL_IC;
+                // ratL_LO = FL_LOm / FL_LO;
+                // ratL_dip = FL_dipm / FL_dip;
+                // ratL_qg = FL_qgm / FL_qg;
+                // ratT_IC = FT_ICm / FT_IC;
+                // ratT_LO = FT_LOm / FT_LO;
+                // ratT_dip = FT_dipm / FT_dip;
+                // ratT_qg = FT_qgm / FT_qg;
                 ++calccount;}
             if (useSigma3){
                 FL_sigma3 = SigmaComputer.Structf_LNLOsigma3(Q,xbj);
@@ -694,7 +709,7 @@ int main( int argc, char* argv[] )
         }
 
         // Output for plotting
-        bool print_ratios = true;
+        bool print_ratios = false;
         if(!useMasses){
         #pragma omp critical
         cout    << setw(15) << xbj          << " "
