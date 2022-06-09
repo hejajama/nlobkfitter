@@ -12,6 +12,7 @@
 std::vector<double> FindOptimalSigma02(std::vector<double> expdata, std::vector<double> experr,
                          std::vector<double> thdata);
 
-
+double minimiser_helper_chisqr_vec(double sigma02, std::vector<double> expdata, std::vector<double> experr,
+                          std::vector<double> thdata);
 
 #endif

@@ -14,6 +14,7 @@ build/
 fit
 fitex
 swarmscan
+massivescan
 tool
 plottool
 lgcy-plottool
@@ -27,5 +28,6 @@ fltool
 .vscode/
 doc/
 out/
+out-mass/
 fits/
 errors/

@@ -371,6 +371,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     double icx0_bk  = par[ parameters.Index("icx0_bk")];
     double initialconditionY0  = par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
+    double old_sigma02 = par[ parameters.Index("old_sigma02")];
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
     double qMass_u = 0.0023; // GeV, literature value
     double qMass_d = 0.0048; // GeV, literature value
@@ -551,7 +552,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
                         // theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_UniformZ2Bound(Q , xbj , y );
                         ++calccount;}
                     if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
-                        theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_massive(Q , xbj , y, qMass_light );
+                        theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_massive(Q , xbj , y, qMass_charm );
                         ++calccount;}
                 }
                 if (!useMasses){
@@ -608,7 +609,9 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     // Minimize sigma02
     std::vector<double> sigma02fit = FindOptimalSigma02(datavals,dataerrs, thdata);
     double chisqr_over_n = sigma02fit[1];
-    double sigma02 = sigma02fit[0];    
+    double sigma02 = sigma02fit[0];
+    // comparing to old sigma02
+    double old_chisq_over_n = minimiser_helper_chisqr_vec(old_sigma02, datavals, dataerrs, thdata);
     // Output for plotting
     if(nlodis_config::PRINTDATA){
         for(int i=0; i<var_xbj.size(); i++){
@@ -628,6 +631,12 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
             << " (N=" << points
             << "), parameters (" << PrintVector(par)
             << ", sigma02=" << sigma02
+            << ")" << endl<<endl;
+    cout    << endl
+            << "# Calculated chi^2/N = " << old_chisq_over_n
+            << " (N=" << points
+            << "), parameters (" << PrintVector(par)
+            << ", sigma02=" << old_sigma02
             << ")" << endl<<endl;
     
 

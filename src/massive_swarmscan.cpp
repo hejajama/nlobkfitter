@@ -48,7 +48,8 @@ void ErrHandlerCustom(const char * reason,
 
     if (gsl_errno == 11) return; // ignore max subdivision errors
     if (gsl_errno == 18) return; // roundoff errors from small r?
-    // if (gsl_errno == 15 or gsl_errno == 16) return;
+    if (gsl_errno == 15) return; // underflow // safe to ignore?
+    // if (gsl_errno == 16) return; // overflow
     // Ugly hack, comes from the edges of the z integral in virtual_photon.cpp
     // Overflows come from IPsat::bint when it is done analytically
     // Hope is that these errors are handled correctly everywhere
@@ -65,16 +66,16 @@ int main( int argc, char* argv[] )
     nlodis_config::USE_MASSES = true;
 
 //     nlodis_config::CUBA_EPSREL = 10e-3;
-    nlodis_config::CUBA_EPSREL = 2e-3; // highacc def1
+    nlodis_config::CUBA_EPSREL = 1e-4; // highacc def1
 //     nlodis_config::CUBA_MAXEVAL= 2e7;
-    nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
+    nlodis_config::CUBA_MAXEVAL= 1e8; // highacc def1
     nlodis_config::MINR = 1e-6;
     nlodis_config::MAXR = 30;
     nlodis_config::PRINTDATA = true;
     bool useNLO = true;
     bool computeNLO = useNLO;
-    // string cubaMethod = "vegas";
-    string cubaMethod = "suave";
+    string cubaMethod = "vegas";
+    // string cubaMethod = "suave";
 
     config::NO_K2 = true;  // Do not include numerically demanding full NLO part
     config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
@@ -102,7 +103,8 @@ int main( int argc, char* argv[] )
     data.SetMinQsqr(0.75);
     data.SetMaxQsqr(50);
     data.SetMaxX(0.01);
-    data.LoadData("./data/hera_II_combined_sigmar_cc.txt", TOTAL); // newer charm data
+    data.LoadData("./data/hera_combined_sigmar_cc.txt", TOTAL); // old charm data
+    // data.LoadData("./data/hera_II_combined_sigmar_cc.txt", TOTAL); // newer charm data
     // data.LoadData("./data/hera_II_combined_sigmar_b.txt", TOTAL); // newer bottom data
     // data.LoadData("./data/hera_combined_sigmar.txt", TOTAL); // older total data
     // data.LoadData("./data/hera_II_combined_sigmar.txt", TOTAL); // newer total data
@@ -220,6 +222,7 @@ int main( int argc, char* argv[] )
 
     int argi=6;
     double icqs0sq, iccsq, icx0_if, icx0_bk, ic_ec, icgamma, icQ0sq, icY0, icEta0;
+    double old_sigma02 = 1.;
     // reading fit initial condition parameters:
     if (argc == argi){
         cout << "Swarmscan needs Q^2, C^2 and gamma IC values at the least!" << endl;
@@ -245,6 +248,7 @@ int main( int argc, char* argv[] )
         icQ0sq    = stod( argv [argi] ); argi++;
         icY0      = stod( argv [argi] ); argi++;
         icEta0    = stod( argv [argi] ); argi++;
+        old_sigma02 = stod( argv [argi] ); argi++;
     }
 
 
@@ -269,6 +273,7 @@ int main( int argc, char* argv[] )
     parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
     parameters.Add("initialconditionY0",    icY0 );
     parameters.Add("eta0", icEta0 );
+    parameters.Add("old_sigma02", old_sigma02 );
 
     NLODISFitter fitter(parameters);
     fitter.AddDataset(data);
@@ -279,9 +284,9 @@ int main( int argc, char* argv[] )
     fitter.UseConsistentlyBoundLoopTerm(useBoundLoop);
     fitter.SetCubaMethod(cubaMethod);
 
-    cout << "=== Perturbative settings ===" << endl;
     cout << std::boolalpha;
     cout    << "# === Perturbative settings ===" << endl
+            << "# Use masses: " << nlodis_config::USE_MASSES << endl
             << "# Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
             << "# Use LOBK (DL,SL==false): " << (!(config::RESUM_DLOG) 
                                     and !(config::RESUM_SINGLE_LOG)) << endl
@@ -321,9 +326,9 @@ int main( int argc, char* argv[] )
     FunctionMinimum min = fit();
     std::cout<<"minimum: "<<min<<std::endl;
 
-    cout << "=== Perturbative settings were ===" << endl;
     cout << std::boolalpha;
     cout    << "# === Perturbative settings ===" << endl
+            << "# Use masses: " << nlodis_config::USE_MASSES << endl
             << "# Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
             << "# Use LOBK (DL,SL==false): " << (!(config::RESUM_DLOG) 
                                     and !(config::RESUM_SINGLE_LOG)) << endl

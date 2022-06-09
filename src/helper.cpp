@@ -49,6 +49,18 @@ double minimiser_helper_chisqr(double sigma02, void* p)
     return sum;
 }
 
+double minimiser_helper_chisqr_vec(double sigma02, std::vector<double> expdata, std::vector<double> experr,
+                          std::vector<double> thdata)
+{
+    double sum=0;
+    for (unsigned int i=0; i< expdata.size(); i++)
+    {
+        sum += std::pow((sigma02*thdata[i]-expdata[i])/experr[i], 2.0)/expdata.size();
+    }
+    //cout << sigma02 << " " << sum << endl;
+    return sum;
+}
+
 std::vector<double> FindOptimalSigma02(std::vector<double> expdata, std::vector<double> experr,
                           std::vector<double> thdata)
 {

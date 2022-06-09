@@ -29,6 +29,9 @@ lightqfitex: $(OBJECTS) src/lightq-fit.o
 swarmscan: $(OBJECTS) src/swarmscan.o src/nlodissigmar.hpp
 	g++ $(OBJECTS) src/swarmscan.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o swarmscan $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
 
+massivescan: $(OBJECTS) src/massive_swarmscan.o src/nlodissigmar.hpp
+	g++ $(OBJECTS) src/massive_swarmscan.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o massivescan $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
+
 lightqscan: $(OBJECTS) src/lightq_scan.o
 	g++ $(OBJECTS) src/lightq_scan.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o lightqscan $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
 
@@ -49,5 +52,5 @@ subunsubtest: $(OBJECTS) src/sub_unsub_test.o
 	g++ $(OBJECTS) src/sub_unsub_test.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o subunsub $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
 
 clean:
-	rm -f $(OBJECTS) $(AMPLITUDELIBO) src/main.o src/toolF2.o src/main_switches.o src/tool_plot.o src/tool_fl.o src/swarmscan.o src/lightq_scan.o src/lightq-fit.o src/sub_unsub_test.o src/lo-fit-plot.o
-	rm -f fit fitex tool plottool fltool swarmscan lightqscan subunsub lightqfitex lofit
+	rm -f $(OBJECTS) $(AMPLITUDELIBO) src/main.o src/toolF2.o src/main_switches.o src/tool_plot.o src/tool_fl.o src/swarmscan.o src/massive_swarmscan.o src/lightq_scan.o src/lightq-fit.o src/sub_unsub_test.o src/lo-fit-plot.o
+	rm -f fit fitex tool plottool fltool swarmscan massivescan lightqscan subunsub lightqfitex lofit
