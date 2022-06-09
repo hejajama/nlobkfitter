@@ -102,8 +102,10 @@ int main( int argc, char* argv[] )
     data.SetMinQsqr(0.75);
     data.SetMaxQsqr(50);
     data.SetMaxX(0.01);
-    data.LoadData("./data/hera_combined_sigmar.txt", TOTAL);
-    // data.LoadData("./data/hera_II_combined_sigmar.txt", TOTAL);
+    data.LoadData("./data/hera_II_combined_sigmar_cc.txt", TOTAL); // newer charm data
+    // data.LoadData("./data/hera_II_combined_sigmar_b.txt", TOTAL); // newer bottom data
+    // data.LoadData("./data/hera_combined_sigmar.txt", TOTAL); // older total data
+    // data.LoadData("./data/hera_II_combined_sigmar.txt", TOTAL); // newer total data
 
     MnUserParameters parameters;
 
