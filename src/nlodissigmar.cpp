@@ -552,6 +552,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
                         // theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_UniformZ2Bound(Q , xbj , y );
                         ++calccount;}
                     if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
+                        cout << "This should be in use???" << "charm mass is: " << qMass_charm << endl;
                         theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_massive(Q , xbj , y, qMass_charm );
                         ++calccount;}
                 }
@@ -1198,7 +1199,24 @@ struct Userdata{
 };
 
 
+double sumef_from_mass(double mf){
 
+    double sumef; // \sum_f e_f^2
+    if (mf == 0) {
+        sumef = 6.0/9.0; // light quarks uds only.
+    } else if (mf == 0.0023) {
+        sumef = 4.0/9.0;
+    } else if (mf == 0.0048) {
+        sumef = 1.0/9.0;
+    } else if (mf == 0.095) {
+        sumef = 1.0/9.0;
+    } else if (mf == 1.35) {
+        sumef = 4.0/9.0;
+    } else if (mf == 4.180) {
+        sumef = 1.0/9.0;
+    }
+    return sumef;
+}
 
 ///===========================================================================================
 ///===========================================================================================
@@ -1297,8 +1315,7 @@ double ComputeSigmaR::LLOp_massive(double Q, double x, double mf) {
     userdata.qMass=mf;
     userdata.ComputerPtr=this;
 
-    double ef = sumef;
-    // double ef = 1; // fractional charges need to be summed over after individual cross sections!
+    double ef = sumef_from_mass(mf);
 
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*ef;
     Cuba(cubamethod,ndim,integrand_ILLOpMass,&userdata,&integral,&error,&prob);
@@ -1405,8 +1422,7 @@ double ComputeSigmaR::TLOp_massive(double Q, double x, double mf) {
     userdata.qMass = mf;
     userdata.ComputerPtr=this;
 
-    double ef = sumef;
-    // double ef = 1; // fractional charges need to be summed over after individual cross sections!
+    double ef = sumef_from_mass(mf);
 
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*ef;
     Cuba(cubamethod,ndim,integrand_ITLOpMass,&userdata,&integral,&error,&prob);
@@ -2194,7 +2210,7 @@ int integrand_ILqgunsub_massive_I3(const int *ndim, const double x[], const int 
 double ComputeSigmaR::LNLOdip_massive_LiLogConst(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=2;
-    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
@@ -2208,7 +2224,7 @@ double ComputeSigmaR::LNLOdip_massive_LiLogConst(double Q, double x, double mf) 
 double ComputeSigmaR::LNLOdip_massive_Iab(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=3; // One more integral than in the Li & Log & Const terms
-    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
@@ -2221,7 +2237,7 @@ double ComputeSigmaR::LNLOdip_massive_Iab(double Q, double x, double mf) {
 double ComputeSigmaR::LNLOdip_massive_Icd(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=4; // Two more integrals than in the Li & Log & Const terms
-    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
@@ -2235,7 +2251,7 @@ double ComputeSigmaR::LNLOqgunsub_massive(double Q, double x, double mf) {
     double integral, error, prob;
     // const int ndim=5; // 5 + 2*2 deterministic cuhre dimensions from G_qg*G_qg evaluated inside the integral
     const int ndim=9; // MC full phase space
-    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
@@ -2249,7 +2265,7 @@ double ComputeSigmaR::LNLOqgunsub_massive(double Q, double x, double mf) {
 double ComputeSigmaR::LNLOqgunsub_massive_I1(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=5; 
-    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
@@ -2263,7 +2279,7 @@ double ComputeSigmaR::LNLOqgunsub_massive_I1(double Q, double x, double mf) {
 double ComputeSigmaR::LNLOqgunsub_massive_I2(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=7; // MC 5+2 phase space
-    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
@@ -2277,7 +2293,7 @@ double ComputeSigmaR::LNLOqgunsub_massive_I2(double Q, double x, double mf) {
 double ComputeSigmaR::LNLOqgunsub_massive_I3(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=9; // MC full 5+2+2 phase space
-    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
@@ -3000,7 +3016,7 @@ int integrand_ITqgunsub_massive_I3(const int *ndim, const double x[], const int 
 double ComputeSigmaR::TNLOdip_massive_I1(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=2;
-    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
@@ -3014,7 +3030,7 @@ double ComputeSigmaR::TNLOdip_massive_I1(double Q, double x, double mf) {
 double ComputeSigmaR::TNLOdip_massive_I2(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=3; // One more integral than in the Li & Log & Const terms
-    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
@@ -3027,7 +3043,7 @@ double ComputeSigmaR::TNLOdip_massive_I2(double Q, double x, double mf) {
 double ComputeSigmaR::TNLOdip_massive_I3(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=4; // Two more integrals than in the Li & Log & Const terms
-    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
@@ -3042,7 +3058,7 @@ double ComputeSigmaR::TNLOdip_massive_I3(double Q, double x, double mf) {
 double ComputeSigmaR::TNLOqgunsub_massive_I1(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=5; 
-    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
@@ -3056,7 +3072,7 @@ double ComputeSigmaR::TNLOqgunsub_massive_I1(double Q, double x, double mf) {
 double ComputeSigmaR::TNLOqgunsub_massive_I2(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=7; // MC 5+2 phase space
-    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
@@ -3070,7 +3086,7 @@ double ComputeSigmaR::TNLOqgunsub_massive_I2(double Q, double x, double mf) {
 double ComputeSigmaR::TNLOqgunsub_massive_I3(double Q, double x, double mf) {
     double integral, error, prob;
     const int ndim=9; // MC full 5+2+2 phase space
-    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
     userdata.xbj=x;
