@@ -1200,7 +1200,6 @@ struct Userdata{
 
 
 double sumef_from_mass(double mf){
-
     double sumef; // \sum_f e_f^2
     if (mf == 0) {
         sumef = 6.0/9.0; // light quarks uds only.

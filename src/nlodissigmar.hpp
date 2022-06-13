@@ -314,7 +314,6 @@ public:
     double SrTripole(double x01, double x_x01, double x02, double x_x02, double x21, double x_x21);
     double P(double z);
     double heaviside_theta(double x);
-    double sumef_from_mass(double mf);
 
     // running couplings
     double Alphabar(double rsq){ return (this->*AlphabarPTR)(rsq); } // pointer shell function
@@ -455,7 +454,7 @@ public:
     double TNLOqgunsub_massive_I3(double Q, double x, double mf) ;
 };
 
-
+double sumef_from_mass(double mf);
 
 void Cuba(string method, int ndim, integrand_t integrand,void *userdata, double *integral, double *error, double *prob);
 
