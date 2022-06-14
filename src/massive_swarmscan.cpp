@@ -103,11 +103,7 @@ int main( int argc, char* argv[] )
     data.SetMinQsqr(0.75);
     data.SetMaxQsqr(50);
     data.SetMaxX(0.01);
-    data.LoadData("./data/hera_combined_sigmar_cc.txt", TOTAL); // old charm data
-    // data.LoadData("./data/hera_II_combined_sigmar_cc.txt", TOTAL); // newer charm data
-    // data.LoadData("./data/hera_II_combined_sigmar_b.txt", TOTAL); // newer bottom data
-    // data.LoadData("./data/hera_combined_sigmar.txt", TOTAL); // older total data
-    // data.LoadData("./data/hera_II_combined_sigmar.txt", TOTAL); // newer total data
+
 
     MnUserParameters parameters;
 
@@ -118,6 +114,7 @@ int main( int argc, char* argv[] )
     if (argc<2){ cout << helpstring << endl; return 0;}
     // Argv[0] is the name of the program
 
+    nlodis_config::MASS_SCHEME = nlodis_config::MASSLESS;
     string_sub = string(argv [1]);
     if (string(argv [1]) == "sub"){
         useSUB = true;
@@ -126,12 +123,37 @@ int main( int argc, char* argv[] )
         nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
         useSigma3 = false;
-    } else if (string(argv [1]) == "unsub+"){
+    } else if (string(argv [1]) == "uncc"){
         nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
-        useSigma3 = true;
-        cout << "This Sigma3 ('unsub+') is obsolete and invalid, should not be used! Exit." << endl; return -1;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::CHARM_ONLY;
+    } else if (string(argv [1]) == "unbb"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::BEAUTY_ONLY;
+    } else if (string(argv [1]) == "unlpc"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::LIGHT_PLUS_CHARM;
+    } else if (string(argv [1]) == "unlpcb"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY;
     } else {cout << helpstring << endl; return -1;}
+
+    if (nlodis_config::MASS_SCHEME == nlodis_config::CHARM_ONLY){
+        data.LoadData("./data/hera_combined_sigmar_cc.txt", TOTAL); // old charm data
+        // data.LoadData("./data/hera_II_combined_sigmar_cc.txt", TOTAL); // newer charm data
+    } else if (nlodis_config::MASS_SCHEME == nlodis_config::BEAUTY_ONLY){
+        data.LoadData("./data/hera_II_combined_sigmar_b.txt", TOTAL); // newer bottom data
+    } else {
+        data.LoadData("./data/hera_combined_sigmar.txt", TOTAL); // older total data
+        // data.LoadData("./data/hera_II_combined_sigmar.txt", TOTAL); // newer total data
+    }
 
     string_bk = string(argv [2]);
     if (string(argv [2]) == "resumbk"){
@@ -286,7 +308,7 @@ int main( int argc, char* argv[] )
 
     cout << std::boolalpha;
     cout    << "# === Perturbative settings ===" << endl
-            << "# Use masses: " << nlodis_config::USE_MASSES << endl
+            << "# Use masses: " << nlodis_config::USE_MASSES << ", scheme:" << nlodis_config::MASS_SCHEME << endl
             << "# Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
             << "# Use LOBK (DL,SL==false): " << (!(config::RESUM_DLOG) 
                                     and !(config::RESUM_SINGLE_LOG)) << endl
@@ -328,7 +350,7 @@ int main( int argc, char* argv[] )
 
     cout << std::boolalpha;
     cout    << "# === Perturbative settings ===" << endl
-            << "# Use masses: " << nlodis_config::USE_MASSES << endl
+            << "# Use masses: " << nlodis_config::USE_MASSES << ", scheme:" << nlodis_config::MASS_SCHEME << endl
             << "# Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
             << "# Use LOBK (DL,SL==false): " << (!(config::RESUM_DLOG) 
                                     and !(config::RESUM_SINGLE_LOG)) << endl

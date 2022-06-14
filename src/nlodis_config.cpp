@@ -21,6 +21,7 @@ namespace nlodis_config
 
     RunningCouplingDIS RC_DIS;
     SubtractionScheme SUB_SCHEME;
+    QuarkMassScheme MASS_SCHEME;
     SubSchemeTermKernel SUB_TERM_KERNEL;
     GluonZ2Minimum Z2MINIMUM;
     TargetRapidityBKRhoPresc TRBK_RHO_PRESC = nlodis_config::TRBK_RHO_DISABLED;

@@ -20,6 +20,16 @@ namespace nlodis_config
     extern double MAXR;
     extern double MINR;
 
+    enum QuarkMassScheme
+    {
+        MASSLESS,
+        CHARM_ONLY,
+        BEAUTY_ONLY,
+        LIGHT_PLUS_CHARM,
+        LIGHT_PLUS_CHARM_AND_BEAUTY
+    };
+    extern QuarkMassScheme MASS_SCHEME;
+
     enum SubtractionScheme
     {
         SUBTRACTED,     // \sigma_NLO = \sigma_LO + \sigma_qg,sub
