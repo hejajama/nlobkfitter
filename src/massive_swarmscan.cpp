@@ -118,11 +118,13 @@ int main( int argc, char* argv[] )
     string_sub = string(argv [1]);
     if (string(argv [1]) == "sub"){
         useSUB = true;
+        nlodis_config::USE_MASSES = false;
         nlodis_config::SUB_SCHEME = nlodis_config::SUBTRACTED;
     } else if (string(argv [1]) == "unsub"){
         nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
         useSigma3 = false;
+        nlodis_config::USE_MASSES = false;
     } else if (string(argv [1]) == "uncc"){
         nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
