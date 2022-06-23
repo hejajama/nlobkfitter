@@ -20,6 +20,13 @@ namespace nlodis_config
     extern double MAXR;
     extern double MINR;
 
+    enum ScatteringProcess
+    {
+        DIS,
+        DIFFRACTIVE_DIS
+    };
+    extern ScatteringProcess SCATTERING_PROC;
+
     enum QuarkMassScheme
     {
         MASSLESS,

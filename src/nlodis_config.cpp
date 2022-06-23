@@ -19,6 +19,7 @@ namespace nlodis_config
 
     bool USE_MASSES = false;
 
+    ScatteringProcess SCATTERING_PROC = nlodis_config::DIS;
     RunningCouplingDIS RC_DIS;
     SubtractionScheme SUB_SCHEME;
     QuarkMassScheme MASS_SCHEME;
