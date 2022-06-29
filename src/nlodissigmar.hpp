@@ -91,6 +91,7 @@ public:
     double SigmarNLOunsubRisto ( double Q , double xbj, double y) ;
     double SigmarNLOsubRisto ( double Q , double xbj, double y) ;
 
+    // DIS structure functions
     double Structf_LLO ( double Q , double xbj) ;
     double Structf_TLO ( double Q , double xbj) ;
     double Structf_LNLOdip ( double Q , double xbj) ;
@@ -118,6 +119,14 @@ public:
     double Structf_LFULLNLOsub ( double Q , double xbj) ;
     double Structf_TFULLNLOsub ( double Q , double xbj) ;
 
+    // Diffractive structure functions
+    double diff_xpom_SigmarLO ( double Q , double xpom, double beta, double y) ;
+    double diff_xpom_SigmarNLO ( double Q , double xpom, double beta, double y) ;
+    double diff_xpom_SigmarNLO_largeM ( double Q , double xpom, double beta, double y) ;
+    double diff_xpom_SigmarNLO_largeQsq ( double Q , double xpom, double beta, double y) ;
+
+
+    // calculation settings & params
     void SetQuarkMassLight(double qMass_light_){ qMass_light = qMass_light_; }
 	void SetQuarkMassCharm(double m) { qMass_charm = m; }
     void SetAlphasScalingC2(double c2_){ alpha_scaling_C2_ = c2_; }
@@ -399,7 +408,7 @@ public:
     }
 
 
-    // cross section integrators
+    // cross section integrators --- DIS
     // Longitudinal
     double ILLO(double Q, double z1, double x01sq) ;
     double ILdip(double Q, double z1, double x01sq) ;
@@ -452,12 +461,22 @@ public:
     double TNLOqgunsub_massive_I1(double Q, double x, double mf) ;
     double TNLOqgunsub_massive_I2(double Q, double x, double mf) ;
     double TNLOqgunsub_massive_I3(double Q, double x, double mf) ;
+
+    // cross section integrators --- Diffraction
+    double diff_lo_xpom_FL(double Q, double xpom, double beta) ;
+    double diff_lo_xpom_FT(double Q, double xpom, double beta) ;
+    double diff_nlo_xpom_FT_qqbarg_largeM(double Q, double xpom, double beta) ;
+    double diff_nlo_xpom_FT_qqbarg_largeQsq(double Q, double xpom, double beta) ;
+    double diff_nlo_xpom_FL_qqbarg(double Q, double xpom, double beta) ;
+    double diff_nlo_xpom_FT_qqbarg(double Q, double xpom, double beta) ;
+
 };
 
 double sumef_from_mass(double mf);
 
 void Cuba(string method, int ndim, integrand_t integrand,void *userdata, double *integral, double *error, double *prob);
 
+// DIS
 int integrand_ILLOp(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 int integrand_ILLOpMass(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 int integrand_ILdip(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
@@ -493,6 +512,16 @@ int integrand_ITdip_massive_I3(const int *ndim, const double x[], const int *nco
 int integrand_ITqgunsub_massive_I1(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 int integrand_ITqgunsub_massive_I2(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 int integrand_ITqgunsub_massive_I3(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+
+
+// diffraction
+int integrand_ddis_lo_qqbar_L(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ddis_lo_qqbar_T(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ddis_nlo_qqbarg_T_largeM(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ddis_nlo_qqbarg_T_largeQsq(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ddis_nlo_qqbarg_L(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ddis_nlo_qqbarg_T(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+
 
 string PrintVector(vector<double> v);
 
