@@ -20,7 +20,8 @@ enum DataType
 {
     TOTAL,      // total reduced cross section
     CHARM,      // only charm contribution
-    FL          // F_L stucture function data
+    FL,         // F_L stucture function data
+    DIFFRACTIVE // Diffractive reduced cross section
 };
 
 class Data
@@ -53,6 +54,7 @@ private:
     
     vector<double> Qsqrvals;
     vector<double> xbjvals;
+    vector<double> xpomvals;
     vector<double> yvals;
     vector<double> sigmarvals;
     vector<double> errors;

@@ -39,11 +39,13 @@ int Data::LoadData(string filename, DataType type)
     
     int points=0;
     
-    bool onlycharm, onlyFL = false;
+    bool onlycharm, onlyFL, diffractive_data = false;
     if (type == CHARM )
         onlycharm = true;
     else if (type == FL )
         onlyFL = true;
+    else if (type == DIFFRACTIVE)
+        diffractive_data = true;
 
     while(!file.eof() )
     {
@@ -52,6 +54,7 @@ int Data::LoadData(string filename, DataType type)
         if (line.substr(0, 1)=="#" or line.length() < 5)
         continue;
         string x,qsqr,y,sigmar,err;
+        string xpom,beta,xpomsigmar;
         stringstream l(line);
         if (onlyFL == true){
             l >> qsqr; l>>x; l>>sigmar; l>>err;
@@ -60,6 +63,15 @@ int Data::LoadData(string filename, DataType type)
             points++;
             Qsqrvals.push_back(DataStrToReal(qsqr)); xbjvals.push_back(DataStrToReal(x));
             sigmarvals.push_back(DataStrToReal(sigmar)); errors.push_back(DataStrToReal(err));
+        }
+        else if (diffractive_data == true){
+            l >> qsqr; l>>beta; l>>xpom; l>>xpomsigmar; l>>err; // data does not have y??
+            
+            if (DataStrToReal(xpom)>maxx or DataStrToReal(xpom)<minx or DataStrToReal(qsqr)<minQ2 or DataStrToReal(qsqr)>maxQ2) continue;
+            points++;
+            Qsqrvals.push_back(DataStrToReal(qsqr)); xpomvals.push_back(DataStrToReal(xpom));
+            // yvals.push_back(DataStrToReal(y)); // data does not have y??
+            sigmarvals.push_back(DataStrToReal(xpomsigmar)); errors.push_back(DataStrToReal(err));
         }
         else{
             l >> qsqr; l>>x; l>>y; l>>sigmar; l>>err;
