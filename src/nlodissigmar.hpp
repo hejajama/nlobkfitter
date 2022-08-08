@@ -462,7 +462,7 @@ public:
     double TNLOqgunsub_massive_I2(double Q, double x, double mf) ;
     double TNLOqgunsub_massive_I3(double Q, double x, double mf) ;
 
-    // cross section integrators --- Diffraction
+    // structure function integrators --- Diffraction --- DDIS
     double diff_lo_xpom_FL(double Q, double xpom, double beta) ;
     double diff_lo_xpom_FT(double Q, double xpom, double beta) ;
     double diff_nlo_xpom_FT_qqbarg_largeM(double Q, double xpom, double beta) ;

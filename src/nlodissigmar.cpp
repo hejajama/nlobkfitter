@@ -3109,3 +3109,45 @@ double ComputeSigmaR::TNLOqgunsub_massive_I3(double Q, double x, double mf) {
 
 
 //*/
+
+
+
+///===========================================================================================
+///     DIFFRACTION DDIS
+///===========================================================================================
+
+/// --- LLL --- LO --- LLL ---------------------
+
+double ComputeSigmaR::diff_lo_xpom_FL(double Q, double xpom, double beta){
+    double integral, error, prob;
+    const int ndim=;
+    // double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xbj=x;
+    userdata.icX0=icX0;
+    // userdata.qMass=mf;
+    userdata.ComputerPtr=this;
+    Cuba(cubamethod,ndim,integrand_ddis_lo_qqbar_L,&userdata,&integral,&error,&prob);
+    // return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+}
+
+/// --- TTT --- LO --- TTT ---------------------
+
+double ComputeSigmaR::diff_lo_xpom_FT(double Q, double xpom, double beta)
+
+
+/// --- TTT --- APPROX LIMIT LARGE M, LARGE Q --- TTT ---------------------
+
+double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg_largeM(double Q, double xpom, double beta)
+double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg_largeQsq(double Q, double xpom, double beta)
+
+
+/// --- LLL --- NLO --- LLL ---------------------
+
+double ComputeSigmaR::diff_nlo_xpom_FL_qqbarg(double Q, double xpom, double beta)
+
+
+/// --- TTT --- NLO --- TTT ---------------------
+
+double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg(double Q, double xpom, double beta)
