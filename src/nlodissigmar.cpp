@@ -1205,6 +1205,7 @@ ComputeSigmaR::ComputeSigmaR(AmplitudeLib *ObjectPointer){
 struct Userdata{
     ComputeSigmaR* ComputerPtr;
     double Q, xbj;
+    double beta, xpom;
     double qMass;
     double icX0;
 };
@@ -3118,34 +3119,114 @@ double ComputeSigmaR::TNLOqgunsub_massive_I3(double Q, double x, double mf) {
 
 /// --- LLL --- LO --- LLL ---------------------
 
+int integrand_ddis_lo_qqbar_L(const int *ndim, const double x[], const int *ncomp, double *f, void *userdata) {
+    Userdata *dataptr = (Userdata*)userdata;
+    double Q=dataptr->Q;
+    double xpom=dataptr->xpom;
+    double beta=dataptr->beta;
+    ComputeSigmaR *Optr = dataptr->ComputerPtr;
+    double z1=x[0];
+    double x01=nlodis_config::MAXR*x[1];
+    double conj_x01=nlodis_config::MAXR*x[2];
+    double x01sq=Sq(x01);
+    double conj_x01sq=Sq(conj_x01);
+
+    double alphabar=Optr->Alphabar(x01sq);
+    double alphfac=alphabar*CF/Nc;
+    double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Sq(Q), x01sq); // TODO check x val
+    double Xrpdty_lo_bar = Optr->Xrpdty_LO(xpom, Sq(Q), conj_x01sq); // TODO check x val
+    double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
+    double SKernel_conj = 1.0 - Optr->Sr(conj_x01,Xrpdty_lo_bar);
+    double res;
+
+    res = SKernel*SKernel_conj*(I_ddis_lo_qqbar_L(Q,beta,z1,x01sq,conj_x01sq))*x01*conj_x01*alphfac;
+    if(gsl_finite(res)==1){
+        *f=res;
+    }else{
+        *f=0;
+    }
+    return 0;
+}
+
 double ComputeSigmaR::diff_lo_xpom_FL(double Q, double xpom, double beta){
     double integral, error, prob;
-    const int ndim=;
-    // double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef;
+    const int ndim=3; // z + r + rbar
+    double fac=Nc*std::pow(Q,4.0)/(2.0*pow(M_PI,3.0)*beta)*sumef;
     Userdata userdata;
     userdata.Q=Q;
-    userdata.xbj=x;
+    userdata.xpom=xpom;
+    userdata.beta=beta;
     userdata.icX0=icX0;
-    // userdata.qMass=mf;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ddis_lo_qqbar_L,&userdata,&integral,&error,&prob);
-    // return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+    return fac*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
 
 /// --- TTT --- LO --- TTT ---------------------
 
-double ComputeSigmaR::diff_lo_xpom_FT(double Q, double xpom, double beta)
+double ComputeSigmaR::diff_lo_xpom_FT(double Q, double xpom, double beta){
+    double integral, error, prob;
+    const int ndim=3; // z + r + rbar
+    double fac=Nc*std::pow(Q,4.0)/(8.0*pow(M_PI,3.0)*beta)*sumef;
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xpom=xpom;
+    userdata.beta=beta;
+    userdata.icX0=icX0;
+    userdata.ComputerPtr=this;
+    Cuba(cubamethod,ndim,integrand_ddis_lo_qqbar_T,&userdata,&integral,&error,&prob);
+    return fac*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+}
+
 
 
 /// --- TTT --- APPROX LIMIT LARGE M, LARGE Q --- TTT ---------------------
 
-double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg_largeM(double Q, double xpom, double beta)
-double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg_largeQsq(double Q, double xpom, double beta)
+double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg_largeM(double Q, double xpom, double beta){
+    double integral, error, prob;
+    const int ndim=; // z + \xt0 + \xt1 + \xt2
+    double fac=Nc*CF*std::pow(Q,2.0)/(16.0*pow(M_PI,5.0))*sumef; // alpha_s included in integrand
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xpom=xpom;
+    userdata.beta=0;
+    userdata.icX0=icX0;
+    userdata.ComputerPtr=this;
+    Cuba(cubamethod,ndim,integrand_ddis_nlo_qqbarg_T_largeM,&userdata,&integral,&error,&prob);
+    // return fac*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+}
+
+
+double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg_largeQsq(double Q, double xpom, double beta){
+    double integral, error, prob;
+    const int ndim=4; // z + k^2 + r + rbar
+    double fac=beta/(8.0*pow(M_PI,4.0))*sumef; // alpha_s included in integrand
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xpom=xpom;
+    userdata.beta=beta;
+    userdata.icX0=icX0;
+    userdata.ComputerPtr=this;
+    Cuba(cubamethod,ndim,integrand_ddis_nlo_qqbarg_T_largeQsq,&userdata,&integral,&error,&prob);
+    return fac*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+}
 
 
 /// --- LLL --- NLO --- LLL ---------------------
 
-double ComputeSigmaR::diff_nlo_xpom_FL_qqbarg(double Q, double xpom, double beta)
+double ComputeSigmaR::diff_nlo_xpom_FL_qqbarg(double Q, double xpom, double beta){
+    double integral, error, prob;
+    const int ndim=; // z_0 + z_2 + xt_0 + xt_1 + xt_0bar + xt_1bar + thetax0 + thetax1 + thetax0bar + thetax1bar // CHECK HOW MANY ANGLE INTEGRALS SEPARATE
+    // double fac=Nc*std::pow(Q,4.0)/(8.0*pow(M_PI,3.0)*beta)*sumef;
+    Userdata userdata;
+    userdata.Q=Q;
+    userdata.xpom=xpom;
+    userdata.beta=beta;
+    userdata.icX0=icX0;
+    userdata.ComputerPtr=this;
+    Cuba(cubamethod,ndim,integrand_ddis_nlo_qqbarg_L,&userdata,&integral,&error,&prob);
+    // return fac*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+}
 
 
 /// --- TTT --- NLO --- TTT ---------------------
