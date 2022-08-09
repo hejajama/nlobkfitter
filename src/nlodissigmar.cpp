@@ -3247,7 +3247,7 @@ int integrand_ddis_nlo_qqbarg_T_largeM(const int *ndim, const double x[], const 
 
 double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg_largeM(double Q, double xpom, double beta){
     double integral, error, prob;
-    const int ndim=; // z + \xt0 + \xt1 + \xt2
+    const int ndim=4; // z + x01 + x02 + phix0102
     double fac=Nc*CF*std::pow(Q,2.0)/(16.0*pow(M_PI,5.0))*sumef; // alpha_s included in integrand
     Userdata userdata;
     userdata.Q=Q;
@@ -3256,7 +3256,7 @@ double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg_largeM(double Q, double xpom, doub
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ddis_nlo_qqbarg_T_largeM,&userdata,&integral,&error,&prob);
-    // return fac*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+    return fac*2*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
 
 
@@ -3280,7 +3280,7 @@ double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg_largeQsq(double Q, double xpom, do
 double ComputeSigmaR::diff_nlo_xpom_FL_qqbarg(double Q, double xpom, double beta){
     double integral, error, prob;
     const int ndim=; // z_0 + z_2 + xt_0 + xt_1 + xt_0bar + xt_1bar + thetax0 + thetax1 + thetax0bar + thetax1bar // CHECK HOW MANY ANGLE INTEGRALS SEPARATE
-    // double fac=Nc*std::pow(Q,4.0)/(8.0*pow(M_PI,3.0)*beta)*sumef;
+    double fac=4*Nc*CF*std::pow(Q,4.0)/(beta)*sumef;
     Userdata userdata;
     userdata.Q=Q;
     userdata.xpom=xpom;
