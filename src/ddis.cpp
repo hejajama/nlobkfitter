@@ -42,7 +42,7 @@ double I_ddis_nlo_qqbarg_T_largeM(double Q, double z, double x01sq) {
     return res;
 }
 
-double I_ddis_nlo_qqbarg_T_largeQsq(double Q, double beta, double z, double ksq, double x01sq, double conj_x01sq) {
+double I_ddis_nlo_qqbarg_T_largeQsq(double Q, double beta, double z, double ksq, double r, double rbar) {
     double res;
     
     return res;

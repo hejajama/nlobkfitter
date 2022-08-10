@@ -3260,6 +3260,37 @@ double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg_largeM(double Q, double xpom, doub
 }
 
 
+int integrand_ddis_nlo_qqbarg_T_largeQsq(const int *ndim, const double x[], const int *ncomp, double *f, void *userdata) {
+    Userdata *dataptr = (Userdata*)userdata;
+    double Q=dataptr->Q;
+    double Qsq=Sq(Q);
+    double xpom=dataptr->xpom;
+    double beta=dataptr->beta;
+    ComputeSigmaR *Optr = dataptr->ComputerPtr;
+    double z=beta + (1-beta)*x[0]; // z \in [beta,1]
+    double r=nlodis_config::MAXR*x[1];
+    double rbar=nlodis_config::MAXR*x[2];
+    double ksq=Qsq*x[3];
+
+    double alphabar=Optr->Alphabar(r);
+    double alphfac=alphabar*CF/Nc;
+    double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Qsq, r); // TODO check x val
+    double Xrpdty_lo_bar = Optr->Xrpdty_LO(xpom, Qsq, rbar); // TODO check x val
+    double N_r = 1.0 - Optr->Sr(r,Xrpdty_lo);
+    double N_rbar = 1.0 - Optr->Sr(rbar,Xrpdty_lo_bar);
+    double dipole_kernel = N_r * N_rbar;
+    double jacobian_ksq_z = Qsq * (1-beta);
+    double res;
+
+    res = jacobian_ksq_z*dipole_kernel*(I_ddis_nlo_qqbarg_T_largeQsq(Q,beta,z,ksq,r,rbar))*r*rbar*alphfac;
+    if(gsl_finite(res)==1){
+        *f=res;
+    }else{
+        *f=0;
+    }
+    return 0;
+}
+
 double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg_largeQsq(double Q, double xpom, double beta){
     double integral, error, prob;
     const int ndim=4; // z + k^2 + r + rbar
