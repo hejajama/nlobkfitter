@@ -3139,7 +3139,7 @@ int integrand_ddis_lo_qqbar_L(const int *ndim, const double x[], const int *ncom
     double SKernel_conj = 1.0 - Optr->Sr(conj_x01,Xrpdty_lo_bar);
     double res;
 
-    res = SKernel*SKernel_conj*(I_ddis_lo_qqbar_L(Q,beta,z1,x01,conj_x01))*x01*conj_x01*alphfac;
+    res = SKernel*SKernel_conj*(I_ddis_lo_qqbar_L(Q,beta,z1,x01,conj_x01))*alphfac;
     if(gsl_finite(res)==1){
         *f=res;
     }else{
@@ -3184,7 +3184,7 @@ int integrand_ddis_lo_qqbar_T(const int *ndim, const double x[], const int *ncom
     double SKernel_conj = 1.0 - Optr->Sr(conj_x01,Xrpdty_lo_bar);
     double res;
 
-    res = SKernel*SKernel_conj*(I_ddis_lo_qqbar_T(Q,beta,z1,x01,conj_x01))*x01*conj_x01*alphfac;
+    res = SKernel*SKernel_conj*(I_ddis_lo_qqbar_T(Q,beta,z1,x01,conj_x01))*alphfac;
     if(gsl_finite(res)==1){
         *f=res;
     }else{
