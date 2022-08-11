@@ -219,7 +219,16 @@ int main( int argc, char* argv[] )
     if (argc == argi){
         cout << "Swarmscan needs Q^2, C^2 and gamma IC values at the least!" << endl;
         cout << helpstring << endl;
-        exit(1);
+        // exit(1);
+        icqs0sq   = 1.0;
+        iccsq     = 1.0;
+        icgamma   = 1.0;
+        icx0_if   = 1.0;
+        icx0_bk   = 0.01;
+        ic_ec     = 1.0;
+        icQ0sq    = 1.0;
+        icY0      = 0;
+        icEta0    = 0;
     } else if (argc == argi+3){
         icqs0sq   = stod( argv [argi] ); argi++;
         iccsq     = stod( argv [argi] ); argi++;
@@ -251,7 +260,11 @@ int main( int argc, char* argv[] )
     double CStep = pow(Cup/Cdown , iccsq/240.);
     double Ccalc = Cdown * CStep; // compute C² on a logarithmic grid
 
-
+    // parameters for LO DIS fit
+    // Qcalc = 0.165;
+    // Ccalc = 6.35;
+    // icgamma = 1.135;
+    double old_sigma02 = 1.;
     cout << Qcalc << " " << Ccalc << endl;
 
 	parameters.Add("qs0sqr",		        Qcalc);
@@ -264,6 +277,7 @@ int main( int argc, char* argv[] )
     parameters.Add("icTypicalPartonVirtualityQ0sqr", icQ0sq );
     parameters.Add("initialconditionY0",    icY0 );
     parameters.Add("eta0", icEta0 );
+    parameters.Add("old_sigma02", old_sigma02 );
 
     NLODISFitter fitter(parameters);
     fitter.AddDataset(data);
