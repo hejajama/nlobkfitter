@@ -148,13 +148,13 @@ int main( int argc, char* argv[] )
     } else {cout << helpstring << endl; return -1;}
 
     if (nlodis_config::MASS_SCHEME == nlodis_config::CHARM_ONLY){
-        data.LoadData("./data/hera_combined_sigmar_cc.txt", TOTAL); // old charm data
-        // data.LoadData("./data/hera_II_combined_sigmar_cc.txt", TOTAL); // newer charm data
+        // data.LoadData("./data/hera_combined_sigmar_cc.txt", TOTAL); // old charm data
+        data.LoadData("./data/hera_II_combined_sigmar_cc.txt", TOTAL); // newer charm data
     } else if (nlodis_config::MASS_SCHEME == nlodis_config::BEAUTY_ONLY){
         data.LoadData("./data/hera_II_combined_sigmar_b.txt", TOTAL); // newer bottom data
     } else {
-        data.LoadData("./data/hera_combined_sigmar.txt", TOTAL); // older total data
-        // data.LoadData("./data/hera_II_combined_sigmar.txt", TOTAL); // newer total data
+        // data.LoadData("./data/hera_combined_sigmar.txt", TOTAL); // older total data
+        data.LoadData("./data/hera_II_combined_sigmar.txt", TOTAL); // newer total data
     }
 
     string_bk = string(argv [2]);
