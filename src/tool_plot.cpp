@@ -77,6 +77,7 @@ int main( int argc, char* argv[] )
     // nlodis_config::MAXR = 25;
     nlodis_config::PRINTDATA = true;
     bool useNLO = true;
+    // bool useNLO = false;
     bool computeNLO = useNLO;
     string cubaMethod = "vegas";
     // string cubaMethod = "suave";
@@ -102,8 +103,7 @@ int main( int argc, char* argv[] )
     // config::DE_SOLVER_STEP = 0.8; // Rungekutta step
 
     // Constants
-    config::NF=3;   // Only light quarks
-    config::LAMBDAQCD = 0.241;
+    config::NF=3;   // Only light quarksicx0_bk
 
 
     MnUserParameters parameters;
@@ -258,12 +258,12 @@ int main( int argc, char* argv[] )
     double sigma02;
 
     if (argc == 6){
-	    qs0sqr       = 0.2; //par[ parameters.Index("qs0sqr")];
-        alphas_scaling     = 1.0; //par[ parameters.Index("alphascalingC2")]; // MATCH THIS IN IMPACTFACTOR ALPHA_S WHEN NLO
-	    anomalous_dimension = 1.0; //par[ parameters.Index("anomalous_dimension")];
+	    qs0sqr       = 0.165; //par[ parameters.Index("qs0sqr")];
+        alphas_scaling     = 6.35; //par[ parameters.Index("alphascalingC2")]; // MATCH THIS IN IMPACTFACTOR ALPHA_S WHEN NLO
+	    anomalous_dimension = 1.135; //par[ parameters.Index("anomalous_dimension")];
         icx0_bk = 0.01; //par[ parameters.Index("initialconditionX0")];
-        sigma02 = 1.0;
-	cout << "# NO INITIAL PARAMETERS PASSED, USING DEFAULTS" << endl;
+        sigma02 = 40.9804;
+	cout << "# NO INITIAL PARAMETERS PASSED, USING LO FIT DEFAULTS" << endl;
     }
 
     if (argc >= 11){
@@ -274,11 +274,33 @@ int main( int argc, char* argv[] )
         sigma02		    = stod(argv[10]);
 
     }
+    double icqs0sq, iccsq, icx0_if, ic_ec, icgamma, icQ0sq, icY0, icEta0;
+    double Cdown, Cup, CStep;
+    if (argc >= 15){
+        icqs0sq   = stod( argv [6] );
+        iccsq     = stod( argv [7] );
+        anomalous_dimension   = stod( argv [8] );
+        icx0_if   = stod( argv [9] );
+        icx0_bk   = stod( argv [10] );
+        ic_ec     = stod( argv [11] );
+        icQ0sq    = stod( argv [12] );
+        icY0      = stod( argv [13] );
+        icEta0    = stod( argv [14] );
+        sigma02 = stod( argv [15] );
+
+        // Constructing Q and C^2 grids
+        qs0sqr = icqs0sq/1000.; // input in milli-GeV² integer strings
+
+        Cdown = 0.1;
+        Cup = 5.0;
+        CStep = pow(Cup/Cdown , iccsq/240.);
+        alphas_scaling = Cdown * CStep; // compute C² on a logarithmic grid
+    }
 
     string dataname;
-    if (argc >= 12){
-        dataname = argv[11];
-    }
+    // if (argc >= 12){
+    //     dataname = argv[11];
+    // }
 
     string string_ic = "cli_mode";
     /*
@@ -534,21 +556,21 @@ int main( int argc, char* argv[] )
 
     std::vector< std::tuple<int, int, int> > coordinates;
 
-    for (int k=0; k<5; k+=1) // real masses
+    // for (int k=0; k<5; k+=1) // real masses
     // for (int k=0; k<1; k+=1) // one mass bin
-    // for (int k=0; k<10; k+=1) // masses over a range instead of real masses
+    for (int k=0; k<10; k+=1) // masses over a range instead of real masses
     {
         // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
         // for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
         // for (int i=0; i<=20; i+=10)  // Q^2 in [1,100]
-        for (int i=1; i<=17; i+=4)  // Q^2 in [1,100]
-        // for (int i=10; i<=20; i+=11)  // Q^2 = 10
+        // for (int i=1; i<=17; i+=4)  // Q^2 in [1,100]
+        for (int i=10; i<=20; i+=11)  // Q^2 = 10
         // for (int i=0; i<=1; i++)
         {
             // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
             //for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
-            for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
-            // for (int j=9; j<=10; j+=8)  // xbj = {~1e-4}
+            // for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
+            for (int j=9; j<=10; j+=8)  // xbj = {~1e-4}
             // for (int j=1; j<=9; j+=8)      // xbj = {~1e-2, ~1e-4} // LHEC predictions for x0bk=0.01
             // for (int j=2; j<=8; j+=2)  // xbj = {1e-6} // LHEC predictions for x0bk=0.01
             // for (int j=0; j<=1; j++)
@@ -570,9 +592,9 @@ int main( int argc, char* argv[] )
         if (j==0 and cubaMethod=="suave"){continue;}
         double Q = 1.0*pow(10,(double)i/20.0);
         double xbj = icx0/pow(10,(double)j/4.0);
-        double qmass = qMasses_tuple[l];
+        // double qmass = qMasses_tuple[l];
         // double qmass = 0.;
-        // double qmass = 0.001 + (qMass_b - 0.001)/9.*(double)l; // masses over a range up to bottom mass
+        double qmass = 0.001 + (qMass_b - 0.001)/9.*(double)l; // masses over a range up to bottom mass
         // double xbj = 0.1/pow(10,(double)j/4.0); // TODO NOTE: modify xbj upper limit for Heikki & Jani F2 testing 
         // #pragma omp critical
         // cout << "Q=" << Q << ", xbj=" << xbj << endl;
@@ -595,8 +617,10 @@ int main( int argc, char* argv[] )
             double alphaem=1.0/137.0;
             double structurefunfac=1./(Sq(2*M_PI)*alphaem);
             double fac = structurefunfac*Sq(Q);
-            FL_LO = fac*SigmaComputer.LLOpMass(Q,xbj,useCharm);
-            FT_LO = fac*SigmaComputer.TLOpMass(Q,xbj,useCharm);
+            // FL_LOm = fac*SigmaComputer.LLOpMass(Q,xbj,useCharm);
+            // FT_LOm = fac*SigmaComputer.TLOpMass(Q,xbj,useCharm);
+            FL_LOm = fac*SigmaComputer.LLOp_massive(Q,xbj,qmass);
+            FT_LOm = fac*SigmaComputer.TLOp_massive(Q,xbj,qmass);
             ++calccount;
         }
 
