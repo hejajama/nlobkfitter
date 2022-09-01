@@ -247,6 +247,7 @@ int main( int argc, char* argv[] )
     int argi=6;
     double icqs0sq, iccsq, icx0_if, icx0_bk, ic_ec, icgamma, icQ0sq, icY0, icEta0;
     double old_sigma02 = 1.;
+    double mass_charm = 1.27; // MSbar value as default ----- // OLD WAS 1.35;
     // reading fit initial condition parameters:
     if (argc == argi){
         cout << "Swarmscan needs Q^2, C^2 and gamma IC values at the least!" << endl;
@@ -273,6 +274,7 @@ int main( int argc, char* argv[] )
         icY0      = stod( argv [argi] ); argi++;
         icEta0    = stod( argv [argi] ); argi++;
         old_sigma02 = stod( argv [argi] ); argi++;
+        mass_charm = stod( argv [argi] ); argi++;
     }
 
 
@@ -298,6 +300,7 @@ int main( int argc, char* argv[] )
     parameters.Add("initialconditionY0",    icY0 );
     parameters.Add("eta0", icEta0 );
     parameters.Add("old_sigma02", old_sigma02 );
+    parameters.Add("mass_charm", mass_charm );
 
     NLODISFitter fitter(parameters);
     fitter.AddDataset(data);

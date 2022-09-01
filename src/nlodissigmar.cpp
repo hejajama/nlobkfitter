@@ -372,12 +372,14 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     double initialconditionY0  = par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
     double old_sigma02 = par[ parameters.Index("old_sigma02")];
+    double mass_charm = par[ parameters.Index("mass_charm")];
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
-    double qMass_u = 0.0023; // GeV, literature value
-    double qMass_d = 0.0048; // GeV, literature value
-    double qMass_s = 0.095; // GeV, literature value
-    double qMass_charm = 1.35;
-    double qMass_b = 4.180; // GeV, literature value
+    double qMass_u = 0.00216; // GeV, PDG MSbar value
+    double qMass_d = 0.00467; // GeV, PDG MSbar value
+    double qMass_s = 0.093; // GeV, PDG MSbar value
+    // double qMass_charm = 1.27 // PDG MSbar value // 1.35; == old default
+    double qMass_charm = mass_charm;
+    double qMass_b = 4.180; // GeV, PDG MSbar value
     bool useMasses = nlodis_config::USE_MASSES;
     bool useCharm = false;
 
