@@ -529,6 +529,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
             {
                 theory=0;
                 if (datasets[dataset]->OnlyCharm(i)==false)
+                // if (true)
                 {
                     theory = (fitsigma0)*SigmaComputer.SigmarLOmass(Q , xbj , y, false );
                 }
@@ -1212,6 +1213,7 @@ struct Userdata{
 
 double sumef_from_mass(double mf){
     double sumef; // \sum_f e_f^2
+    // return 1.0; // mass function plots
     if (mf == 0) {
         sumef = 6.0/9.0; // light quarks uds only.
     } else if (mf == 0.0023) {
