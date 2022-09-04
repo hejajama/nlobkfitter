@@ -1216,18 +1216,27 @@ struct Userdata{
 double sumef_from_mass(double mf){
     double sumef; // \sum_f e_f^2
     // return 1.0; // mass function plots
-    if (mf == 0) {
+    if (mf < 1e-8) {
         sumef = 6.0/9.0; // light quarks uds only.
-    } else if (mf == 0.0023) {
+    } else if (mf > 0.7*0.00216 && mf < 1.3*0.00216) {
+        // u
         sumef = 4.0/9.0;
-    } else if (mf == 0.0048) {
+    } else if (mf > 0.7*0.00467 && mf < 1.3*0.00467) {
+        // d
         sumef = 1.0/9.0;
-    } else if (mf == 0.095) {
+    } else if (mf > 0.7*0.093 && mf < 1.3*0.093) {
+        // s
         sumef = 1.0/9.0;
-    } else if (mf == 1.35) {
+    } else if (mf > 0.7*1.27 && mf < 1.3*1.27) {
+        // c
         sumef = 4.0/9.0;
-    } else if (mf == 4.180) {
+    } else if (mf > 0.7*4.180 && mf < 1.3*4.180) {
+        // b
         sumef = 1.0/9.0;
+    } else {
+        // failure to identify quark from mass: kill it all.
+        cout << "Failure to identify quark sumef from mass. Exit." << endl;
+        exit(1);
     }
     return sumef;
 }
