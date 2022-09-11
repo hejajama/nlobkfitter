@@ -35,6 +35,8 @@ massivescan: $(OBJECTS) src/massive_swarmscan.o src/nlodissigmar.hpp
 lightqscan: $(OBJECTS) src/lightq_scan.o
 	g++ $(OBJECTS) src/lightq_scan.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o lightqscan $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
 
+nuclearstrufun: $(OBJECTS) src/unint_nucl_structfun.o 
+	g++ $(OBJECTS) src/unint_nucl_structfun.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o nuclearstrufun $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
 
 plottool: $(OBJECTS) src/tool_plot.o 
 	g++ $(OBJECTS) src/tool_plot.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o plottool $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
