@@ -344,7 +344,8 @@ int main( int argc, char* argv[] )
     double qMass_d = 0.00467; // GeV, literature value
     double qMass_s = 0.093; // GeV, literature value
     double qMass_charm = 1.27;
-    double qMass_b = 4.180; // GeV, literature value
+    // double qMass_b = 4.180; // GeV, literature value
+    double qMass_b = 4.75; // GeV, suggested pole mass scheme standard value from Heikki
     // std::tuple<float, float, float, float, float> qMass_all;
     double qMasses_tuple [5] = {qMass_u, qMass_d, qMass_s, qMass_charm, qMass_b};
     // double qMasses_tuple [1] = {0.001};
