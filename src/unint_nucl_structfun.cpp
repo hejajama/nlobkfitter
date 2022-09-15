@@ -752,19 +752,11 @@ int main( int argc, char* argv[] )
                     FT_dipm += FT_dip + FT_dipm_b;
                     FL_qgm += FL_qg + FL_qgm_b;
                     FT_qgm  += FT_qg + FT_qgm_b;
-                // ratL_IC = FL_ICm / FL_IC;
-                // ratL_LO = FL_LOm / FL_LO;
-                // ratL_dip = FL_dipm / FL_dip;
-                // ratL_qg = FL_qgm / FL_qg;
-                // ratT_IC = FT_ICm / FT_IC;
-                // ratT_LO = FT_LOm / FT_LO;
-                // ratT_dip = FT_dipm / FT_dip;
-                // ratT_qg = FT_qgm / FT_qg;
                 ++calccount;}
-            if (useSigma3){
-                FL_sigma3 = SigmaComputer.Structf_LNLOsigma3(Q,xbj);
-                FT_sigma3 = SigmaComputer.Structf_TNLOsigma3(Q,xbj);
-                }
+                if (useSigma3){
+                    FL_sigma3 = SigmaComputer.Structf_LNLOsigma3(Q,xbj);
+                    FT_sigma3 = SigmaComputer.Structf_TNLOsigma3(Q,xbj);
+                    }
             }
         }
 

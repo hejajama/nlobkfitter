@@ -123,10 +123,26 @@ int main( int argc, char* argv[] )
         nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
         useSigma3 = false;
-    } else if (string(argv [1]) == "unsub+"){
+    } else if (string(argv [1]) == "uncc"){
         nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
-        useSigma3 = true;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::CHARM_ONLY;
+    } else if (string(argv [1]) == "unbb"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::BEAUTY_ONLY;
+    } else if (string(argv [1]) == "unlpc"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::LIGHT_PLUS_CHARM;
+    } else if (string(argv [1]) == "unlpcb"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY;
     } else {cout << helpstring << endl; return -1;}
 
     string_bk = string(argv [2]);
@@ -276,6 +292,7 @@ int main( int argc, char* argv[] )
     }
     double icqs0sq, iccsq, icx0_if, ic_ec, icgamma, icQ0sq, icY0, icEta0;
     double Cdown, Cup, CStep;
+    double qmass;
     if (argc >= 15){
         icqs0sq   = stod( argv [6] );
         iccsq     = stod( argv [7] );
@@ -287,6 +304,7 @@ int main( int argc, char* argv[] )
         icY0      = stod( argv [13] );
         icEta0    = stod( argv [14] );
         sigma02 = stod( argv [15] );
+        qmass = stod( argv[16] );
 
         // Constructing Q and C^2 grids
         qs0sqr = icqs0sq/1000.; // input in milli-GeV² integer strings
@@ -319,11 +337,12 @@ int main( int argc, char* argv[] )
     double initialconditionY0  = 0; //par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = 1.0; //par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
-    double qMass_u = 0.0023; // GeV, literature value
-    double qMass_d = 0.0048; // GeV, literature value
-    double qMass_s = 0.095; // GeV, literature value
-    double qMass_charm = 1.35;
-    double qMass_b = 4.180; // GeV, literature value
+    double qMass_u = 0.00216; // GeV, literature value
+    double qMass_d = 0.00467; // GeV, literature value
+    double qMass_s = 0.093; // GeV, literature value
+    double qMass_charm = 1.27;
+    // double qMass_b = 4.180; // GeV, literature value
+    double qMass_b = 4.75; // GeV, suggested pole mass scheme standard value from Heikki
     // std::tuple<float, float, float, float, float> qMass_all;
     double qMasses_tuple [5] = {qMass_u, qMass_d, qMass_s, qMass_charm, qMass_b};
     // double qMasses_tuple [1] = {0.001};
@@ -341,6 +360,7 @@ int main( int argc, char* argv[] )
          << ", icY0=" << initialconditionY0
          << ", icTypPartonVirtQ0sqr=" << icTypicalPartonVirtualityQ0sqr
          << ", sigma02=" << sigma02
+         << ", q_mass=" << qmass
          << endl;
 
     /*
@@ -557,25 +577,28 @@ int main( int argc, char* argv[] )
     std::vector< std::tuple<int, int, int> > coordinates;
 
     // for (int k=0; k<5; k+=1) // real masses
-    // for (int k=0; k<1; k+=1) // one mass bin
-    for (int k=0; k<10; k+=1) // masses over a range instead of real masses
+    for (int k=0; k<1; k+=1) // one mass bin
+    // for (int k=0; k<10; k+=1) // masses over a range instead of real masses
     {
+        for (int i=0; i<=14; i+=1)  // Q^2 in [1,90] with Q pow base = 5
         // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
         // for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
         // for (int i=0; i<=20; i+=10)  // Q^2 in [1,100]
         // for (int i=1; i<=17; i+=4)  // Q^2 in [1,100]
-        for (int i=10; i<=20; i+=11)  // Q^2 = 10
+        // for (int i=10; i<=20; i+=11)  // Q^2 = 10
         // for (int i=0; i<=1; i++)
         {
+            for (int j=0; j<=8; j++)  // xbj in [1e-4, 1e-2]
             // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
             //for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
             // for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
-            for (int j=9; j<=10; j+=8)  // xbj = {~1e-4}
+            // for (int j=9; j<=10; j+=8)  // xbj = {~1e-4}
             // for (int j=1; j<=9; j+=8)      // xbj = {~1e-2, ~1e-4} // LHEC predictions for x0bk=0.01
             // for (int j=2; j<=8; j+=2)  // xbj = {1e-6} // LHEC predictions for x0bk=0.01
             // for (int j=0; j<=1; j++)
             {
-                if (!((i == 0 or i == 17) or (j == 1 or j == 4 or j == 9 or j == 12 or j == 17))) { continue; }
+                // if (!((i == 0 or i == 17) or (j == 1 or j == 4 or j == 9 or j == 12 or j == 17))) { continue; }
+                if (!((i == 5) or (j == 4))) { continue; }
                 coordinates.emplace_back(i,j,k);
             }
         }
@@ -590,20 +613,23 @@ int main( int argc, char* argv[] )
         std::tie(i,j,l) = coordinates[k];
 
         if (j==0 and cubaMethod=="suave"){continue;}
-        double Q = 1.0*pow(10,(double)i/20.0);
+        double Q = 1.0*pow(5,(double)i*2/20.0);
+        // double Q = 1.0*pow(10,(double)i/20.0);
         double xbj = icx0/pow(10,(double)j/4.0);
         // double qmass = qMasses_tuple[l];
         // double qmass = 0.;
-        double qmass = 0.001 + (qMass_b - 0.001)/9.*(double)l; // masses over a range up to bottom mass
+        // double qmass = 0.001 + (qMass_b - 0.001)/9.*(double)l; // masses over a range up to bottom mass
         // double xbj = 0.1/pow(10,(double)j/4.0); // TODO NOTE: modify xbj upper limit for Heikki & Jani F2 testing 
         // #pragma omp critical
         // cout << "Q=" << Q << ", xbj=" << xbj << endl;
         
         double FL_IC=0, FL_LO=0, FL_dip=0, FL_qg=0, FL_sigma3=0;
         double FL_ICm=0, FL_LOm=0, FL_dipm=0, FL_qgm=0, FL_sigma3m=0;
+        double FL_ICm_b=0, FL_LOm_b=0, FL_dipm_b=0, FL_qgm_b=0, FL_sigma3m_b=0;
         double ratL_IC=0, ratL_LO=0, ratL_dip=0, ratL_qg=0, ratL_sig3=0;
         double FT_IC=0, FT_LO=0, FT_dip=0, FT_qg=0, FT_sigma3=0;
         double FT_ICm=0, FT_LOm=0, FT_dipm=0, FT_qgm=0, FT_sigma3m=0;
+        double FT_ICm_b=0, FT_LOm_b=0, FT_dipm_b=0, FT_qgm_b=0, FT_sigma3m_b=0;
         double ratT_IC=0, ratT_LO=0, ratT_dip=0, ratT_qg=0, ratT_sig3=0;
         int calccount=0;
         if (!computeNLO && !useMasses) // Compute reduced cross section using leading order impact factors
@@ -646,60 +672,81 @@ int main( int argc, char* argv[] )
                 FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
                 FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
                 ++calccount;}
-            // if (!useBoundLoop && useMasses){ // the old way, no z2 lower bound in dipole loop term.
-            //     FL_IC = SigmaComputer.Structf_LLO_massive(Q,icx0_bk,qmass);
-            //     FT_IC = SigmaComputer.Structf_TLO_massive(Q,icx0_bk,qmass);
-            //     FL_LO = SigmaComputer.Structf_LLO_massive(Q,xbj,qmass);
-            //     FT_LO = SigmaComputer.Structf_TLO_massive(Q,xbj,qmass);
-            //     FL_dip = SigmaComputer.Structf_LNLOdip_massive(Q,xbj,qmass);
-            //     // FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
-            //     FL_qg  = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qmass);
-            //     // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
-            //     ++calccount;}
             if (!useBoundLoop && useMasses){
-                // massless structure functions
-                // FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
-                // FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
-                // FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
-                // FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
-                // FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
-                // FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
-                // FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
-                // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
-
-                // massless computation for massive data format
-                // FL_ICm = SigmaComputer.Structf_LLO(Q,icx0_bk);
-                // FT_ICm = SigmaComputer.Structf_TLO(Q,icx0_bk);
-                // FL_LOm = SigmaComputer.Structf_LLO(Q,xbj);
-                // FT_LOm = SigmaComputer.Structf_TLO(Q,xbj);
-                // FL_dipm = SigmaComputer.Structf_LNLOdip(Q,xbj);
-                // FT_dipm = SigmaComputer.Structf_TNLOdip(Q,xbj);
-                // FL_qgm  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
-                // FT_qgm  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
-
                 // Massive structure functions
-                FL_ICm = SigmaComputer.Structf_LLO_massive(Q,icx0_bk,qmass);
-                FT_ICm = SigmaComputer.Structf_TLO_massive(Q,icx0_bk,qmass);
-                FL_LOm = SigmaComputer.Structf_LLO_massive(Q,xbj,qmass);
-                FT_LOm = SigmaComputer.Structf_TLO_massive(Q,xbj,qmass);
-                FL_dipm = SigmaComputer.Structf_LNLOdip_massive(Q,xbj,qmass);
-                FT_dipm = SigmaComputer.Structf_TNLOdip_massive(Q,xbj,qmass);
-                FL_qgm = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qmass);
-                FT_qgm  = SigmaComputer.Structf_TNLOqg_unsub_massive(Q,xbj,qmass);
-
-                // ratL_IC = FL_ICm / FL_IC;
-                // ratL_LO = FL_LOm / FL_LO;
-                // ratL_dip = FL_dipm / FL_dip;
-                // ratL_qg = FL_qgm / FL_qg;
-                // ratT_IC = FT_ICm / FT_IC;
-                // ratT_LO = FT_LOm / FT_LO;
-                // ratT_dip = FT_dipm / FT_dip;
-                // ratT_qg = FT_qgm / FT_qg;
+                if (nlodis_config::MASS_SCHEME == nlodis_config::CHARM_ONLY or nlodis_config::MASS_SCHEME == nlodis_config::BEAUTY_ONLY){
+                    FL_ICm = SigmaComputer.Structf_LLO_massive(Q,icx0_bk,qmass);
+                    FT_ICm = SigmaComputer.Structf_TLO_massive(Q,icx0_bk,qmass);
+                    FL_LOm = SigmaComputer.Structf_LLO_massive(Q,xbj,qmass);
+                    FT_LOm = SigmaComputer.Structf_TLO_massive(Q,xbj,qmass);
+                    FL_dipm = SigmaComputer.Structf_LNLOdip_massive(Q,xbj,qmass);
+                    FT_dipm = SigmaComputer.Structf_TNLOdip_massive(Q,xbj,qmass);
+                    FL_qgm = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qmass);
+                    FT_qgm  = SigmaComputer.Structf_TNLOqg_unsub_massive(Q,xbj,qmass);
+                } else if (nlodis_config::MASS_SCHEME == nlodis_config::LIGHT_PLUS_CHARM){
+                    FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
+                    FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
+                    FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+                    FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
+                    FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
+                    FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
+                    FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
+                    FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+                    FL_ICm = SigmaComputer.Structf_LLO_massive(Q,icx0_bk,qmass);
+                    FT_ICm = SigmaComputer.Structf_TLO_massive(Q,icx0_bk,qmass);
+                    FL_LOm = SigmaComputer.Structf_LLO_massive(Q,xbj,qmass);
+                    FT_LOm = SigmaComputer.Structf_TLO_massive(Q,xbj,qmass);
+                    FL_dipm = SigmaComputer.Structf_LNLOdip_massive(Q,xbj,qmass);
+                    FT_dipm = SigmaComputer.Structf_TNLOdip_massive(Q,xbj,qmass);
+                    FL_qgm = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qmass);
+                    FT_qgm  = SigmaComputer.Structf_TNLOqg_unsub_massive(Q,xbj,qmass);
+                    FL_ICm += FL_IC;
+                    FT_ICm += FT_IC;
+                    FL_LOm += FL_LO;
+                    FT_LOm += FT_LO;
+                    FL_dipm += FL_dip;
+                    FT_dipm += FT_dip;
+                    FL_qgm += FL_qg;
+                    FT_qgm  += FT_qg;
+                } else if (nlodis_config::MASS_SCHEME == nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY){
+                    FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
+                    FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
+                    FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+                    FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
+                    FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
+                    FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
+                    FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
+                    FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+                    FL_ICm = SigmaComputer.Structf_LLO_massive(Q,icx0_bk,qmass);
+                    FT_ICm = SigmaComputer.Structf_TLO_massive(Q,icx0_bk,qmass);
+                    FL_LOm = SigmaComputer.Structf_LLO_massive(Q,xbj,qmass);
+                    FT_LOm = SigmaComputer.Structf_TLO_massive(Q,xbj,qmass);
+                    FL_dipm = SigmaComputer.Structf_LNLOdip_massive(Q,xbj,qmass);
+                    FT_dipm = SigmaComputer.Structf_TNLOdip_massive(Q,xbj,qmass);
+                    FL_qgm = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qmass);
+                    FT_qgm  = SigmaComputer.Structf_TNLOqg_unsub_massive(Q,xbj,qmass);
+                    FL_ICm_b = SigmaComputer.Structf_LLO_massive(Q,icx0_bk,qMass_b);
+                    FT_ICm_b = SigmaComputer.Structf_TLO_massive(Q,icx0_bk,qMass_b);
+                    FL_LOm_b = SigmaComputer.Structf_LLO_massive(Q,xbj,qMass_b);
+                    FT_LOm_b = SigmaComputer.Structf_TLO_massive(Q,xbj,qMass_b);
+                    FL_dipm_b = SigmaComputer.Structf_LNLOdip_massive(Q,xbj,qMass_b);
+                    FT_dipm_b = SigmaComputer.Structf_TNLOdip_massive(Q,xbj,qMass_b);
+                    FL_qgm_b = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qMass_b);
+                    FT_qgm_b  = SigmaComputer.Structf_TNLOqg_unsub_massive(Q,xbj,qMass_b);
+                    FL_ICm += FL_IC + FL_ICm_b;
+                    FT_ICm += FT_IC + FT_ICm_b;
+                    FL_LOm += FL_LO + FL_LOm_b;
+                    FT_LOm += FT_LO + FT_LOm_b;
+                    FL_dipm += FL_dip + FL_dipm_b;
+                    FT_dipm += FT_dip + FT_dipm_b;
+                    FL_qgm += FL_qg + FL_qgm_b;
+                    FT_qgm  += FT_qg + FT_qgm_b;
                 ++calccount;}
-            if (useSigma3){
-                FL_sigma3 = SigmaComputer.Structf_LNLOsigma3(Q,xbj);
-                FT_sigma3 = SigmaComputer.Structf_TNLOsigma3(Q,xbj);
-                }
+                if (useSigma3){
+                    FL_sigma3 = SigmaComputer.Structf_LNLOsigma3(Q,xbj);
+                    FT_sigma3 = SigmaComputer.Structf_TNLOsigma3(Q,xbj);
+                    }
+            }
         }
 
         if (computeNLO && useSUB) // SUB SCHEME Full NLO impact factors for reduced cross section
