@@ -15,6 +15,7 @@
 #include "solver.hpp"
 #include "ic.hpp"
 #include "mv-nucl.hpp"
+#include "mv.hpp"
 #include "ic_datafile.hpp"
 #include "dipole.hpp"
 #include "solver.hpp"
@@ -351,7 +352,7 @@ int main( int argc, char* argv[] )
     // double qMasses_tuple [1] = {0.001};
     bool useMasses = nlodis_config::USE_MASSES;
     bool useCharm = false;
-    int A = 197; // stable gold isotope
+    double A = 197; // stable gold isotope
 
     cout << "# === Initial parameters ===" << endl;
     cout << "# "
@@ -372,78 +373,85 @@ int main( int argc, char* argv[] )
     /*
     // ***Solve BK***
     */
-
-    // double maxy = 15.4249; // from the paper, fcBK_MV.dat, 15=10+5 extra for z2improved extended evolution
-
-    // double maxy = std::log(icx0_bk/(1e-5)) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
-    // if (useImprovedZ2Bound){maxy += 5;}
-
-    // double maxy = std::log(icx0_bk/(1e-7)); // from the paper, fcBK_MV.dat, 15=10+5 extra for z2improved extended evolution
-    // if (useImprovedZ2Bound){maxy += std::log(100/1);} // extra evolution from the term log(Q^2 / Q_0^2)
-
+    string dipole_basename = "./out/dipoles/dipole";
+    string dipole_filename;
+    AmplitudeLib* DipoleAmplitude_ptr; // Forward declaration of the dipole object to be initialized from a file or solved data.
+    Dipole* DipoleSolver_ptr;
     double eta0 = 0;
-
-    double min_xbj = 1e-5;
-    // NLODISSIGMAR IC + SOLVER CODE
-    MVnuc ic;                                            // Initial condition
-    ic.SetQsqr(qs0sqr);
-    ic.SetAnomalousDimension(anomalous_dimension);
-    ic.setImpactParb(impact_b);
-    ic.setA(A);
-    ic.setSigma0(sigma02*2);
-    ic.SetE(e_c);                                     // e_c of MVe parametrization
-
-    Dipole dipole(&ic);
-    dipole.SetX0(icx0_bk);
-    BKSolver solver(&dipole);
-    double maxy = std::log(icx0_bk/(1e-7)) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
-    
-    double maxq2=100;     // Todo, take from actual data!
+    double min_xbj = 1e-7;
+    double maxq2=100.0;
+    double maxy = std::log(icx0_bk/(min_xbj)) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
     if (useImprovedZ2Bound)
         maxy += std::log(maxq2 / icTypicalPartonVirtualityQ0sqr);
 
-    // cout << "=== Solving BK ===" << endl;
+    // BK IC depends on impactb
+    MVnuc ic_nuc;                                     // Nucleus initial condition
+    MV ic;                                          // Proton initial condition
+    if (impact_b <= 30.0){
+        ic_nuc.SetQsqr(qs0sqr);
+        ic_nuc.SetAnomalousDimension(anomalous_dimension);
+        ic_nuc.setImpactParb(impact_b);
+        ic_nuc.setA(A);
+        ic_nuc.setSigma0(sigma02*2);
+        ic_nuc.SetE(e_c);                                     // e_c of MVe parametrization
+        dipole_filename = dipole_basename
+                                + "_" + string_bk
+                                + "_" + string_rc
+                                + "_x0bk" + std::to_string(icx0_bk)
+                                + "_qs0sqr" + std::to_string(qs0sqr)
+                                + "_asC^2" + std::to_string(alphas_scaling)
+                                + "_gamma" + std::to_string(anomalous_dimension)
+                                + "_sigma0" + std::to_string(sigma02*2)
+                                + "_impactb" + std::to_string(impact_b)
+                                + "_A" + std::to_string(A)
+                                + "_ec" + std::to_string(e_c)
+                                + "_eta0" + std::to_string(eta0)
+                                + "_maxy" + std::to_string(maxy)
+                                + "_euler" + std::to_string(config::EULER_METHOD)
+                                + "_step" + std::to_string(config::DE_SOLVER_STEP)
+                                + "_rpoints" + std::to_string(config::RPOINTS)
+                                + "_rminmax" + std::to_string(config::MINR) + "--" + std::to_string(config::MAXR)
+                                + "_intacc" + std::to_string(config::INTACCURACY) ;
+        DipoleSolver_ptr = new Dipole(&ic_nuc);
+        // nuclear structure functions are not normalized by sigma02, they only get an overall 2pi from the angular b-integral
+        sigma02 = 2 * M_PI;
+    } else {
+        ic.SetQsqr(qs0sqr);
+        ic.SetAnomalousDimension(anomalous_dimension);
+        ic.SetE(e_c);
+        dipole_filename = dipole_basename
+                                + "_" + string_bk
+                                + "_" + string_rc
+                                + "_x0bk" + std::to_string(icx0_bk)
+                                + "_qs0sqr" + std::to_string(qs0sqr)
+                                + "_asC^2" + std::to_string(alphas_scaling)
+                                + "_gamma" + std::to_string(anomalous_dimension)
+                                + "_ec" + std::to_string(e_c)
+                                + "_eta0" + std::to_string(eta0)
+                                + "_maxy" + std::to_string(maxy)
+                                + "_euler" + std::to_string(config::EULER_METHOD)
+                                + "_step" + std::to_string(config::DE_SOLVER_STEP)
+                                + "_rpoints" + std::to_string(config::RPOINTS)
+                                + "_rminmax" + std::to_string(config::MINR) + "--" + std::to_string(config::MAXR)
+                                + "_intacc" + std::to_string(config::INTACCURACY) ;
+        DipoleSolver_ptr = new Dipole(&ic);
+        // modify sigma02 to account for the linearized nuclear factor
+        InitializeWSDistribution(A);
+        sigma02 = 2 * M_PI * sigma02 * A * T_A(impact_b,A);
+    }
+
+    // SOLVER CODE
+    // Dipole dipole(&ic);
+    // dipole.SetX0(icx0_bk);
+    // BKSolver solver(&dipole);
+    DipoleSolver_ptr->SetX0(icx0_bk);
+    BKSolver solver(*&DipoleSolver_ptr);
 
     solver.SetAlphasScaling(alphas_scaling);
-    // solver.SetEta0(par[ parameters.Index("eta0")]);
     solver.SetX0(icx0_bk);
     solver.SetICX0_nlo_impfac(icx0_nlo_impfac);
     solver.SetICTypicalPartonVirtualityQ0sqr(icTypicalPartonVirtualityQ0sqr);
 
-
-
-    AmplitudeLib* DipoleAmplitude_ptr; // Forward declaration of the dipole object to be initialized from a file or solved data.
-    string dipole_basename = "./out/dipoles/dipole";
-    string dipole_filename = dipole_basename
-                             + "_" + string_bk
-                             + "_" + string_rc
-                             + "_x0bk" + std::to_string(icx0_bk)
-                             + "_qs0sqr" + std::to_string(qs0sqr)
-                             + "_asC^2" + std::to_string(alphas_scaling)
-                             + "_gamma" + std::to_string(anomalous_dimension)
-                             + "_sigma0" + std::to_string(sigma02*2)
-                             + "_impactb" + std::to_string(impact_b)
-                             + "_A" + std::to_string(A)
-                             + "_ec" + std::to_string(e_c)
-                             + "_eta0" + std::to_string(eta0)
-                             + "_maxy" + std::to_string(maxy)
-                             + "_euler" + std::to_string(config::EULER_METHOD)
-                             + "_step" + std::to_string(config::DE_SOLVER_STEP)
-                             + "_rpoints" + std::to_string(config::RPOINTS)
-                             + "_rminmax" + std::to_string(config::MINR) + "--" + std::to_string(config::MAXR)
-                             + "_intacc" + std::to_string(config::INTACCURACY) ;
-    
-    // generate publishable filenames
-    // string bk_name = (string_bk == "trbk") ? "tbk" : string_bk;
-    // string rc_name = (string_rc == "sdrc") ? "bal+sd" : "parent";
-    // string Y0_valu = (icx0_bk == 1.0) ? "0.00" : std::to_string((int)(std::log(1./icx0_bk) * 100 + .5) / 100.0);
-    // Y0_valu.erase(Y0_valu.find_last_of(".") + 3, std::string::npos);
-    // string dipole_filename = dipole_basename
-    //                          + "-" + bk_name
-    //                          + "-" + dataname
-    //                          + "-" + rc_name
-    //                          + "-" + Y0_valu
-    //                          + ".dip";
     if (FILE *file = fopen(dipole_filename.c_str(), "r")) {
         cout << "# Previously saved dipole file found: " << dipole_filename << endl;
         DipoleAmplitude_ptr = new AmplitudeLib(dipole_filename);      // read data from existing file.

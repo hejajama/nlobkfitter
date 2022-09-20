@@ -4,8 +4,8 @@
  * Heikki Mäntysaari <heikki.mantysaari@jyu.fi>, 2012
  */
 
-#ifndef _BK_MV_IC_
-#define _BK_MV_IC_
+#ifndef _BK_MVNUC_IC_
+#define _BK_MVNUC_IC_
 
 /*
  * MV and MV^\gamma initial conditions
