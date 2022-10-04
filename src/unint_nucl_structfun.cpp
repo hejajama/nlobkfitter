@@ -144,6 +144,20 @@ int main( int argc, char* argv[] )
         useSUB = false;
         useSigma3 = false;
         nlodis_config::MASS_SCHEME = nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY;
+    } else if (string(argv [1]) == "locc"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useNLO = false;
+        computeNLO = false;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::CHARM_ONLY;
+    } else if (string(argv [1]) == "lolpcb"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useNLO = false;
+        computeNLO = false;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY;
     } else {cout << helpstring << endl; return -1;}
 
     string_bk = string(argv [2]);
@@ -618,7 +632,7 @@ int main( int argc, char* argv[] )
             // for (int j=2; j<=8; j+=2)  // xbj = {1e-6} // LHEC predictions for x0bk=0.01
             // for (int j=0; j<=1; j++)
             {
-                if (!((i == 5) or (j == 4))) { continue; }
+                if (!((i == 5) or (j == 0) or (j == 4))) { continue; }
                 coordinates.emplace_back(i,j,k);
             }
         }
@@ -664,8 +678,19 @@ int main( int argc, char* argv[] )
             double fac = structurefunfac*Sq(Q);
             // FL_LOm = fac*SigmaComputer.LLOpMass(Q,xbj,useCharm);
             // FT_LOm = fac*SigmaComputer.TLOpMass(Q,xbj,useCharm);
-            FL_LOm = fac*SigmaComputer.LLOp_massive(Q,xbj,qmass);
-            FT_LOm = fac*SigmaComputer.TLOp_massive(Q,xbj,qmass);
+            if (nlodis_config::MASS_SCHEME == nlodis_config::CHARM_ONLY or nlodis_config::MASS_SCHEME == nlodis_config::BEAUTY_ONLY){
+                FL_LOm = fac*SigmaComputer.LLOp_massive(Q,xbj,qmass);
+                FT_LOm = fac*SigmaComputer.TLOp_massive(Q,xbj,qmass);
+            } else if (nlodis_config::MASS_SCHEME == nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY){
+                FL_LO = fac*(SigmaComputer.LLOp_massive(Q,xbj,qMass_u) + SigmaComputer.LLOp_massive(Q,xbj,qMass_d) + SigmaComputer.LLOp_massive(Q,xbj,qMass_s));
+                FT_LO = fac*(SigmaComputer.TLOp_massive(Q,xbj,qMass_u) + SigmaComputer.TLOp_massive(Q,xbj,qMass_d) + SigmaComputer.TLOp_massive(Q,xbj,qMass_s));
+                FL_LOm = fac*SigmaComputer.LLOp_massive(Q,xbj,qmass);
+                FT_LOm = fac*SigmaComputer.TLOp_massive(Q,xbj,qmass);
+                FL_LOm_b = SigmaComputer.Structf_LLO_massive(Q,xbj,qMass_b);
+                FT_LOm_b = SigmaComputer.Structf_TLO_massive(Q,xbj,qMass_b);
+                FL_LOm += FL_LO + FL_LOm_b;
+                FT_LOm += FT_LO + FT_LOm_b;
+            }
             ++calccount;
         }
 

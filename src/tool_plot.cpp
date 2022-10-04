@@ -143,6 +143,20 @@ int main( int argc, char* argv[] )
         useSUB = false;
         useSigma3 = false;
         nlodis_config::MASS_SCHEME = nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY;
+    } else if (string(argv [1]) == "locc"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useNLO = false;
+        computeNLO = false;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::CHARM_ONLY;
+    } else if (string(argv [1]) == "lolpcb"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useNLO = false;
+        computeNLO = false;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY;
     } else {cout << helpstring << endl; return -1;}
 
     string_bk = string(argv [2]);
@@ -272,6 +286,8 @@ int main( int argc, char* argv[] )
     double anomalous_dimension;
     double icx0_bk;
     double sigma02;
+    double qmass;
+    double impact_b;
 
     if (argc == 6){
 	    qs0sqr       = 0.165; //par[ parameters.Index("qs0sqr")];
@@ -288,11 +304,11 @@ int main( int argc, char* argv[] )
 	    anomalous_dimension = stod(argv[8]);
         icx0_bk		    = stod(argv[9]);
         sigma02		    = stod(argv[10]);
-
+        qmass        = stod(argv[11]);
+        impact_b        = stod(argv[12]);
     }
     double icqs0sq, iccsq, icx0_if, ic_ec, icgamma, icQ0sq, icY0, icEta0;
     double Cdown, Cup, CStep;
-    double qmass;
     if (argc >= 15){
         icqs0sq   = stod( argv [6] );
         iccsq     = stod( argv [7] );
@@ -598,7 +614,8 @@ int main( int argc, char* argv[] )
             // for (int j=0; j<=1; j++)
             {
                 // if (!((i == 0 or i == 17) or (j == 1 or j == 4 or j == 9 or j == 12 or j == 17))) { continue; }
-                if (!((i == 5) or (j == 4))) { continue; }
+                // if (!((i == 5) or (j == 4))) { continue; }
+                if (!((i == 5) or (j == 0) or (j == 4))) { continue; }
                 coordinates.emplace_back(i,j,k);
             }
         }
@@ -645,8 +662,19 @@ int main( int argc, char* argv[] )
             double fac = structurefunfac*Sq(Q);
             // FL_LOm = fac*SigmaComputer.LLOpMass(Q,xbj,useCharm);
             // FT_LOm = fac*SigmaComputer.TLOpMass(Q,xbj,useCharm);
-            FL_LOm = fac*SigmaComputer.LLOp_massive(Q,xbj,qmass);
-            FT_LOm = fac*SigmaComputer.TLOp_massive(Q,xbj,qmass);
+            if (nlodis_config::MASS_SCHEME == nlodis_config::CHARM_ONLY or nlodis_config::MASS_SCHEME == nlodis_config::BEAUTY_ONLY){
+                FL_LOm = fac*SigmaComputer.LLOp_massive(Q,xbj,qmass);
+                FT_LOm = fac*SigmaComputer.TLOp_massive(Q,xbj,qmass);
+            } else if (nlodis_config::MASS_SCHEME == nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY){
+                FL_LO = fac*(SigmaComputer.LLOp_massive(Q,xbj,qMass_u) + SigmaComputer.LLOp_massive(Q,xbj,qMass_d) + SigmaComputer.LLOp_massive(Q,xbj,qMass_s));
+                FT_LO = fac*(SigmaComputer.TLOp_massive(Q,xbj,qMass_u) + SigmaComputer.TLOp_massive(Q,xbj,qMass_d) + SigmaComputer.TLOp_massive(Q,xbj,qMass_s));
+                FL_LOm = fac*SigmaComputer.LLOp_massive(Q,xbj,qmass);
+                FT_LOm = fac*SigmaComputer.TLOp_massive(Q,xbj,qmass);
+                FL_LOm_b = SigmaComputer.Structf_LLO_massive(Q,xbj,qMass_b);
+                FT_LOm_b = SigmaComputer.Structf_TLO_massive(Q,xbj,qMass_b);
+                FL_LOm += FL_LO + FL_LOm_b;
+                FT_LOm += FT_LO + FT_LOm_b;
+            }
             ++calccount;
         }
 
