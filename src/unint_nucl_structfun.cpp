@@ -308,7 +308,7 @@ int main( int argc, char* argv[] )
         q_mass        = stod(argv[11]);
         impact_b        = stod(argv[12]);
     }
-    double icqs0sq, iccsq, icx0_if, ic_ec, icgamma, icQ0sq, icY0, icEta0;
+    double icqs0sq, iccsq, icx0_if, ic_ec=1.0, icgamma, icQ0sq, icY0, icEta0;
     double Cdown, Cup, CStep;
     if (argc >= 15){
         icqs0sq   = stod( argv [6] );
@@ -350,7 +350,7 @@ int main( int argc, char* argv[] )
     icx0_bk = 0.01; //par[ parameters.Index("initialconditionX0")];
     sigma02 = 1.0;
     }
-    double e_c          = 1.0; //par[ parameters.Index("e_c")];
+    double e_c          = ic_ec; //par[ parameters.Index("e_c")];
     double icx0_nlo_impfac = 1.0; //par[ parameters.Index("initialconditionX0")];
     double initialconditionY0  = 0; //par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = 1.0; //par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
@@ -619,6 +619,7 @@ int main( int argc, char* argv[] )
         // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
         // for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
         for (int i=0; i<=14; i+=1)  // Q^2 in [1,90] with Q pow base = 5
+        // for (int i=15; i<=29; i+=2)  // Q^2 in [125,11300] with Q pow base = 5
         // for (int i=0; i<=20; i+=10)  // Q^2 in {1,10,100}
         // for (int i=1; i<=17; i+=4)  // Q^2 in [1,~50]
         // for (int i=10; i<=20; i+=11)  // Q^2 = 10
@@ -632,7 +633,7 @@ int main( int argc, char* argv[] )
             // for (int j=2; j<=8; j+=2)  // xbj = {1e-6} // LHEC predictions for x0bk=0.01
             // for (int j=0; j<=1; j++)
             {
-                if (!((i == 5) or (j == 0) or (j == 4))) { continue; }
+                if (!((i == 5) or (j == 4))) { continue; }
                 coordinates.emplace_back(i,j,k);
             }
         }

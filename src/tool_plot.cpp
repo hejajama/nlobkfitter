@@ -307,7 +307,7 @@ int main( int argc, char* argv[] )
         qmass        = stod(argv[11]);
         impact_b        = stod(argv[12]);
     }
-    double icqs0sq, iccsq, icx0_if, ic_ec, icgamma, icQ0sq, icY0, icEta0;
+    double icqs0sq, iccsq, icx0_if, ic_ec=1.0, icgamma, icQ0sq, icY0, icEta0;
     double Cdown, Cup, CStep;
     if (argc >= 15){
         icqs0sq   = stod( argv [6] );
@@ -348,7 +348,7 @@ int main( int argc, char* argv[] )
     icx0_bk = 0.01; //par[ parameters.Index("initialconditionX0")];
     sigma02 = 1.0;
     }
-    double e_c          = 1.0; //par[ parameters.Index("e_c")];
+    double e_c          = ic_ec; //par[ parameters.Index("e_c")];
     double icx0_nlo_impfac = 1.0; //par[ parameters.Index("initialconditionX0")];
     double initialconditionY0  = 0; //par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = 1.0; //par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
@@ -597,6 +597,7 @@ int main( int argc, char* argv[] )
     // for (int k=0; k<10; k+=1) // masses over a range instead of real masses
     {
         for (int i=0; i<=14; i+=1)  // Q^2 in [1,90] with Q pow base = 5
+        // for (int i=15; i<=29; i+=2)  // Q^2 in [125,11300] with Q pow base = 5
         // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
         // for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
         // for (int i=0; i<=20; i+=10)  // Q^2 in [1,100]
@@ -615,7 +616,7 @@ int main( int argc, char* argv[] )
             {
                 // if (!((i == 0 or i == 17) or (j == 1 or j == 4 or j == 9 or j == 12 or j == 17))) { continue; }
                 // if (!((i == 5) or (j == 4))) { continue; }
-                if (!((i == 5) or (j == 0) or (j == 4))) { continue; }
+                if (!((i == 5) or (j == 4))) { continue; }
                 coordinates.emplace_back(i,j,k);
             }
         }
