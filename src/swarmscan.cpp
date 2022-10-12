@@ -48,6 +48,7 @@ void ErrHandlerCustom(const char * reason,
 
     if (gsl_errno == 11) return; // ignore max subdivision errors
     if (gsl_errno == 18) return; // roundoff errors from small r?
+    // if (gsl_errno == 15) return; // underflow // safe to ignore?
     // if (gsl_errno == 15 or gsl_errno == 16) return;
     // Ugly hack, comes from the edges of the z integral in virtual_photon.cpp
     // Overflows come from IPsat::bint when it is done analytically
@@ -71,8 +72,10 @@ int main( int argc, char* argv[] )
     nlodis_config::PRINTDATA = true;
     bool useNLO = true;
     bool computeNLO = useNLO;
-    // string cubaMethod = "vegas";
-    string cubaMethod = "suave";
+    nlodis_config::USE_MASSES = false;
+
+    string cubaMethod = "vegas";
+    // string cubaMethod = "suave";
 
     config::NO_K2 = true;  // Do not include numerically demanding full NLO part
     config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
@@ -265,6 +268,7 @@ int main( int argc, char* argv[] )
     // Ccalc = 6.35;
     // icgamma = 1.135;
     double old_sigma02 = 1.;
+    double mass_charm = 1.27; // MSbar value as default
     cout << Qcalc << " " << Ccalc << endl;
 
 	parameters.Add("qs0sqr",		        Qcalc);
@@ -278,6 +282,7 @@ int main( int argc, char* argv[] )
     parameters.Add("initialconditionY0",    icY0 );
     parameters.Add("eta0", icEta0 );
     parameters.Add("old_sigma02", old_sigma02 );
+    parameters.Add("mass_charm", mass_charm );
 
     NLODISFitter fitter(parameters);
     fitter.AddDataset(data);

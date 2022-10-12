@@ -390,7 +390,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     }
     if (qs0sqr < 0.0001 or qs0sqr > 100 or alphas_scaling < 0.01 or alphas_scaling > 99999
         /*or fitsigma0 < 0.1 or fitsigma0 > 999 */
-        or e_c < 1 or e_c > 9999)
+        or e_c < 1)
     return 9999999;
 
     cout << "=== Initializing Chi^2 regression === "<< " parameters (" << PrintVector(par) << ")" << endl;
@@ -902,7 +902,7 @@ double ComputeSigmaR::x_eta_delta_ij_r(double x_ij_sq, double rsq){
 ///===========================================================================================
 // RUNNING COUPLINGS
 double ComputeSigmaR::alpha_bar_running_pd_sharpcutoff( double rsq ) { // alphabar = Nc/M_PI * alphas
-    double logvar = gsl_sf_log(	(4*(alpha_scaling_C2_)/(rsq*Sq(lambdaqcd))	)	);
+    double logvar = std::log(	(4*(alpha_scaling_C2_)/(rsq*Sq(lambdaqcd))	)	);
     double AlphaSres = 12*M_PI/(	(33.0-2*Nc)*logvar );
     if ((logvar<0) || (AlphaSres>0.7)) {
         AlphaSres = 0.7;
@@ -1542,9 +1542,12 @@ double ComputeSigmaR::Bessel0Tripole(double Q, double x, double z1, double z2, d
 
     double bessel_innerfun = Q*sqrt(X3sq);
     double facNLO = 0;
-    if (bessel_innerfun < 1e-7){
+    // if (bessel_innerfun < 1e-7){
+    if (bessel_innerfun > 200){
         // cout << "bessel_innerfun = " << bessel_innerfun << " Q " << Q << " X3sq " << X3sq << endl;
         return 0;
+    } else if (bessel_innerfun < 1e-30){
+        return 1;
     }else{
         facNLO = 4.0*Sq(Q*gsl_sf_bessel_K0( bessel_innerfun ));
     }
@@ -1613,12 +1616,12 @@ double ComputeSigmaR::ILNLOqgRisto(double Q, double x, double z0, double z2, dou
     ///*
     double facExpn, facExpo;
     if(x02sq/x01sq>1e-8 && x02sq/x01sq<5e2){
-        facExpn = gsl_sf_exp(-x02sq/(gsl_sf_exp(M_EULER)*x01sq));
+        facExpn = std::exp(-x02sq/(std::exp(M_EULER)*x01sq));
     }else if (x02sq/x01sq<1e-8){
         facExpn = 1;
     }else{ facExpn = 0; }
     if(x21sq/x01sq>1e-8 && x21sq/x01sq<5e2){
-        facExpo = gsl_sf_exp(-x21sq/(gsl_sf_exp(M_EULER)*x01sq));
+        facExpo = std::exp(-x21sq/(std::exp(M_EULER)*x01sq));
     }else if (x21sq/x01sq<1e-8){
         facExpn = 1;
     }else{ facExpn = 0; }
@@ -1632,8 +1635,8 @@ double ComputeSigmaR::ILNLOqgRisto(double Q, double x, double z0, double z2, dou
     }else{ facBesExpo = 0; }
     //*/
 
-    //double facBesExpn = 4.0*Sq(Q*gsl_sf_bessel_K0(Qbarn*sqrt(x01sq)))*gsl_sf_exp(-x02sq/(gsl_sf_exp(M_EULER)*x01sq))*SKernel;
-    //double facBesExpo = 4.0*Sq(Q*gsl_sf_bessel_K0(Qbaro*sqrt(x01sq)))*gsl_sf_exp(-x21sq/(gsl_sf_exp(M_EULER)*x01sq))*SKernel;
+    //double facBesExpn = 4.0*Sq(Q*gsl_sf_bessel_K0(Qbarn*sqrt(x01sq)))*std::exp(-x02sq/(std::exp(M_EULER)*x01sq))*SKernel;
+    //double facBesExpo = 4.0*Sq(Q*gsl_sf_bessel_K0(Qbaro*sqrt(x01sq)))*std::exp(-x21sq/(std::exp(M_EULER)*x01sq))*SKernel;
 
     // FIRST FORM
     double term1 = facterm1*( facBesselTrip - facBesExpn );
@@ -1663,14 +1666,27 @@ int integrand_ILqgunsub(const int *ndim, const double x[], const int *ncomp,doub
         return 0;
     }
     double z1=(1.0-z2min)*x[0];
-    double z2=((1.0-z1)-z2min)*x[1]+z2min;
+    double z2=((1.0-z1)-z2min)*x[1]+z2min; // linear z_2 int
+    // double ymax = std::log(1-z1);
+    // double ymin = std::log(z2min);
+    // double y=(ymax-ymin)*x[1]+ymin;
+    // double z2=std::exp(y);
     double x01=nlodis_config::MAXR*x[2];
     double x02=nlodis_config::MAXR*x[3];
+    // double rhomax=std::log(nlodis_config::MAXR);
+    // double rhomin=std::log(nlodis_config::MINR);
+    // double rho01=(rhomax-rhomin)*x[2] + rhomin;
+    // double rho02=(rhomax-rhomin)*x[3] + rhomin;
+    // double x01=std::exp(rho01);
+    // double x02=std::exp(rho02);
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
-    double jac=(1.0-z2min)*(1.0-z1-z2min);
+    double jac=(1.0-z2min)*(1.0-z1-z2min)*Sq(nlodis_config::MAXR); // linear z_2 int, linear x01 x02
+    // double jac=(1.0-z2min)*(ymax-ymin)*z2; // log z_2 int
+    // double jac=(1.0-z2min)*(1.0-z1-z2min)*Sq(rhomax-rhomin)*x01*x02; // linear z_2 int, log x01, log x02
+
     double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
 
     Alphasdata alphasdata;
@@ -1883,7 +1899,8 @@ double ComputeSigmaR::LNLOqgunsub(double Q, double x) { // old LNLObeufQGiancu
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ILqgunsub,&userdata,&integral,&error,&prob);
-    return 2*fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+    // return 2*fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+    return 2*fac*2.0*M_PI*integral; // removed x01, x02 integral jacobians --- use with logarithmic x01, x02 integrals
 }
 
 double ComputeSigmaR::LNLOsigma3(double Q, double x) {
@@ -2420,9 +2437,11 @@ double ComputeSigmaR::Bessel1Tripole(double Q, double x, double z1, double z2, d
 
     double bessel_innerfun = Q*sqrt(X3sq);
     double facNLO = 0;
-    if (bessel_innerfun < 1e-7){
+    if (bessel_innerfun > 200){
         // cout << "bessel_innerfun = " << bessel_innerfun << " Q " << Q << " X3sq " << X3sq << endl;
         return 0;
+    } else if (bessel_innerfun < 1e-30){
+        return 1;
     }else{
         facNLO = Sq(Q*gsl_sf_bessel_K1(bessel_innerfun));
     }
@@ -2491,12 +2510,12 @@ double ComputeSigmaR::ITNLOqgRisto(double Q, double x, double z0, double z2, dou
     ///*
     double facExpn, facExpo;
     if(x02sq/x01sq>1e-8 && x02sq/x01sq<5e2){
-        facExpn = gsl_sf_exp(-x02sq/(gsl_sf_exp(M_EULER)*x01sq));
+        facExpn = std::exp(-x02sq/(std::exp(M_EULER)*x01sq));
     }else if (x02sq/x01sq<1e-8){
         facExpn = 1;
     }else{ facExpn = 0; }
     if(x21sq/x01sq>1e-8 && x21sq/x01sq<5e2){
-        facExpo = gsl_sf_exp(-x21sq/(gsl_sf_exp(M_EULER)*x01sq));
+        facExpo = std::exp(-x21sq/(std::exp(M_EULER)*x01sq));
     }else if (x21sq/x01sq<1e-8){
         facExpn = 1;
     }else{ facExpn = 0; }
@@ -2509,8 +2528,8 @@ double ComputeSigmaR::ITNLOqgRisto(double Q, double x, double z0, double z2, dou
         facBesExpo = Sq(Q*gsl_sf_bessel_K1(Qbaro*sqrt(x01sq)))*facExpo*SKernel;
     }else{ facBesExpo = 0; }
     //*/
-    //double facBesExpn = Sq(Q*gsl_sf_bessel_K1(Qbarn*sqrt(x01sq)))*gsl_sf_exp(-x02sq/(gsl_sf_exp(M_EULER)*x01sq))*SKernel;
-    //double facBesExpo = Sq(Q*gsl_sf_bessel_K1(Qbaro*sqrt(x01sq)))*gsl_sf_exp(-x21sq/(gsl_sf_exp(M_EULER)*x01sq))*SKernel;
+    //double facBesExpn = Sq(Q*gsl_sf_bessel_K1(Qbarn*sqrt(x01sq)))*std::exp(-x02sq/(std::exp(M_EULER)*x01sq))*SKernel;
+    //double facBesExpo = Sq(Q*gsl_sf_bessel_K1(Qbaro*sqrt(x01sq)))*std::exp(-x21sq/(std::exp(M_EULER)*x01sq))*SKernel;
 
     double term1 = factermF*( facBesselTrip - facBesExpn );
     double term2 = factermG*( facBesselTrip - facBesExpo );
@@ -2532,14 +2551,26 @@ int integrand_ITqgunsub(const int *ndim, const double x[], const int *ncomp, dou
         return 0;
     }
     double z1=(1.0-z2min)*x[0];
-    double z2=((1.0-z1)-z2min)*x[1]+z2min;
+    double z2=((1.0-z1)-z2min)*x[1]+z2min; // linear z_2 int
+    // double ymax = std::log(1-z1);
+    // double ymin = std::log(z2min);
+    // double y=(ymax-ymin)*x[1]+ymin;
+    // double z2=std::exp(y);
     double x01=nlodis_config::MAXR*x[2];
     double x02=nlodis_config::MAXR*x[3];
+    // double rhomax=std::log(nlodis_config::MAXR);
+    // double rhomin=std::log(nlodis_config::MINR);
+    // double rho01=(rhomax-rhomin)*x[2] + rhomin;
+    // double rho02=(rhomax-rhomin)*x[3] + rhomin;
+    // double x01=std::exp(rho01);
+    // double x02=std::exp(rho02);
     double phix0102=2.0*M_PI*x[4];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
-    double jac=(1.0-z2min)*(1.0-z1-z2min);
+    double jac=(1.0-z2min)*(1.0-z1-z2min)*Sq(nlodis_config::MAXR); // linear z_2 int, linear in x01 x02
+    // double jac=(1.0-z2min)*(ymax-ymin)*z2; // log z_2 int
+    // double jac=(1.0-z2min)*(1.0-z1-z2min)*Sq(rhomax-rhomin)*x01*x02; // linear z_2 int, log x01, log x02
     double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
 
     Alphasdata alphasdata;
@@ -2751,7 +2782,8 @@ double ComputeSigmaR::TNLOqgunsub(double Q, double x) { // old TNLObeufQGiancu
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ITqgunsub,&userdata,&integral,&error,&prob);
-    return 2*fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+    // return 2*fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
+    return 2*fac*2.0*M_PI*integral; // removed x01 x02 integral jacobian --- use with logarithmic x01 x02 integral
 }
 
 double ComputeSigmaR::TNLOsigma3(double Q, double x) {
