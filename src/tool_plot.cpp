@@ -70,7 +70,7 @@ int main( int argc, char* argv[] )
     nlodis_config::CUBA_EPSREL = 1e-4;
     // nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
     // nlodis_config::CUBA_MAXEVAL = 4e8;
-    nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
+    nlodis_config::CUBA_MAXEVAL= 5e9; // highacc def1
     nlodis_config::MINR = 1e-6;
     // nlodis_config::MINR = 1e-7;
     nlodis_config::MAXR = 30;
@@ -128,6 +128,12 @@ int main( int argc, char* argv[] )
         useSUB = false;
         useSigma3 = false;
         nlodis_config::MASS_SCHEME = nlodis_config::CHARM_ONLY;
+    } else if (string(argv [1]) == "uncc2"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::CHARM_ONLY;
+        nlodis_config::PERF_MODE = nlodis_config::MASSIVE_EXPLICIT_BESSEL_DIM_REDUCTION;
     } else if (string(argv [1]) == "unbb"){
         nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
@@ -143,6 +149,12 @@ int main( int argc, char* argv[] )
         useSUB = false;
         useSigma3 = false;
         nlodis_config::MASS_SCHEME = nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY;
+    } else if (string(argv [1]) == "unlpcb2"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY;
+        nlodis_config::PERF_MODE = nlodis_config::MASSIVE_EXPLICIT_BESSEL_DIM_REDUCTION;
     } else if (string(argv [1]) == "locc"){
         nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useNLO = false;
@@ -274,6 +286,7 @@ int main( int argc, char* argv[] )
             << "# Cuba MC: " << cubaMethod
                 << ", Cuba eps = " << nlodis_config::CUBA_EPSREL
                 << ", Cuba maxeval = " << (float)nlodis_config::CUBA_MAXEVAL
+                << ", Cuba perf scheme = " << nlodis_config::PERF_MODE
                 << endl
             << "# config::INTACCURACY = " << config::INTACCURACY
                 << ", config::RPOINTS = " << config::RPOINTS
@@ -605,18 +618,18 @@ int main( int argc, char* argv[] )
         // for (int i=10; i<=20; i+=11)  // Q^2 = 10
         // for (int i=0; i<=1; i++)
         {
-            for (int j=0; j<=8; j++)  // xbj in [1e-4, 1e-2]
+            // for (int j=0; j<=8; j++)  // xbj in [1e-4, 1e-2]
             // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
             //for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
             // for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
             // for (int j=9; j<=10; j+=8)  // xbj = {~1e-4}
             // for (int j=1; j<=9; j+=8)      // xbj = {~1e-2, ~1e-4} // LHEC predictions for x0bk=0.01
             // for (int j=2; j<=8; j+=2)  // xbj = {1e-6} // LHEC predictions for x0bk=0.01
-            // for (int j=0; j<=1; j++)
+            for (int j=0; j<1; j++)
             {
                 // if (!((i == 0 or i == 17) or (j == 1 or j == 4 or j == 9 or j == 12 or j == 17))) { continue; }
                 // if (!((i == 5) or (j == 4))) { continue; }
-                if (!((i == 5) or (j == 4))) { continue; }
+                // if (!((i == 5) or (j == 4))) { continue; }
                 coordinates.emplace_back(i,j,k);
             }
         }
@@ -633,7 +646,8 @@ int main( int argc, char* argv[] )
         if (j==0 and cubaMethod=="suave"){continue;}
         double Q = 1.0*pow(5,(double)i*2/20.0);
         // double Q = 1.0*pow(10,(double)i/20.0);
-        double xbj = icx0/pow(10,(double)j/4.0);
+        // double xbj = icx0/pow(10,(double)j/4.0);
+        double xbj = 2e-3;
         // double qmass = qMasses_tuple[l];
         // double qmass = 0.;
         // double qmass = 0.001 + (qMass_b - 0.001)/9.*(double)l; // masses over a range up to bottom mass
@@ -709,26 +723,26 @@ int main( int argc, char* argv[] )
                     FL_LOm = SigmaComputer.Structf_LLO_massive(Q,xbj,qmass);
                     FT_LOm = SigmaComputer.Structf_TLO_massive(Q,xbj,qmass);
                     FL_dipm = SigmaComputer.Structf_LNLOdip_massive(Q,xbj,qmass);
-                    FT_dipm = SigmaComputer.Structf_TNLOdip_massive(Q,xbj,qmass);
+                    // FT_dipm = SigmaComputer.Structf_TNLOdip_massive(Q,xbj,qmass);
                     FL_qgm = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qmass);
-                    FT_qgm  = SigmaComputer.Structf_TNLOqg_unsub_massive(Q,xbj,qmass);
+                    // FT_qgm  = SigmaComputer.Structf_TNLOqg_unsub_massive(Q,xbj,qmass);
                 } else if (nlodis_config::MASS_SCHEME == nlodis_config::LIGHT_PLUS_CHARM){
                     FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
                     FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
                     FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
                     FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
                     FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
-                    FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
+                    // FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
                     FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
-                    FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+                    // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
                     FL_ICm = SigmaComputer.Structf_LLO_massive(Q,icx0_bk,qmass);
                     FT_ICm = SigmaComputer.Structf_TLO_massive(Q,icx0_bk,qmass);
                     FL_LOm = SigmaComputer.Structf_LLO_massive(Q,xbj,qmass);
                     FT_LOm = SigmaComputer.Structf_TLO_massive(Q,xbj,qmass);
                     FL_dipm = SigmaComputer.Structf_LNLOdip_massive(Q,xbj,qmass);
-                    FT_dipm = SigmaComputer.Structf_TNLOdip_massive(Q,xbj,qmass);
+                    // FT_dipm = SigmaComputer.Structf_TNLOdip_massive(Q,xbj,qmass);
                     FL_qgm = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qmass);
-                    FT_qgm  = SigmaComputer.Structf_TNLOqg_unsub_massive(Q,xbj,qmass);
+                    // FT_qgm  = SigmaComputer.Structf_TNLOqg_unsub_massive(Q,xbj,qmass);
                     FL_ICm += FL_IC;
                     FT_ICm += FT_IC;
                     FL_LOm += FL_LO;
@@ -743,25 +757,25 @@ int main( int argc, char* argv[] )
                     FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
                     FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
                     FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
-                    FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
+                    // FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
                     FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
-                    FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+                    // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
                     FL_ICm = SigmaComputer.Structf_LLO_massive(Q,icx0_bk,qmass);
                     FT_ICm = SigmaComputer.Structf_TLO_massive(Q,icx0_bk,qmass);
                     FL_LOm = SigmaComputer.Structf_LLO_massive(Q,xbj,qmass);
                     FT_LOm = SigmaComputer.Structf_TLO_massive(Q,xbj,qmass);
                     FL_dipm = SigmaComputer.Structf_LNLOdip_massive(Q,xbj,qmass);
-                    FT_dipm = SigmaComputer.Structf_TNLOdip_massive(Q,xbj,qmass);
+                    // FT_dipm = SigmaComputer.Structf_TNLOdip_massive(Q,xbj,qmass);
                     FL_qgm = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qmass);
-                    FT_qgm  = SigmaComputer.Structf_TNLOqg_unsub_massive(Q,xbj,qmass);
+                    // FT_qgm  = SigmaComputer.Structf_TNLOqg_unsub_massive(Q,xbj,qmass);
                     FL_ICm_b = SigmaComputer.Structf_LLO_massive(Q,icx0_bk,qMass_b);
                     FT_ICm_b = SigmaComputer.Structf_TLO_massive(Q,icx0_bk,qMass_b);
                     FL_LOm_b = SigmaComputer.Structf_LLO_massive(Q,xbj,qMass_b);
                     FT_LOm_b = SigmaComputer.Structf_TLO_massive(Q,xbj,qMass_b);
                     FL_dipm_b = SigmaComputer.Structf_LNLOdip_massive(Q,xbj,qMass_b);
-                    FT_dipm_b = SigmaComputer.Structf_TNLOdip_massive(Q,xbj,qMass_b);
+                    // FT_dipm_b = SigmaComputer.Structf_TNLOdip_massive(Q,xbj,qMass_b);
                     FL_qgm_b = SigmaComputer.Structf_LNLOqg_unsub_massive(Q,xbj,qMass_b);
-                    FT_qgm_b  = SigmaComputer.Structf_TNLOqg_unsub_massive(Q,xbj,qMass_b);
+                    // FT_qgm_b  = SigmaComputer.Structf_TNLOqg_unsub_massive(Q,xbj,qMass_b);
                     FL_ICm += FL_IC + FL_ICm_b;
                     FT_ICm += FT_IC + FT_ICm_b;
                     FL_LOm += FL_LO + FL_LOm_b;
