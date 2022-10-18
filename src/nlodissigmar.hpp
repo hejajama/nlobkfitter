@@ -473,8 +473,10 @@ int integrand_ILdip_massive_Iab(const int *ndim, const double x[], const int *nc
 int integrand_ILdip_massive_Icd(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 int integrand_ILqgunsub_massive(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 int integrand_ILqgunsub_massive_I1(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
-int integrand_ILqgunsub_massive_I2(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
-int integrand_ILqgunsub_massive_I3(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ILqgunsub_massive_I2(int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ILqgunsub_massive_I3(int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ILqgunsub_massive_I2_fast(int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ILqgunsub_massive_I3_fast(int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 
 
 int integrand_ITLOp(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
@@ -491,8 +493,10 @@ int integrand_ITdip_massive_I1(const int *ndim, const double x[], const int *nco
 int integrand_ITdip_massive_I2(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 int integrand_ITdip_massive_I3(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 int integrand_ITqgunsub_massive_I1(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
-int integrand_ITqgunsub_massive_I2(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
-int integrand_ITqgunsub_massive_I3(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ITqgunsub_massive_I2(int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ITqgunsub_massive_I3(int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ITqgunsub_massive_I2_fast(int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
+int integrand_ITqgunsub_massive_I3_fast(int *ndim, const double x[], const int *ncomp,double *f, void *userdata) ;
 
 string PrintVector(vector<double> v);
 

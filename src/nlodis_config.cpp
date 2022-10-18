@@ -19,6 +19,7 @@ namespace nlodis_config
 
     bool USE_MASSES = false;
 
+    PerfScheme PERF_MODE = nlodis_config::DISABLED;
     RunningCouplingDIS RC_DIS;
     SubtractionScheme SUB_SCHEME;
     QuarkMassScheme MASS_SCHEME;

@@ -20,6 +20,13 @@ namespace nlodis_config
     extern double MAXR;
     extern double MINR;
 
+    enum PerfScheme
+    {
+        DISABLED,
+        MASSIVE_EXPLICIT_BESSEL_DIM_REDUCTION
+    };
+    extern PerfScheme PERF_MODE;
+
     enum QuarkMassScheme
     {
         MASSLESS,

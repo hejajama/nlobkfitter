@@ -2162,7 +2162,7 @@ int integrand_ILqgunsub_massive_I2(const int *ndim, const double x[], const int 
     double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double y_t1 = x[5];
-    double y_u1 = x[6];
+    double y_u1 = x[6]; // not used in fast
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
@@ -2178,6 +2178,53 @@ int integrand_ILqgunsub_massive_I2(const int *ndim, const double x[], const int 
     double alphfac=alphabar*CF/Nc;
 
     double tripole_term = SKernel_tripole * ILNLOqg_massive_tripole_part_I2(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_t1,y_u1); // Terms proportional to N_012
+    // double tripole_term = SKernel_tripole * ILNLOqg_massive_tripole_part_I2_fast(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_t1); // Terms proportional to N_012
+
+    double res =   jac*alphfac*( tripole_term )/z2*x01*x02;
+
+    if(gsl_finite(res)==1){
+        *f=res;
+    }else{
+        *f=0;
+    }
+    return 0;
+}
+
+int integrand_ILqgunsub_massive_I2_fast(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) {
+    Userdata *dataptr = (Userdata*)userdata;
+    double Q=dataptr->Q;
+    double xbj=dataptr->xbj;
+    double X0=dataptr->icX0;
+    double mf=dataptr->qMass;
+    ComputeSigmaR *Optr = dataptr->ComputerPtr;
+    double z2min = Optr->z2lower_bound(xbj,Sq(Q));
+    if (z2min > 1.0){ // Check that z2min is not too large. IF it is too large, return *f=0.
+        *f=0;
+        return 0;
+    }
+
+    double z1=(1.0-z2min)*x[0];
+    double z2=((1.0-z1)-z2min)*x[1]+z2min;
+    double x01=nlodis_config::MAXR*x[2];
+    double x02=nlodis_config::MAXR*x[3];
+    double phix0102=2.0*M_PI*x[4];
+    double y_t1 = x[5];
+    // double y_u1 = x[6]; // not used in fast
+    double x01sq=Sq(x01);
+    double x02sq=Sq(x02);
+    double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
+    double jac=(1.0-z2min)*(1.0-z1-z2min);
+    double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
+    double SKernel_tripole = 1.0 - Optr->SrTripole(x01,Xrpdt,x02,Xrpdt,sqrt(x21sq),Xrpdt);
+
+    Alphasdata alphasdata;
+    alphasdata.x01sq=x01sq;
+    alphasdata.x02sq=x02sq;
+    alphasdata.x21sq=x21sq;
+    double alphabar=Optr->Alphabar_QG( &alphasdata );
+    double alphfac=alphabar*CF/Nc;
+
+    double tripole_term = SKernel_tripole * ILNLOqg_massive_tripole_part_I2_fast(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_t1); // Terms proportional to N_012
 
     double res =   jac*alphfac*( tripole_term )/z2*x01*x02;
 
@@ -2208,9 +2255,9 @@ int integrand_ILqgunsub_massive_I3(const int *ndim, const double x[], const int 
     double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double y_t1 = x[5];
-    double y_u1 = x[6];
-    double y_t2 = x[7];
-    double y_u2 = x[8];
+    double y_t2 = x[6];
+    double y_u1 = x[7]; // not used in fast
+    double y_u2 = x[8]; // not used in fast
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
@@ -2234,6 +2281,57 @@ int integrand_ILqgunsub_massive_I3(const int *ndim, const double x[], const int 
     double alphfac=alphabar*CF/Nc;
 
     double tripole_term = SKernel_tripole * ILNLOqg_massive_tripole_part_I3(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_t1,y_u1,y_t2,y_u2); // Terms proportional to N_012
+    // double tripole_term = SKernel_tripole * ILNLOqg_massive_tripole_part_I3_fast(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_t1,y_t2); // Terms proportional to N_012
+
+    double res =   jac*alphfac*( tripole_term )/z2*x01*x02;
+
+    if(gsl_finite(res)==1){
+        *f=res;
+    }else{
+        *f=0;
+    }
+    return 0;
+}
+
+int integrand_ILqgunsub_massive_I3_fast(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) {
+    Userdata *dataptr = (Userdata*)userdata;
+    double Q=dataptr->Q;
+    double xbj=dataptr->xbj;
+    double X0=dataptr->icX0;
+    double mf=dataptr->qMass;
+    ComputeSigmaR *Optr = dataptr->ComputerPtr;
+    double z2min = Optr->z2lower_bound(xbj,Sq(Q));
+    if (z2min > 1.0){ // Check that z2min is not too large. IF it is too large, return *f=0.
+        *f=0;
+        return 0;
+    }
+
+    double z1=(1.0-z2min)*x[0];
+    double z2=((1.0-z1)-z2min)*x[1]+z2min;
+    double x01=nlodis_config::MAXR*x[2];
+    double x02=nlodis_config::MAXR*x[3];
+    double phix0102=2.0*M_PI*x[4];
+    double y_t1 = x[5];
+    double y_t2 = x[6];
+    // double y_u1 = x[7]; // not used in fast
+    // double y_u2 = x[8]; // not used in fast
+    double x01sq=Sq(x01);
+    double x02sq=Sq(x02);
+    double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
+    double jac=(1.0-z2min)*(1.0-z1-z2min);
+    double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
+
+    double SKernel_tripole = 1.0 - Optr->SrTripole(x01,Xrpdt,x02,Xrpdt,sqrt(x21sq),Xrpdt);
+
+
+    Alphasdata alphasdata;
+    alphasdata.x01sq=x01sq;
+    alphasdata.x02sq=x02sq;
+    alphasdata.x21sq=x21sq;
+    double alphabar=Optr->Alphabar_QG( &alphasdata );
+    double alphfac=alphabar*CF/Nc;
+
+    double tripole_term = SKernel_tripole * ILNLOqg_massive_tripole_part_I3_fast(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_t1,y_t2); // Terms proportional to N_012
 
     double res =   jac*alphfac*( tripole_term )/z2*x01*x02;
 
@@ -2318,7 +2416,9 @@ double ComputeSigmaR::LNLOqgunsub_massive_I1(double Q, double x, double mf) {
 
 double ComputeSigmaR::LNLOqgunsub_massive_I2(double Q, double x, double mf) {
     double integral, error, prob;
-    const int ndim=7; // MC 5+2 phase space
+    int ndim;
+    // const int ndim=7; // MC 5+2 phase space
+    // const int ndim=6; // fast MC 5+1 phase space
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
@@ -2326,13 +2426,21 @@ double ComputeSigmaR::LNLOqgunsub_massive_I2(double Q, double x, double mf) {
     userdata.icX0=icX0;
     userdata.qMass=mf;
     userdata.ComputerPtr=this;
-    Cuba(cubamethod,ndim,integrand_ILqgunsub_massive_I2,&userdata,&integral,&error,&prob);
+    if (nlodis_config::PERF_MODE == nlodis_config::DISABLED) {
+        ndim = 7;
+        Cuba(cubamethod,ndim,integrand_ILqgunsub_massive_I2,&userdata,&integral,&error,&prob);
+    } else if (nlodis_config::PERF_MODE == nlodis_config::MASSIVE_EXPLICIT_BESSEL_DIM_REDUCTION) {
+        ndim = 6;
+        Cuba(cubamethod,ndim,integrand_ILqgunsub_massive_I2_fast,&userdata,&integral,&error,&prob);
+    }
     return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
 
 double ComputeSigmaR::LNLOqgunsub_massive_I3(double Q, double x, double mf) {
     double integral, error, prob;
-    const int ndim=9; // MC full 5+2+2 phase space
+    int ndim;
+    // const int ndim=9; // MC full 5+2+2 phase space
+    // const int ndim=7; // fast MC full 5+2 phase space
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
@@ -2340,7 +2448,13 @@ double ComputeSigmaR::LNLOqgunsub_massive_I3(double Q, double x, double mf) {
     userdata.icX0=icX0;
     userdata.qMass=mf;
     userdata.ComputerPtr=this;
-    Cuba(cubamethod,ndim,integrand_ILqgunsub_massive_I3,&userdata,&integral,&error,&prob);
+    if (nlodis_config::PERF_MODE == nlodis_config::DISABLED) {
+        ndim = 9;
+        Cuba(cubamethod,ndim,integrand_ILqgunsub_massive_I3,&userdata,&integral,&error,&prob);
+    } else if (nlodis_config::PERF_MODE == nlodis_config::MASSIVE_EXPLICIT_BESSEL_DIM_REDUCTION) {
+        ndim = 7;
+        Cuba(cubamethod,ndim,integrand_ILqgunsub_massive_I3_fast,&userdata,&integral,&error,&prob);
+    }
     return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
 
@@ -2990,7 +3104,7 @@ int integrand_ITqgunsub_massive_I2(const int *ndim, const double x[], const int 
     double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double y_t1 = x[5];
-    double y_u1 = x[6];
+    double y_u1 = x[6]; // not used in fast
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
@@ -3006,6 +3120,53 @@ int integrand_ITqgunsub_massive_I2(const int *ndim, const double x[], const int 
     double alphfac=alphabar*CF/Nc;
 
     double tripole_term = SKernel_tripole * ITNLOqg_massive_tripole_part_I2(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_t1,y_u1); // Terms proportional to N_012
+    // double tripole_term = SKernel_tripole * ITNLOqg_massive_tripole_part_I2_fast(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_t1); // Terms proportional to N_012
+
+    double res =   jac*alphfac*( tripole_term )/z2*x01*x02;
+
+    if(gsl_finite(res)==1){
+        *f=res;
+    }else{
+        *f=0;
+    }
+    return 0;
+}
+
+int integrand_ITqgunsub_massive_I2_fast(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) {
+    Userdata *dataptr = (Userdata*)userdata;
+    double Q=dataptr->Q;
+    double xbj=dataptr->xbj;
+    double X0=dataptr->icX0;
+    double mf=dataptr->qMass;
+    ComputeSigmaR *Optr = dataptr->ComputerPtr;
+    double z2min = Optr->z2lower_bound(xbj,Sq(Q));
+    if (z2min > 1.0){ // Check that z2min is not too large. IF it is too large, return *f=0.
+        *f=0;
+        return 0;
+    }
+
+    double z1=(1.0-z2min)*x[0];
+    double z2=((1.0-z1)-z2min)*x[1]+z2min;
+    double x01=nlodis_config::MAXR*x[2];
+    double x02=nlodis_config::MAXR*x[3];
+    double phix0102=2.0*M_PI*x[4];
+    double y_t1 = x[5];
+    // double y_u1 = x[6]; // not used in fast
+    double x01sq=Sq(x01);
+    double x02sq=Sq(x02);
+    double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
+    double jac=(1.0-z2min)*(1.0-z1-z2min);
+    double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
+    double SKernel_tripole = 1.0 - Optr->SrTripole(x01,Xrpdt,x02,Xrpdt,sqrt(x21sq),Xrpdt);
+
+    Alphasdata alphasdata;
+    alphasdata.x01sq=x01sq;
+    alphasdata.x02sq=x02sq;
+    alphasdata.x21sq=x21sq;
+    double alphabar=Optr->Alphabar_QG( &alphasdata );
+    double alphfac=alphabar*CF/Nc;
+
+    double tripole_term = SKernel_tripole * ITNLOqg_massive_tripole_part_I2_fast(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_t1); // Terms proportional to N_012
 
     double res =   jac*alphfac*( tripole_term )/z2*x01*x02;
 
@@ -3036,9 +3197,9 @@ int integrand_ITqgunsub_massive_I3(const int *ndim, const double x[], const int 
     double x02=nlodis_config::MAXR*x[3];
     double phix0102=2.0*M_PI*x[4];
     double y_t1 = x[5];
-    double y_u1 = x[6];
-    double y_t2 = x[7];
-    double y_u2 = x[8];
+    double y_t2 = x[6];
+    double y_u1 = x[7]; // not used in fast
+    double y_u2 = x[8]; // not used in fast
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
@@ -3056,6 +3217,7 @@ int integrand_ITqgunsub_massive_I3(const int *ndim, const double x[], const int 
     double alphfac=alphabar*CF/Nc;
 
     double tripole_term = SKernel_tripole * ITNLOqg_massive_tripole_part_I3(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_t1,y_u1,y_t2,y_u2); // Terms proportional to N_012
+    // double tripole_term = SKernel_tripole * ITNLOqg_massive_tripole_part_I3_fast(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_t1,y_t2); // Terms proportional to N_012
 
     double res =   jac*alphfac*( tripole_term )/z2*x01*x02;
 
@@ -3067,6 +3229,55 @@ int integrand_ITqgunsub_massive_I3(const int *ndim, const double x[], const int 
     return 0;
 }
 
+int integrand_ITqgunsub_massive_I3_fast(const int *ndim, const double x[], const int *ncomp,double *f, void *userdata) {
+    Userdata *dataptr = (Userdata*)userdata;
+    double Q=dataptr->Q;
+    double xbj=dataptr->xbj;
+    double X0=dataptr->icX0;
+    double mf=dataptr->qMass;
+    ComputeSigmaR *Optr = dataptr->ComputerPtr;
+    double z2min = Optr->z2lower_bound(xbj,Sq(Q));
+    if (z2min > 1.0){ // Check that z2min is not too large. IF it is too large, return *f=0.
+        *f=0;
+        return 0;
+    }
+
+    double z1=(1.0-z2min)*x[0];
+    double z2=((1.0-z1)-z2min)*x[1]+z2min;
+    double x01=nlodis_config::MAXR*x[2];
+    double x02=nlodis_config::MAXR*x[3];
+    double phix0102=2.0*M_PI*x[4];
+    double y_t1 = x[5];
+    double y_t2 = x[6];
+    // double y_u1 = x[7]; // not used in fast
+    // double y_u2 = x[8]; // not used in fast
+    double x01sq=Sq(x01);
+    double x02sq=Sq(x02);
+    double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
+    double jac=(1.0-z2min)*(1.0-z1-z2min);
+    double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2;
+
+    double SKernel_tripole = 1.0 - Optr->SrTripole(x01,Xrpdt,x02,Xrpdt,sqrt(x21sq),Xrpdt);
+
+
+    Alphasdata alphasdata;
+    alphasdata.x01sq=x01sq;
+    alphasdata.x02sq=x02sq;
+    alphasdata.x21sq=x21sq;
+    double alphabar=Optr->Alphabar_QG( &alphasdata );
+    double alphfac=alphabar*CF/Nc;
+
+    double tripole_term = SKernel_tripole * ITNLOqg_massive_tripole_part_I3_fast(Q,mf,z1,z2,x01sq,x02sq,x21sq,y_t1,y_t2); // Terms proportional to N_012
+
+    double res =   jac*alphfac*( tripole_term )/z2*x01*x02;
+
+    if(gsl_finite(res)==1){
+        *f=res;
+    }else{
+        *f=0;
+    }
+    return 0;
+}
 
 double ComputeSigmaR::TNLOdip_massive_I1(double Q, double x, double mf) {
     double integral, error, prob;
@@ -3126,7 +3337,9 @@ double ComputeSigmaR::TNLOqgunsub_massive_I1(double Q, double x, double mf) {
 
 double ComputeSigmaR::TNLOqgunsub_massive_I2(double Q, double x, double mf) {
     double integral, error, prob;
-    const int ndim=7; // MC 5+2 phase space
+    int ndim;
+    // const int ndim=7; // MC 5+2 phase space
+    // const int ndim=6; // fast MC 5+1 phase space
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
@@ -3134,13 +3347,21 @@ double ComputeSigmaR::TNLOqgunsub_massive_I2(double Q, double x, double mf) {
     userdata.icX0=icX0;
     userdata.qMass=mf;
     userdata.ComputerPtr=this;
-    Cuba(cubamethod,ndim,integrand_ITqgunsub_massive_I2,&userdata,&integral,&error,&prob);
+    if (nlodis_config::PERF_MODE == nlodis_config::DISABLED) {
+        ndim = 7;
+        Cuba(cubamethod,ndim,integrand_ITqgunsub_massive_I2,&userdata,&integral,&error,&prob);
+    } else if (nlodis_config::PERF_MODE == nlodis_config::MASSIVE_EXPLICIT_BESSEL_DIM_REDUCTION) {
+        ndim = 6;
+        Cuba(cubamethod,ndim,integrand_ITqgunsub_massive_I2_fast,&userdata,&integral,&error,&prob);
+    }
     return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
 
 double ComputeSigmaR::TNLOqgunsub_massive_I3(double Q, double x, double mf) {
     double integral, error, prob;
-    const int ndim=9; // MC full 5+2+2 phase space
+    int ndim;
+    // const int ndim=9; // MC full 5+2+2 phase space
+    // const int ndim=7; // fast MC full 5+2 phase space
     double fac=4.0*Nc*alphaem/Sq(2.0*M_PI)*sumef_from_mass(mf);
     Userdata userdata;
     userdata.Q=Q;
@@ -3148,7 +3369,13 @@ double ComputeSigmaR::TNLOqgunsub_massive_I3(double Q, double x, double mf) {
     userdata.icX0=icX0;
     userdata.qMass=mf;
     userdata.ComputerPtr=this;
-    Cuba(cubamethod,ndim,integrand_ITqgunsub_massive_I3,&userdata,&integral,&error,&prob);
+    if (nlodis_config::PERF_MODE == nlodis_config::DISABLED) {
+        ndim = 9;
+        Cuba(cubamethod,ndim,integrand_ITqgunsub_massive_I3,&userdata,&integral,&error,&prob);
+    } else if (nlodis_config::PERF_MODE == nlodis_config::MASSIVE_EXPLICIT_BESSEL_DIM_REDUCTION) {
+        ndim = 7;
+        Cuba(cubamethod,ndim,integrand_ITqgunsub_massive_I3_fast,&userdata,&integral,&error,&prob);
+    }
     return fac*2.0*M_PI*nlodis_config::MAXR*nlodis_config::MAXR*integral;
 }
 
