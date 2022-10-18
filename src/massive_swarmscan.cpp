@@ -68,7 +68,7 @@ int main( int argc, char* argv[] )
 //     nlodis_config::CUBA_EPSREL = 10e-3;
     nlodis_config::CUBA_EPSREL = 1e-4; // highacc def1
 //     nlodis_config::CUBA_MAXEVAL= 2e7;
-    nlodis_config::CUBA_MAXEVAL= 1e8; // highacc def1
+    nlodis_config::CUBA_MAXEVAL= 1e9; // highacc def1
     nlodis_config::MINR = 1e-6;
     nlodis_config::MAXR = 30;
     nlodis_config::PRINTDATA = true;
@@ -130,6 +130,12 @@ int main( int argc, char* argv[] )
         useSUB = false;
         useSigma3 = false;
         nlodis_config::MASS_SCHEME = nlodis_config::CHARM_ONLY;
+    } else if (string(argv [1]) == "uncc2"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::CHARM_ONLY;
+        nlodis_config::PERF_MODE = nlodis_config::MASSIVE_EXPLICIT_BESSEL_DIM_REDUCTION;
     } else if (string(argv [1]) == "unbb"){
         nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
@@ -145,6 +151,12 @@ int main( int argc, char* argv[] )
         useSUB = false;
         useSigma3 = false;
         nlodis_config::MASS_SCHEME = nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY;
+    } else if (string(argv [1]) == "unlpcb2"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY;
+        nlodis_config::PERF_MODE = nlodis_config::MASSIVE_EXPLICIT_BESSEL_DIM_REDUCTION;
     } else {cout << helpstring << endl; return -1;}
 
     if (nlodis_config::MASS_SCHEME == nlodis_config::CHARM_ONLY){
@@ -339,6 +351,7 @@ int main( int argc, char* argv[] )
             << "# Cuba MC: " << cubaMethod
                 << ", Cuba eps = " << nlodis_config::CUBA_EPSREL
                 << ", Cuba maxeval = " << (float)nlodis_config::CUBA_MAXEVAL
+                << ", Cuba perf scheme = " << nlodis_config::PERF_MODE
                 << endl
             << "# config::INTACCURACY = " << config::INTACCURACY
                 << ", config::RPOINTS = " << config::RPOINTS
@@ -381,6 +394,7 @@ int main( int argc, char* argv[] )
             << "# Cuba MC: " << cubaMethod
                 << ", Cuba eps = " << nlodis_config::CUBA_EPSREL
                 << ", Cuba maxeval = " << (float)nlodis_config::CUBA_MAXEVAL
+                << ", Cuba perf scheme = " << nlodis_config::PERF_MODE
                 << endl
             << "# config::INTACCURACY = " << config::INTACCURACY
                 << ", config::RPOINTS = " << config::RPOINTS
