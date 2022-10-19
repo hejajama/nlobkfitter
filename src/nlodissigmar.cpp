@@ -379,7 +379,8 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     double qMass_s = 0.093; // GeV, PDG MSbar value
     // double qMass_charm = 1.27 // PDG MSbar value // 1.35; == old default
     double qMass_charm = mass_charm;
-    double qMass_b = 4.180; // GeV, PDG MSbar value
+    double qMass_b = 4.750; // GeV, pole mass scheme val
+    double qMass_b_var = mass_charm;
     bool useMasses = nlodis_config::USE_MASSES;
     bool useCharm = false;
 
@@ -559,7 +560,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
                         if (nlodis_config::MASS_SCHEME == nlodis_config::CHARM_ONLY){
                             theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_massive(Q , xbj , y, qMass_charm );
                         } else if (nlodis_config::MASS_SCHEME == nlodis_config::BEAUTY_ONLY){
-                            theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_massive(Q , xbj , y, qMass_b );
+                            theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub_massive(Q , xbj , y, qMass_b_var );
                         } else if (nlodis_config::MASS_SCHEME == nlodis_config::LIGHT_PLUS_CHARM){
                             theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub(Q , xbj , y )
                                      + (fitsigma0)*SigmaComputer.SigmarNLOunsub_massive(Q , xbj , y, qMass_charm );
