@@ -68,7 +68,7 @@ int main( int argc, char* argv[] )
 //     nlodis_config::CUBA_EPSREL = 10e-3;
     nlodis_config::CUBA_EPSREL = 1e-4; // highacc def1
 //     nlodis_config::CUBA_MAXEVAL= 2e7;
-    nlodis_config::CUBA_MAXEVAL= 1e9; // highacc def1
+    nlodis_config::CUBA_MAXEVAL= 5e8; // highacc def1
     nlodis_config::MINR = 1e-6;
     nlodis_config::MAXR = 30;
     nlodis_config::PRINTDATA = true;
@@ -141,6 +141,12 @@ int main( int argc, char* argv[] )
         useSUB = false;
         useSigma3 = false;
         nlodis_config::MASS_SCHEME = nlodis_config::BEAUTY_ONLY;
+    } else if (string(argv [1]) == "unbb2"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::BEAUTY_ONLY;
+        nlodis_config::PERF_MODE = nlodis_config::MASSIVE_EXPLICIT_BESSEL_DIM_REDUCTION;
     } else if (string(argv [1]) == "unlpc"){
         nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
