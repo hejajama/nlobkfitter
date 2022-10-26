@@ -1228,10 +1228,10 @@ double sumef_from_mass(double mf){
     } else if (mf > 0.7*0.093 && mf < 1.3*0.093) {
         // s
         sumef = 1.0/9.0;
-    } else if (mf > 0.7*1.27 && mf < 1.3*1.27) {
+    } else if (mf > 0.7*1.27 && mf < 2*1.27) {
         // c
         sumef = 4.0/9.0;
-    } else if (mf > 0.7*4.180 && mf < 1.3*4.180) {
+    } else if (mf > 0.7*4.180 && mf < 3*4.180) {
         // b
         sumef = 1.0/9.0;
     } else {
