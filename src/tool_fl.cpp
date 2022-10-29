@@ -49,7 +49,7 @@ void ErrHandlerCustom(const char * reason,
 
     if (gsl_errno == 11) return; // ignore max subdivision errors
     if (gsl_errno == 18) return; // roundoff errors from small r?
-    // if (gsl_errno == 15 or gsl_errno == 16) return;
+    if (gsl_errno == 15 or gsl_errno == 16) return;
     // Ugly hack, comes from the edges of the z integral in virtual_photon.cpp
     // Overflows come from IPsat::bint when it is done analytically
     // Hope is that these errors are handled correctly everywhere
@@ -63,18 +63,21 @@ int main( int argc, char* argv[] )
     gsl_set_error_handler(&ErrHandlerCustom);
 
     // NLO DIS SIGMA_R COMPUTATION CONFIGS
-    nlodis_config::CUBA_EPSREL = 10e-3;
+    nlodis_config::USE_MASSES = true;
+
+
+    nlodis_config::CUBA_EPSREL = 1e-3;
     //nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
-    nlodis_config::CUBA_MAXEVAL = 2e7;
-    //nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
+    nlodis_config::CUBA_MAXEVAL = 6e7;
+    // nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
     //nlodis_config::MINR = 1e-6;
     nlodis_config::MINR = 1e-6;
     nlodis_config::MAXR = 30;
     nlodis_config::PRINTDATA = true;
     bool useNLO = true;
     bool computeNLO = useNLO;
-    // string cubaMethod = "vegas";
-    string cubaMethod = "suave";
+    string cubaMethod = "vegas";
+    // string cubaMethod = "suave";
 
     config::NO_K2 = true;  // Do not include numerically demanding full NLO part
     config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
@@ -119,15 +122,24 @@ int main( int argc, char* argv[] )
     string_sub = string(argv [1]);
     if (string(argv [1]) == "sub"){
         useSUB = true;
+        nlodis_config::USE_MASSES = false;
         nlodis_config::SUB_SCHEME = nlodis_config::SUBTRACTED;
     } else if (string(argv [1]) == "unsub"){
         nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
         useSigma3 = false;
-    } else if (string(argv [1]) == "unsub+"){
+        nlodis_config::USE_MASSES = false;
+    } else if (string(argv [1]) == "unlpcb"){
         nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
         useSUB = false;
-        useSigma3 = true;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY;
+    } else if (string(argv [1]) == "unlpcb2"){
+        nlodis_config::SUB_SCHEME = nlodis_config::UNSUBTRACTED;
+        useSUB = false;
+        useSigma3 = false;
+        nlodis_config::MASS_SCHEME = nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY;
+        nlodis_config::PERF_MODE = nlodis_config::MASSIVE_EXPLICIT_BESSEL_DIM_REDUCTION;
     } else {cout << helpstring << endl; return -1;}
 
     string_bk = string(argv [2]);
@@ -211,16 +223,24 @@ int main( int argc, char* argv[] )
 
     cout << std::boolalpha;
     cout    << "# === Perturbative settings ===" << endl
+            << "# Use masses: " << nlodis_config::USE_MASSES << ", scheme:" << nlodis_config::MASS_SCHEME << endl
             << "# Settings: " << string_sub << " (scheme), " << string_bk << ", " << string_rc << endl
             << "# Use LOBK (DL,SL==false): " << (!(config::RESUM_DLOG) 
                                     and !(config::RESUM_SINGLE_LOG)) << endl
             << "# Use ResumBK (DL,SL==true,KC_NONE): " << ((config::RESUM_DLOG) 
                                     and (config::RESUM_SINGLE_LOG)
-                                    and (config::KINEMATICAL_CONSTRAINT == config::KC_NONE)) << endl
+                                    and (config::KINEMATICAL_CONSTRAINT == config::KC_NONE)
+                                    and (config::NO_K2 == true)) << endl
+            << "# Use NLOBK (DL,SL==true,KC_NONE,NO_K2==false): " << ((config::RESUM_DLOG) 
+                                    and (config::RESUM_SINGLE_LOG)
+                                    and (config::KINEMATICAL_CONSTRAINT == config::KC_NONE)
+                                    and (config::NO_K2 == false)) << endl
             << "# KinematicalConstraint / target eta0 BK: " << config::KINEMATICAL_CONSTRAINT << " (0 BEUF_K_PLUS, 1 EDMOND_K_MINUS, 2 NONE)" << endl
-            << "# Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 4 balitsky, 6 guillaume)" << endl
-            << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 4 guillaume)" << endl
-            << "# Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 guillaume)" << endl
+            << "# Target eta0 RHO shift: " << nlodis_config::TRBK_RHO_PRESC << " (0 TRBK_RHO_DISABLED, 1 TRBK_RHO_QQ0, 2 TRBK_RHO_RQ0)" << endl
+            << "# Running Coupling: (RC_LO):    " << config::RC_LO << " (0 fc, 1 parent, 2 parent_beta, 3 smallest, 4 balitsky, 5 frac, 6 guillaume)" << endl
+            << "# Running Coupling: (RC_NLO):    " << config::RC_NLO << " (0 fc, 1 parent, 2 smallest)" << endl
+            << "# Running Coupling: (RESUM_RC): " << config::RESUM_RC << " (0 fc, 1 balitsky, 2 parent, 3 smallest, 4 guillaume)" << endl
+            << "# Running Coupling: (RC_DIS):   " << nlodis_config::RC_DIS << " (0 fc, 1 parent, 2 smallest, 3 guillaume)" << endl
             << "# Use NLOimpact: " << useNLO << endl
             << "# Use SUBscheme: " << useSUB << endl
             << "# Use Sigma3: " << useSigma3 << endl
@@ -229,6 +249,7 @@ int main( int argc, char* argv[] )
             << "# Cuba MC: " << cubaMethod
                 << ", Cuba eps = " << nlodis_config::CUBA_EPSREL
                 << ", Cuba maxeval = " << (float)nlodis_config::CUBA_MAXEVAL
+                << ", Cuba perf scheme = " << nlodis_config::PERF_MODE
                 << endl
             << "# config::INTACCURACY = " << config::INTACCURACY
                 << ", config::RPOINTS = " << config::RPOINTS
@@ -241,6 +262,7 @@ int main( int argc, char* argv[] )
     double anomalous_dimension;
     double icx0_bk;
     double sigma02;
+    double qmass;
 
     if (argc == 6){
 	    qs0sqr       = 0.2; //par[ parameters.Index("qs0sqr")];
@@ -257,7 +279,29 @@ int main( int argc, char* argv[] )
 	    anomalous_dimension = stod(argv[8]);
         icx0_bk		    = stod(argv[9]);
         sigma02		    = stod(argv[10]);
+    }
+    double icqs0sq, iccsq, icx0_if, ic_ec=1.0, icgamma, icQ0sq, icY0, icEta0; 
+    double Cdown, Cup, CStep;
+    if (argc >= 15){
+        icqs0sq   = stod( argv [6] );
+        iccsq     = stod( argv [7] );
+        anomalous_dimension   = stod( argv [8] );
+        icx0_if   = stod( argv [9] );
+        icx0_bk   = stod( argv [10] );
+        ic_ec     = stod( argv [11] );
+        icQ0sq    = stod( argv [12] );
+        icY0      = stod( argv [13] );
+        icEta0    = stod( argv [14] );
+        sigma02 = stod( argv [15] );
+        qmass = stod( argv[16] );
 
+        // Constructing Q and C^2 grids
+        qs0sqr = icqs0sq/1000.; // input in milli-GeV² integer strings
+
+        Cdown = 0.1;
+        Cup = 5.0;
+        CStep = pow(Cup/Cdown , iccsq/240.);
+        alphas_scaling = Cdown * CStep; // compute C² on a logarithmic grid
     }
 
     string string_ic = "cli_mode";
@@ -272,14 +316,18 @@ int main( int argc, char* argv[] )
     icx0_bk = 0.01; //par[ parameters.Index("initialconditionX0")];
     sigma02 = 1.0;
     }
-    double e_c          = 1.0; //par[ parameters.Index("e_c")];
-    double icx0_nlo_impfac = 1.0; //par[ parameters.Index("initialconditionX0")];
+    double e_c          = ic_ec; //par[ parameters.Index("e_c")];
+    double icx0_nlo_impfac = icx0_if; //par[ parameters.Index("initialconditionX0")];
     double initialconditionY0  = 0; //par[ parameters.Index("initialconditionY0")];
     double icTypicalPartonVirtualityQ0sqr  = 1.0; //par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
+    bool useMasses = nlodis_config::USE_MASSES;
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
-    double qMass_charm = 1.35;
-    bool useMasses = true;
-    bool useCharm = false;
+    double qMass_u = 0.00216; // GeV, literature value
+    double qMass_d = 0.00467; // GeV, literature value
+    double qMass_s = 0.093; // GeV, literature value
+    double qMass_charm = 1.27;
+    // double qMass_b = 4.180; // GeV, literature value
+    double qMass_b = 4.75; // GeV, suggested pole mass scheme standard value from Heikki
 
     cout << "# === Initial parameters ===" << endl;
     cout << "# "
@@ -292,8 +340,8 @@ int main( int argc, char* argv[] )
          << ", icY0=" << initialconditionY0
          << ", icTypPartonVirtQ0sqr=" << icTypicalPartonVirtualityQ0sqr
          << ", sigma02=" << sigma02
+         << ", q_mass=" << qmass
          << endl;
-
     /*
     // ***Solve BK***
     */
@@ -318,7 +366,7 @@ int main( int argc, char* argv[] )
     Dipole dipole(&ic);
     dipole.SetX0(icx0_bk);
     BKSolver solver(&dipole);
-    double maxy = std::log(icx0_bk/(1e-7)) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
+    double maxy = std::log(icx0_bk/min_xbj) + initialconditionY0; // divisor=smallest HERA xbj in Q^2 range (1E-05)?
     
     double maxq2=100;     // Todo, take from actual data!
     if (useImprovedZ2Bound)
@@ -524,43 +572,56 @@ int main( int argc, char* argv[] )
             }
             if (!computeNLO && useMasses)
             {
-                double alphaem=1.0/137.0;
-                double structurefunfac=1./(Sq(2*M_PI)*alphaem);
-                double fac = structurefunfac*Sq(Q);
-                FL_LO = fac*SigmaComputer.LLOpMass(Q,xbj,useCharm);
-                // FT_LO = fac*SigmaComputer.TLOpMass(Q,xbj,useCharm);
+                FL_LO = SigmaComputer.Structf_LLO_massive(Q, xbj, qmass);
                 FL = FL_LO;
                 ++calccount;
             }
 
             if (computeNLO && !useSUB) // UNSUB SCHEME Full NLO impact factors for reduced cross section
             {
-                if (useBoundLoop){
-                    FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
-                    // FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
-                    FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
-                    // FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
-                    FL_dip = SigmaComputer.Structf_LNLOdip_z2(Q,xbj);
-                    // FT_dip = SigmaComputer.Structf_TNLOdip_z2(Q,xbj);
-                    FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
-                    // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
-                    FL = FL_IC + FL_dip + FL_qg;
-                    ++calccount;}
-                if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
-                    FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
-                    // FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
-                    FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
-                    // FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
-                    FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
-                    // FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
-                    FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
-                    // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
-                    FL = FL_IC + FL_dip + FL_qg;
-                    ++calccount;}
-                if (useSigma3){
-                    FL_sigma3 = SigmaComputer.Structf_LNLOsigma3(Q,xbj);
-                    // FT_sigma3 = SigmaComputer.Structf_TNLOsigma3(Q,xbj);
+                if (useMasses){
+                    if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
+                        if (nlodis_config::MASS_SCHEME == nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY){
+                            FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk) + SigmaComputer.Structf_LLO_massive(Q,icx0_bk, qmass) + SigmaComputer.Structf_LLO_massive(Q,icx0_bk, qMass_b);
+                            // FL_LO = SigmaComputer.Structf_LLO_massive(Q, xbj, qmass);
+                            FL_dip = SigmaComputer.Structf_LNLOdip(Q, xbj) + SigmaComputer.Structf_LNLOdip_massive(Q, xbj, qmass) + SigmaComputer.Structf_LNLOdip_massive(Q, xbj, qMass_b);
+                            FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q, xbj) + SigmaComputer.Structf_LNLOqg_unsub_massive(Q, xbj, qmass) + SigmaComputer.Structf_LNLOqg_unsub_massive(Q, xbj, qMass_b);
+                            FL = FL_IC + FL_dip + FL_qg;
+                            ++calccount;
+                        }
+                    }else{
+                        cout << "Bound loop not supported for heavy quarks!. Exit." << endl;
+                        exit(1);
                     }
+                }
+                if (!useMasses){
+                    if (useBoundLoop){
+                        FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
+                        // FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
+                        FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+                        // FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
+                        FL_dip = SigmaComputer.Structf_LNLOdip_z2(Q,xbj);
+                        // FT_dip = SigmaComputer.Structf_TNLOdip_z2(Q,xbj);
+                        FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
+                        // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+                        FL = FL_IC + FL_dip + FL_qg;
+                        ++calccount;}
+                    if (!useBoundLoop){ // the old way, no z2 lower bound in dipole loop term.
+                        FL_IC = SigmaComputer.Structf_LLO(Q,icx0_bk);
+                        // FT_IC = SigmaComputer.Structf_TLO(Q,icx0_bk);
+                        FL_LO = SigmaComputer.Structf_LLO(Q,xbj);
+                        // FT_LO = SigmaComputer.Structf_TLO(Q,xbj);
+                        FL_dip = SigmaComputer.Structf_LNLOdip(Q,xbj);
+                        // FT_dip = SigmaComputer.Structf_TNLOdip(Q,xbj);
+                        FL_qg  = SigmaComputer.Structf_LNLOqg_unsub(Q,xbj);
+                        // FT_qg  = SigmaComputer.Structf_TNLOqg_unsub(Q,xbj);
+                        FL = FL_IC + FL_dip + FL_qg;
+                        ++calccount;}
+                    if (useSigma3){
+                        FL_sigma3 = SigmaComputer.Structf_LNLOsigma3(Q,xbj);
+                        // FT_sigma3 = SigmaComputer.Structf_TNLOsigma3(Q,xbj);
+                        }
+                }
             }
 
             if (computeNLO && useSUB) // SUB SCHEME Full NLO impact factors for reduced cross section

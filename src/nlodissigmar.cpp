@@ -373,6 +373,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     double icTypicalPartonVirtualityQ0sqr  = par[ parameters.Index("icTypicalPartonVirtualityQ0sqr")];
     double old_sigma02 = par[ parameters.Index("old_sigma02")];
     double mass_charm = par[ parameters.Index("mass_charm")];
+    double mass_bottom = par[ parameters.Index("mass_bottom")];
     double qMass_light  = 0.14; // GeV --- doesn't improve fit at LO
     double qMass_u = 0.00216; // GeV, PDG MSbar value
     double qMass_d = 0.00467; // GeV, PDG MSbar value
@@ -380,7 +381,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
     // double qMass_charm = 1.27 // PDG MSbar value // 1.35; == old default
     double qMass_charm = mass_charm;
     double qMass_b = 4.750; // GeV, pole mass scheme val
-    double qMass_b_var = mass_charm;
+    double qMass_b_var = mass_bottom;
     bool useMasses = nlodis_config::USE_MASSES;
     bool useCharm = false;
 
@@ -567,7 +568,7 @@ double NLODISFitter::operator()(const std::vector<double>& par) const
                         } else if (nlodis_config::MASS_SCHEME == nlodis_config::LIGHT_PLUS_CHARM_AND_BEAUTY){
                             theory = (fitsigma0)*SigmaComputer.SigmarNLOunsub(Q , xbj , y )
                                      + (fitsigma0)*SigmaComputer.SigmarNLOunsub_massive(Q , xbj , y, qMass_charm )
-                                     + (fitsigma0)*SigmaComputer.SigmarNLOunsub_massive(Q , xbj , y, qMass_b );
+                                     + (fitsigma0)*SigmaComputer.SigmarNLOunsub_massive(Q , xbj , y, qMass_b_var );
                         }
                         ++calccount;}
                 }
@@ -1228,10 +1229,10 @@ double sumef_from_mass(double mf){
     } else if (mf > 0.7*0.093 && mf < 1.3*0.093) {
         // s
         sumef = 1.0/9.0;
-    } else if (mf > 0.7*1.27 && mf < 1.3*1.27) {
+    } else if (mf > 0.7*1.27 && mf < 2*1.27) {
         // c
         sumef = 4.0/9.0;
-    } else if (mf > 0.7*4.180 && mf < 1.3*4.180) {
+    } else if (mf > 0.7*4.180 && mf < 3*4.180) {
         // b
         sumef = 1.0/9.0;
     } else {
