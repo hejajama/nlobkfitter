@@ -4,9 +4,10 @@
 #include <gsl/gsl_sf_log.h>
 #include <gsl/gsl_sf_exp.h>
 
+#include "ddis.hpp"
 #include "nlodis_config.hpp"
-#include "nlodissigmar_massiveq.hpp"
 #include "nlodissigmar.hpp"
+#include "nlodissigmar_massiveq.hpp"
 
 
 double I_ddis_lo_qqbar_L(double Q, double beta, double z, double x01, double conj_x01) {
