@@ -3316,20 +3316,34 @@ int integrand_ddis_nlo_qqbarg_L(const int *ndim, const double x[], const int *nc
     double beta=dataptr->beta;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
     double z1=x[0];
-    double x01=nlodis_config::MAXR*x[1];
-    double x02=nlodis_config::MAXR*x[2];
-    double phix0102=2.0*M_PI*x[3];
+    double z2=x[1];
+    double z0=1-z1-z2;
+    double x01=nlodis_config::MAXR*x[2];
+    double x02=nlodis_config::MAXR*x[3];
+    double conj_x01=nlodis_config::MAXR*x[4];
+    double conj_x02=nlodis_config::MAXR*x[5];
+    double phix0102=2.0*M_PI*x[6];
+    double conj_phix0102=2.0*M_PI*x[7];
+    double theta_x2b0b20=2.0*M_PI*x[8];
+    double theta_x2b1b21=2.0*M_PI*x[9];
     double x01sq=Sq(x01);
     double x02sq=Sq(x02);
+    double conj_x01sq=Sq(conj_x01);
+    double conj_x02sq=Sq(conj_x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
     double x21 = std::sqrt(x21sq);
+    double conj_x21sq=conj_x01sq+conj_x02sq-2.0*sqrt(conj_x01sq*conj_x02sq)*cos(conj_phix0102);
+    double conj_x21 = std::sqrt(conj_x21sq);
 
     double alphabar=Optr->Alphabar(x01sq);
     double alphfac=alphabar*CF/Nc;
     double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Sq(Q), x01sq); // TODO check x val
-    double res;
+    double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2; // TODO check what this is
+    double dipole_kernel = (1 - Optr->SrTripole(x01,Xrpdt,x02,Xrpdt,sqrt(x21sq),Xrpdt))*
+                           (1 - Optr->SrTripole(x01,Xrpdt,x02,Xrpdt,sqrt(x21sq),Xrpdt));
 
-    res = bk_kernel*dipole_kernel*(I_ddis_nlo_qqbarg_L_D3(Q, beta, z0, z1, z2, x01sq, x02sq, x21sq, conj_x01sq, conj_x02sq, conj_x21sq))*x01*x02*alphfac;
+    double res;
+    res = dipole_kernel*(I_ddis_nlo_qqbarg_L_D3(Q, beta, z0, z1, z2, x01sq, x02sq, x21sq, conj_x01sq, conj_x02sq, conj_x21sq))*x01*x02*alphfac;
     if(gsl_finite(res)==1){
         *f=res;
     }else{
@@ -3340,7 +3354,7 @@ int integrand_ddis_nlo_qqbarg_L(const int *ndim, const double x[], const int *nc
 
 double ComputeSigmaR::diff_nlo_xpom_FL_qqbarg(double Q, double xpom, double beta){
     double integral, error, prob;
-    const int ndim=; // z_0 + z_2 + xt_0 + xt_1 + xt_0bar + xt_1bar + thetax0 + thetax1 + thetax0bar + thetax1bar // CHECK HOW MANY ANGLE INTEGRALS SEPARATE
+    const int ndim=10;
     double fac=4*Nc*CF*std::pow(Q,4.0)/(beta)*sumef;
     Userdata userdata;
     userdata.Q=Q;
