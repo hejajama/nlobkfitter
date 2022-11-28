@@ -1,3 +1,9 @@
+#include <math>
+#include <vector>
+#include <numerics>
+#include <algorithm> // for transform
+#include <functional> // for plus
+
 #include <gsl/gsl_sys.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf_bessel.h>
@@ -9,6 +15,32 @@
 #include "nlodissigmar.hpp"
 #include "nlodissigmar_massiveq.hpp"
 
+std::tuple<double, double, double, double, double, double> coodinate_inner_products(double x01, double x02, double conj_x01, double conj_x02, double phix0102, double conj_phix0102, double theta20){
+    std::vector<double> x01v = {x01, 0};
+    std::vector<double> x02v = {x02*std::cos(phix0102), x02*std::sin(phix0102)};
+    std::vector<double> x21v;
+    std::transform(x01v.begin(), x01v.end(), x02v.begin(), std::back_inserter(x21v), std::minus<float>()); // x21v = x01v - x02v
+    std::vector<double> conj_x01v = {conj_x01, 0};
+    std::vector<double> conj_x02v = {conj_x02*std::cos(conj_phix0102), conj_x02*std::sin(conj_phix0102)};
+    std::vector<double> conj_x21v;
+    std::transform(conj_x01v.begin(), conj_x01v.end(), conj_x02v.begin(), std::back_inserter(conj_x21v), std::minus<float>());
+    double net_rotation = theta20 + phix0102 - conj_phix0102;
+    double cosnet = std::cos(net_rotation);
+    double sinnet = std::sin(net_rotation);
+    conj_x01v = std::vector<double> {conj_x01v[0]*cosnet - conj_x01v[1]*sinnet, conj_x01v[0]*sinnet + conj_x01v[1]*cosnet};
+    conj_x02v = std::vector<double> {conj_x02v[0]*cosnet - conj_x02v[1]*sinnet, conj_x02v[0]*sinnet + conj_x02v[1]*cosnet};
+    conj_x21v = std::vector<double> {conj_x21v[0]*cosnet - conj_x21v[1]*sinnet, conj_x21v[0]*sinnet + conj_x21v[1]*cosnet};
+
+    double x02_dot_x21 = std::inner_product(x02v.begin(), x02v.end(), x21v.begin(), 0);
+    double conj_x02_dot_conj_x21 = std::inner_product(conj_x02v.begin(), conj_x02v.end(), conj_x21v.begin(), 0);
+    double conj_x02_dot_x02 = std::inner_product(conj_x02v.begin(), conj_x02v.end(), x02v.begin(), 0);
+    double conj_x02_dot_x21 = std::inner_product(conj_x02v.begin(), conj_x02v.end(), x21v.begin(), 0);
+    double conj_x21_dot_x02 = std::inner_product(conj_x21v.begin(), conj_x21v.end(), x02v.begin(), 0);
+    double conj_x21_dot_x21 = std::inner_product(conj_x21v.begin(), conj_x21v.end(), x21v.begin(), 0);
+
+    std::tuple<double, double, double, double, double, double> dot_products {x02_dot_x21, conj_x02_dot_conj_x21, conj_x02_dot_x02, conj_x02_dot_x21, conj_x21_dot_x02, conj_x21_dot_x21};
+    return dot_products;
+}
 
 double I_ddis_lo_qqbar_L(double Q, double beta, double z, double x01, double conj_x01) {
     double res;
