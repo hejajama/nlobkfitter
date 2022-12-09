@@ -225,8 +225,16 @@ double I_ddis_nlo_qqbarg_T_D3(double Q, double beta, double z0, double z1, doubl
     );
     double upsilon_d = Sq(z0*z1*z2)/Sq(z0+z2) - Sq(z0*z1)*z1*z2/(z0+z2) * (x_0p2sc1_dot_x20/x02sq + conj_x_0p2sc1_dot_conj_x20/conj_x02sq)
                        + Sq(z0)*z1*Sq(z1+z2)*z2/(z0+z2) * (x_0sc1p2_dot_x21/x21sq + conj_x_0sc1p2_dot_conj_x21/conj_x21sq);
-    double upsilon_e = ;
-    double upsilon_bc_interf = ;
+    double upsilon_e = Sq(z0*z1*z2)/Sq(z1+z2) - z0*Sq(z1*(z0+z2))*z2/(z1+z2) * (x_0p2sc1_dot_x20/x02sq + conj_x_0p2sc1_dot_conj_x20/conj_x02sq)
+                       + z0*Sq(z0*z1)*z2/(z1+z2) * (x_0sc1p2_dot_x21/x21sq + conj_x_0sc1p2_dot_conj_x21/conj_x21sq);
+    double upsilon_bc_interf = -z0*z1*( z1*(z0 + z2) + z0*(z1 + z2) ) *	( z0*(z0 + z2) + z1*(z1 + z2) )
+                                * ( conj_x_0p2sc1_dot_x_0sc1p2 * (-1)*conj_x02_dot_x21/(conj_x02sq * x21sq) 
+                                   + conj_x_0sc1p2_dot_x_0p2sc1 * (-1)*conj_x21_dot_x02 /(conj_x21sq * x02sq) )
+                                + z0 * z1 * z2 * Sq(z0-z1) * (
+                                    (conj_x_0p2sc1_dot_conj_x20 * x_0sc1p2_dot_x21 - conj_x_0p2sc1_dot_x21 * x_0sc1p2_dot_conj_x20)/(conj_x02sq * x21sq)
+                                    +
+                                    (conj_x_0sc1p2_dot_conj_x21 * x_0p2sc1_dot_x20 - conj_x_0sc1p2_dot_x20 * x_0p2sc1_dot_conj_x21)/(conj_x21sq * x02sq)
+                                );
     double upsilon_terms = upsilon_b_reg + upsilon_c_reg + upsilon_d + upsilon_e + upsilon_bc_interf;
     double impact_fac_integrand = z0 * z1 * Sq(Q) * BesK1 * conj_BesK1 * upsilon_terms;
     
