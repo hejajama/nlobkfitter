@@ -63,15 +63,23 @@ double I_ddis_lo_qqbar_T(double Q, double beta, double z, double x01, double con
 }
 
 double I_ddis_nlo_qqbarg_T_largeM(double Q, double z, double x01sq) {
-    double res;
+    double bessel_inner = std::sqrt(x01sq*z*(1-z))*Q;
+    double psi_LO_sq = 1/M_PI * z*(1-z) * (Sq(2*z - 1) + 1) * Sq(Q*gsl_sf_bessel_K1(bessel_inner));
+    double impact_fac_integrand = psi_LO_sq;
     
-    return res;
+    return impact_fac_integrand;
 }
 
 double I_ddis_nlo_qqbarg_T_largeQsq(double Q, double beta, double z, double ksq, double r, double rbar) {
-    double res;
+    double beta_over_z = beta / z;
+    double splitting_fun = Sq(beta_over_z) + Sq(1-beta_over_z);
+    double j2inner = std::sqrt((1-z)*ksq);
+    double k2inner = std::sqrt(z*ksq);
+    double impact_fac_integrand = Sq(ksq) * std::log(Sq(Q)/ksq) * splitting_fun
+                                  * gsl_sf_bessel_J2(j2inner*r) * gsl_sf_bessel_J2(j2inner*rbar)
+                                  * gsl_sf_bessel_K2(k2inner*r) * gsl_sf_bessel_K2(k2inner*rbar); // r * rbar multiplier not here since polar coord jacobians have been kept in nlodissigmar.cpp
     
-    return res;
+    return impact_fac_integrand;
 }
 
 

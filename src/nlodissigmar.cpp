@@ -3226,6 +3226,7 @@ int integrand_ddis_nlo_qqbarg_T_largeM(const int *ndim, const double x[], const 
     double x02sq=Sq(x02);
     double x21sq=x01sq+x02sq-2.0*sqrt(x01sq*x02sq)*cos(phix0102);
     double x21 = std::sqrt(x21sq);
+    double jacob_free_angles = 2*M_PI; // one free angle, and another goes into sigma_0
 
     double alphabar=Optr->Alphabar(x01sq);
     double alphfac=alphabar*CF/Nc;
@@ -3237,7 +3238,7 @@ int integrand_ddis_nlo_qqbarg_T_largeM(const int *ndim, const double x[], const 
     double bk_kernel = x01sq / (x02sq * x21sq);
     double res;
 
-    res = bk_kernel*dipole_kernel*(I_ddis_nlo_qqbarg_T_largeM(Q,z1,x01))*x01*x02*alphfac;
+    res = bk_kernel*dipole_kernel*(I_ddis_nlo_qqbarg_T_largeM(Q,z1,x01))*x01*x02*alphfac*jacob_free_angles;
     if(gsl_finite(res)==1){
         *f=res;
     }else{
@@ -3249,7 +3250,7 @@ int integrand_ddis_nlo_qqbarg_T_largeM(const int *ndim, const double x[], const 
 double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg_largeM(double Q, double xpom, double beta){
     double integral, error, prob;
     const int ndim=4; // z + x01 + x02 + phix0102
-    double fac=Nc*CF*std::pow(Q,2.0)/(16.0*pow(M_PI,5.0))*sumef; // alpha_s included in integrand
+    double fac=Nc*CF*std::pow(Q,2.0)/(16.0*pow(M_PI,5.0))*sumef; // alpha_em cancels with integrand, alpha_s included in integrand
     Userdata userdata;
     userdata.Q=Q;
     userdata.xpom=xpom;
@@ -3279,7 +3280,7 @@ int integrand_ddis_nlo_qqbarg_T_largeQsq(const int *ndim, const double x[], cons
     double Xrpdty_lo_bar = Optr->Xrpdty_LO(xpom, Qsq, rbar); // TODO check x val
     double N_r = 1.0 - Optr->Sr(r,Xrpdty_lo);
     double N_rbar = 1.0 - Optr->Sr(rbar,Xrpdty_lo_bar);
-    double dipole_kernel = N_r * N_rbar;
+    double dipole_kernel = 4 * N_r * N_rbar;
     double jacobian_ksq_z = Qsq * (1-beta);
     double res;
 
