@@ -362,19 +362,19 @@ double ComputeSigmaR::Structf_TFULLNLOsub ( double Q , double xbj) {
 // DDIS cross structure functions
 // n.b. integrals are already written for structure functions like in the paper
 
-double ComputeSigmaR::DDIS_SigmarNLO ( double Q , double xbj, double y, double q_mass) {
-    double FLqq = Structf_LNLOqg_unsub_massive(Q, xbj);
-    double FTqq = Structf_TNLOqg_unsub_massive(Q, xbj);
-    double FLqqg = Structf_LNLOqg_unsub_massive(Q, xbj);
-    double FTqqg = Structf_TNLOqg_unsub_massive(Q, xbj);
-    double FL = FLqq + FLqqg;
-    double FT = FTqq + FTqqg;
-    double F2 = FL+FT;
-    double fy = Sq(y)/(1+Sq(1-y));
-    double sigma = F2 - fy*FL;
+// double ComputeSigmaR::DDIS_SigmarNLO ( double Q , double xbj, double y, double q_mass) {
+//     double FLqq = Structf_LNLOqg_unsub_massive(Q, xbj);
+//     double FTqq = Structf_TNLOqg_unsub_massive(Q, xbj);
+//     double FLqqg = Structf_LNLOqg_unsub_massive(Q, xbj);
+//     double FTqqg = Structf_TNLOqg_unsub_massive(Q, xbj);
+//     double FL = FLqq + FLqqg;
+//     double FT = FTqq + FTqqg;
+//     double F2 = FL+FT;
+//     double fy = Sq(y)/(1+Sq(1-y));
+//     double sigma = F2 - fy*FL;
 
-    return sigma;
-}
+//     return sigma;
+// }
 
 
 ///===========================================================================================

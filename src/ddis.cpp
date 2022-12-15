@@ -1,6 +1,6 @@
-#include <math>
+#include <cmath>
 #include <vector>
-#include <numerics>
+#include <numeric>
 #include <algorithm> // for transform
 #include <functional> // for plus
 
@@ -21,7 +21,7 @@ double I2_Mx(double Mx, double z0, double z1, double Y01){
 }
 
 double I2_Delta(double t, double coordinates_todo){
-    return 1/(4*M_PI)*gsl_sf_bessel_J0(std::sqrt(std::abs(t))*coordinates_todo)
+    return 1/(4*M_PI)*gsl_sf_bessel_J0(std::sqrt(std::abs(t))*coordinates_todo);
 }
 
 double I3_Mx(double Mx, double z0, double z1, double z2, double Y012){
@@ -76,8 +76,8 @@ double I_ddis_nlo_qqbarg_T_largeQsq(double Q, double beta, double z, double ksq,
     double j2inner = std::sqrt((1-z)*ksq);
     double k2inner = std::sqrt(z*ksq);
     double impact_fac_integrand = Sq(ksq) * std::log(Sq(Q)/ksq) * splitting_fun
-                                  * gsl_sf_bessel_J2(j2inner*r) * gsl_sf_bessel_J2(j2inner*rbar)
-                                  * gsl_sf_bessel_K2(k2inner*r) * gsl_sf_bessel_K2(k2inner*rbar); // r * rbar multiplier not here since polar coord jacobians have been kept in nlodissigmar.cpp
+                                  * gsl_sf_bessel_j2(j2inner*r) * gsl_sf_bessel_j2(j2inner*rbar)
+                                  * gsl_sf_bessel_Kn(2, k2inner*r) * gsl_sf_bessel_Kn(2, k2inner*rbar); // r * rbar multiplier not here since polar coord jacobians have been kept in nlodissigmar.cpp
     
     return impact_fac_integrand;
 }
@@ -131,7 +131,7 @@ double I_ddis_nlo_qqbarg_L_D3(double Q, double beta, double z0, double z1, doubl
     double conj_x01sq = Sq(conj_x01);
     double conj_x02sq = Sq(conj_x02);
     double conj_x21sq=conj_x01sq+conj_x02sq-2.0*sqrt(conj_x01sq*conj_x02sq)*cos(conj_phix0102);
-    std::tuple<double, double, double, double, double, double> dot_products = coodinate_inner_products(x01, x02, conj_x01, conj_x02, phix0102, conj_phix0102, theta20);
+    std::tuple<double, double, double, double, double, double, double> dot_products = coodinate_inner_products(x01, x02, conj_x01, conj_x02, phix0102, conj_phix0102, theta20);
     double conj_x01_dot_x01 = std::get<2>(dot_products); // needed for Y012
     double conj_x02_dot_x02 = std::get<3>(dot_products);
     double conj_x02_dot_x21 = std::get<4>(dot_products);
@@ -176,7 +176,7 @@ double I_ddis_nlo_qqbarg_T_D3(double Q, double beta, double z0, double z1, doubl
     double conj_x01sq = Sq(conj_x01);
     double conj_x02sq = Sq(conj_x02);
     double conj_x21sq=conj_x01sq+conj_x02sq-2.0*sqrt(conj_x01sq*conj_x02sq)*cos(conj_phix0102);
-    std::tuple<double, double, double, double, double, double> dot_products = coodinate_inner_products(x01, x02, conj_x01, conj_x02, phix0102, conj_phix0102, theta20);
+    std::tuple<double, double, double, double, double, double, double> dot_products = coodinate_inner_products(x01, x02, conj_x01, conj_x02, phix0102, conj_phix0102, theta20);
     double x02_dot_x21 = std::get<0>(dot_products); // not in L
     double x21_dot_x02 = x02_dot_x21;
     double conj_x02_dot_conj_x21 = std::get<1>(dot_products); // not in L

@@ -125,6 +125,7 @@ public:
     double diff_xpom_SigmarNLO_largeM ( double Q , double xpom, double beta, double y) ;
     double diff_xpom_SigmarNLO_largeQsq ( double Q , double xpom, double beta, double y) ;
 
+    double DDIS_SigmarNLO ( double Q , double xbj, double y, double q_mass) ;
 
     // calculation settings & params
     void SetQuarkMassLight(double qMass_light_){ qMass_light = qMass_light_; }
