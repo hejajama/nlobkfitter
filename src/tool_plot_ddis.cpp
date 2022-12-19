@@ -76,7 +76,6 @@ int main( int argc, char* argv[] )
     // nlodis_config::MAXR = 25;
     nlodis_config::PRINTDATA = true;
     bool useNLO = true;
-    bool computeNLO = useNLO;
     string cubaMethod = "vegas";
     // string cubaMethod = "suave";
     // string cubaMethod = "divonne";
@@ -310,7 +309,7 @@ int main( int argc, char* argv[] )
     */
     double eta0 = 0;
 
-    double min_xbj = 1e-5;
+    double min_xbj = 1e-7;
     // NLODISSIGMAR IC + SOLVER CODE
     MV ic;                                            // Initial condition
     ic.SetQsqr(qs0sqr);
@@ -406,44 +405,6 @@ int main( int argc, char* argv[] )
 
     // Set running coupling and rapidity function pointters
     SigmaComputer.MetaPrescriptionSetter();
-    // if (use_custom_prescription == true){
-    //     // DEFINE CUSTOM PRESCRIPTION HERE BY OVERWRITING SOME EFFECTS OF MetaPrescriptionSetter
-    //     cout << "############## USE_CUSTOM_PRESCRIPTION IS SET TO TRUE ################" << endl;
-
-    //     if (custom_presc == "cust1"){
-    //         /* z2sim vs z2imp + kinematical rapidity shift comparison
-    //         *  These settings force rapidity shift on with any BK evolution
-    //         */
-    //         cout << "# custom1 -- z2sim vs z2imp+rho: forcing eta rapidity shift (rho) to be on. USE WITH Z2IMP." << endl;
-
-    //         ComputeSigmaR::xrapidity_funpointer x_lo_y_eta_rap_ptr; // only sub scheme LO term should have kinematical rapidity shift. No shift with unsub!
-    //         ComputeSigmaR::xrapidity_NLO_funpointer x_nlo_fun_ptr;
-    //         if (nlodis_config::SUB_SCHEME == nlodis_config::SUBTRACTED){
-    //             // sub scheme has evolution in the LO term so it needs the kinematical shift there as well.
-    //             x_lo_y_eta_rap_ptr = &ComputeSigmaR::Xrpdty_LO_targetETA;
-    //             cout << "# Using shifted target ETA rapidity in SUB leading order term." << endl;
-    //         }else{
-    //             // unsub scheme has no evolution in the lowest order term, so no shift there, use the Y rapidity technology that doesn't shift.
-    //             // Initial condition will be defined in x_eta = x0_bk.
-    //             x_lo_y_eta_rap_ptr = &ComputeSigmaR::Xrpdty_LO_projectileY;
-    //             cout << "# Using unshifted target ETA rapidity in UNSUB lowest order term." << endl;
-    //         }
-    //         x_nlo_fun_ptr = &ComputeSigmaR::Xrpdty_NLO_targetETA;
-    //         cout << "# Using target ETA evolution rapidity in NLO terms" << endl;
-        
-    //         SigmaComputer.SetEvolutionX_LO(x_lo_y_eta_rap_ptr);
-    //         SigmaComputer.SetEvolutionX_DIP(x_lo_y_eta_rap_ptr); // dipole term is always evaluated at the same rapidity as the lowest order term.
-    //         SigmaComputer.SetEvolutionX_NLO(x_nlo_fun_ptr);
-
-    //         // trbk rho prescription
-    //         SigmaComputer.SetTRBKRhoPrescription(nlodis_config::TRBK_RHO_QQ0);
-    //         cout << "# Using rapidity shift RHO with ANY evolution equation." << endl;
-    //     }
-    //     else{
-    //         cout << "Unknown custom prescription: " << custom_presc << endl;
-    //     }
-
-    // }
     
     // CUBA Monte Carlo integration library algorithm setter
     SigmaComputer.SetCubaMethod(cubaMethod);
@@ -453,7 +414,7 @@ int main( int argc, char* argv[] )
             // Print column titles.
             if(!useMasses){
             #pragma omp critical
-            cout    << setw(15) << "# xbj"        << " "
+            cout    << setw(15) << "# xpom"        << " "
                     << setw(15) << "Q^2"          << " "
                     << setw(15) << "beta"         << " "
                     << setw(15) << "FL_qq"        << " "
@@ -498,8 +459,6 @@ int main( int argc, char* argv[] )
 
     #pragma omp parallel for
     for (size_t k=0; k< coordinates.size(); k++)
-    //for (auto co : coordinates)
-    // for (auto co = coordinates.begin(); co != coordinates.end(); ++co)
         {
         int i,j,l;
         std::tie(i,j,l) = coordinates[k];
@@ -514,24 +473,34 @@ int main( int argc, char* argv[] )
         double FT_qq=0, FT_qqg=0, FT_qqg_wusthof=0, FT_qqg_muniershoshi=0;
 
         int calccount=0;
-        if (!computeNLO && !useMasses) // Compute reduced cross section using leading order impact factors
+        if (!useNLO && !useMasses) // Compute reduced cross section using leading order impact factors
         {
             FL_qq = SigmaComputer.diff_lo_xpom_FL(Q,xpom,beta);
+            // cout << FL_qq << endl;
             FT_qq = SigmaComputer.diff_lo_xpom_FT(Q,xpom,beta);
+            // cout << FT_qq << endl;
             FT_qqg_muniershoshi = SigmaComputer.diff_nlo_xpom_FT_qqbarg_largeM(Q,xpom,beta);
+            // cout << FT_qqg_muniershoshi << endl;
             FT_qqg_wusthof = SigmaComputer.diff_nlo_xpom_FT_qqbarg_largeQsq(Q,xpom,beta);
+            // cout << FT_qqg_wusthof << endl;
             ++calccount;
         }
 
-        if (computeNLO) // UNSUB SCHEME Full NLO impact factors for reduced cross section
+        if (useNLO) // UNSUB SCHEME Full NLO impact factors for reduced cross section
         {
             if (!useMasses){ // the old way, no z2 lower bound in dipole loop term.
                 FL_qq = SigmaComputer.diff_lo_xpom_FL(Q,xpom,beta);
+                // cout << FL_qq << endl;
                 FT_qq = SigmaComputer.diff_lo_xpom_FT(Q,xpom,beta);
+                // cout << FT_qq << endl;
                 FL_qqg = SigmaComputer.diff_nlo_xpom_FL_qqbarg(Q,xpom,beta);
+                // cout << FL_qqg << endl;
                 FT_qqg = SigmaComputer.diff_nlo_xpom_FT_qqbarg(Q,xpom,beta);
+                // cout << FT_qqg << endl;
                 FT_qqg_muniershoshi = SigmaComputer.diff_nlo_xpom_FT_qqbarg_largeM(Q,xpom,beta);
+                // cout << FT_qqg_muniershoshi << endl;
                 FT_qqg_wusthof = SigmaComputer.diff_nlo_xpom_FT_qqbarg_largeQsq(Q,xpom,beta);
+                // cout << FT_qqg_wusthof << endl;
                 ++calccount;}
             if (useMasses){
                 ++calccount;}

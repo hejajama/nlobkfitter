@@ -352,6 +352,26 @@ public:
     double Xrpdty_NLO(double Qsq, double z2, double z2min, double icX0, double x01sq, double x02sq, double x21sq ){
         return (this->*Xrpdty_NLO_PTR)(Qsq,z2,z2min,icX0,x01sq,x02sq,x21sq);
     };
+    double Xrpdty_DDIS_dip(double qsq, double xpom, double beta){
+        double xbj = xpom*beta;
+        double Wsq = qsq*(1/xbj - 1);
+        double xrap = icQ0sqr/(Wsq);
+        if (xrap == 0){
+            #pragma omp critical
+            cout << "Got bad xrap with: W^2= " << Wsq << " xpom " << xpom << " beta " << beta << endl;
+        }
+        return xrap;
+    };
+    double Xrpdty_DDIS_NLO(double qsq, double xpom, double beta, double z2){
+        double xbj = xpom*beta;
+        double Wsq = qsq*(1/xbj - 1);
+        double xrap = icQ0sqr/(Wsq*z2);
+        if (xrap == 0){
+            #pragma omp critical
+            cout << "Got bad xrap with: W^2= " << Wsq << ", z2= " << z2 << endl;
+        }
+        return xrap;
+    };
 
     double Xrpdty_LO_projectileY(double x, double Qsq, double rsq);
     double Xrpdty_LO_targetETA(double x, double Qsq, double rsq);

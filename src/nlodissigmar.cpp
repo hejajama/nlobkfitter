@@ -3153,10 +3153,11 @@ int integrand_ddis_lo_qqbar_L(const int *ndim, const double x[], const int *ncom
 
     double alphabar=Optr->Alphabar(x01sq);
     double alphfac=alphabar*CF/Nc;
-    double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Sq(Q), x01sq); // TODO check x val
-    double Xrpdty_lo_bar = Optr->Xrpdty_LO(xpom, Sq(Q), conj_x01sq); // TODO check x val
+    // double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Sq(Q), x01sq); // TODO check x val
+    // double Xrpdty_lo_bar = Optr->Xrpdty_LO(xpom, Sq(Q), conj_x01sq); // TODO check x val
+    double Xrpdty_lo = Optr->Xrpdty_DDIS_dip(Sq(Q), xpom, beta);
     double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
-    double SKernel_conj = 1.0 - Optr->Sr(conj_x01,Xrpdty_lo_bar);
+    double SKernel_conj = 1.0 - Optr->Sr(conj_x01,Xrpdty_lo);
     double res;
 
     res = SKernel*SKernel_conj*(I_ddis_lo_qqbar_L(Q,beta,z1,x01,conj_x01))*alphfac;
@@ -3198,10 +3199,11 @@ int integrand_ddis_lo_qqbar_T(const int *ndim, const double x[], const int *ncom
 
     double alphabar=Optr->Alphabar(x01sq);
     double alphfac=alphabar*CF/Nc;
-    double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Sq(Q), x01sq); // TODO check x val
-    double Xrpdty_lo_bar = Optr->Xrpdty_LO(xpom, Sq(Q), conj_x01sq); // TODO check x val
+    // double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Sq(Q), x01sq); // TODO check x val
+    // double Xrpdty_lo_bar = Optr->Xrpdty_LO(xpom, Sq(Q), conj_x01sq); // TODO check x val
+    double Xrpdty_lo = Optr->Xrpdty_DDIS_dip(Sq(Q), xpom, beta);
     double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
-    double SKernel_conj = 1.0 - Optr->Sr(conj_x01,Xrpdty_lo_bar);
+    double SKernel_conj = 1.0 - Optr->Sr(conj_x01,Xrpdty_lo);
     double res;
 
     res = SKernel*SKernel_conj*(I_ddis_lo_qqbar_T(Q,beta,z1,x01,conj_x01))*alphfac;
@@ -3249,7 +3251,8 @@ int integrand_ddis_nlo_qqbarg_T_largeM(const int *ndim, const double x[], const 
 
     double alphabar=Optr->Alphabar(x01sq);
     double alphfac=alphabar*CF/Nc;
-    double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Sq(Q), x01sq); // TODO check x val
+    double Xrpdty_lo = Optr->Xrpdty_DDIS_dip(Sq(Q), xpom, beta);
+    // double Xrpdt = Optr->Xrpdty_DDIS(Sq(Q), xpom, beta, z2); // no z2 here?
     double N01 = 1.0 - Optr->Sr(x01,Xrpdty_lo);
     double N02 = 1.0 - Optr->Sr(x02,Xrpdty_lo);
     double N21 = 1.0 - Optr->Sr(x21,Xrpdty_lo);
@@ -3273,7 +3276,7 @@ double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg_largeM(double Q, double xpom, doub
     Userdata userdata;
     userdata.Q=Q;
     userdata.xpom=xpom;
-    userdata.beta=0;
+    userdata.beta=beta;
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ddis_nlo_qqbarg_T_largeM,&userdata,&integral,&error,&prob);
@@ -3295,10 +3298,12 @@ int integrand_ddis_nlo_qqbarg_T_largeQsq(const int *ndim, const double x[], cons
 
     double alphabar=Optr->Alphabar(r);
     double alphfac=alphabar*CF/Nc;
-    double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Qsq, r); // TODO check x val
-    double Xrpdty_lo_bar = Optr->Xrpdty_LO(xpom, Qsq, rbar); // TODO check x val
+    // double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Qsq, r); // TODO check x val
+    // double Xrpdty_lo_bar = Optr->Xrpdty_LO(xpom, Qsq, rbar); // TODO check x val
+    double Xrpdty_lo = Optr->Xrpdty_DDIS_dip(Sq(Q), xpom, beta);
+    // double Xrpdt = Optr->Xrpdty_DDIS(Sq(Q), xpom, beta, z2); // no z2 here??
     double N_r = 1.0 - Optr->Sr(r,Xrpdty_lo);
-    double N_rbar = 1.0 - Optr->Sr(rbar,Xrpdty_lo_bar);
+    double N_rbar = 1.0 - Optr->Sr(rbar,Xrpdty_lo);
     double dipole_kernel = 4 * N_r * N_rbar;
     double jacobian_ksq_z = Qsq * (1-beta);
     double res;
@@ -3356,11 +3361,10 @@ int integrand_ddis_nlo_qqbarg_L(const int *ndim, const double x[], const int *nc
 
     double alphabar=Optr->Alphabar(x01sq);
     double alphfac=alphabar*CF/Nc;
-    double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Sq(Q), x01sq); // TODO check x val
-    double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2; // TODO check what this is
-    double conj_Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); // DOES THE CONJUGATE HAVE ITS OWN rapidity scale??
+    double Xrpdt = Optr->Xrpdty_DDIS_NLO(Sq(Q), xpom, beta, z2);
+    // double conj_Xrpdt= Optr->Xrpdty_DDIS(qsq, xpom, beta, z2, x01sq, x02sq, x21sq); // DOES THE CONJUGATE HAVE ITS OWN rapidity scale??
     double dipole_kernel = (1 - Optr->SrTripole(x01,Xrpdt,x02,Xrpdt,x21,Xrpdt))*
-                           (1 - Optr->SrTripole(conj_x01,conj_Xrpdt,conj_x02,conj_Xrpdt,conj_x21,conj_Xrpdt));
+                           (1 - Optr->SrTripole(conj_x01,Xrpdt,conj_x02,Xrpdt,conj_x21,Xrpdt));
 
     double res;
     res = dipole_kernel*(I_ddis_nlo_qqbarg_L_D3(Q, beta, z0, z1, z2, x01, x02, phix0102, conj_x01, conj_x02, conj_phix0102, theta_x2b0b20))*x01*x02*conj_x01*conj_x02*alphfac;
@@ -3417,11 +3421,11 @@ int integrand_ddis_nlo_qqbarg_T(const int *ndim, const double x[], const int *nc
 
     double alphabar=Optr->Alphabar(x01sq);
     double alphfac=alphabar*CF/Nc;
-    double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Sq(Q), x01sq); // TODO check x val
-    double Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); //z2min * X0/z2; // TODO check what this is
-    double conj_Xrpdt= Optr->Xrpdty_NLO(Q*Q, z2, z2min, X0, x01sq, x02sq, x21sq); // DOES THE CONJUGATE HAVE ITS OWN rapidity scale??
+    double qsq = Sq(Q);
+    double Xrpdt = Optr->Xrpdty_DDIS_NLO(qsq, xpom, beta, z2);
+    // double conj_Xrpdt= Optr->Xrpdty_DDIS(qsq, xpom, beta, z2, x01sq, x02sq, x21sq); // DOES THE CONJUGATE HAVE ITS OWN rapidity scale??
     double dipole_kernel = (1 - Optr->SrTripole(x01,Xrpdt,x02,Xrpdt,x21,Xrpdt))*
-                           (1 - Optr->SrTripole(conj_x01,conj_Xrpdt,conj_x02,conj_Xrpdt,conj_x21,conj_Xrpdt));
+                           (1 - Optr->SrTripole(conj_x01,Xrpdt,conj_x02,Xrpdt,conj_x21,Xrpdt));
 
     double res;
     res = dipole_kernel*(I_ddis_nlo_qqbarg_T_D3(Q, beta, z0, z1, z2, x01, x02, phix0102, conj_x01, conj_x02, conj_phix0102, theta_x2b0b20))*x01*x02*conj_x01*conj_x02*alphfac;
