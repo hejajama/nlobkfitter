@@ -3151,8 +3151,6 @@ int integrand_ddis_lo_qqbar_L(const int *ndim, const double x[], const int *ncom
     double x01sq=Sq(x01);
     double conj_x01sq=Sq(conj_x01);
 
-    double alphabar=Optr->Alphabar(x01sq);
-    double alphfac=alphabar*CF/Nc;
     // double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Sq(Q), x01sq); // TODO check x val
     // double Xrpdty_lo_bar = Optr->Xrpdty_LO(xpom, Sq(Q), conj_x01sq); // TODO check x val
     double Xrpdty_lo = Optr->Xrpdty_DDIS_dip(Sq(Q), xpom, beta);
@@ -3160,7 +3158,7 @@ int integrand_ddis_lo_qqbar_L(const int *ndim, const double x[], const int *ncom
     double SKernel_conj = 1.0 - Optr->Sr(conj_x01,Xrpdty_lo);
     double res;
 
-    res = SKernel*SKernel_conj*(I_ddis_lo_qqbar_L(Q,beta,z1,x01,conj_x01))*alphfac;
+    res = SKernel*SKernel_conj*I_ddis_lo_qqbar_L(Q,beta,z1,x01,conj_x01);
     if(gsl_finite(res)==1){
         *f=res;
     }else{
@@ -3197,8 +3195,6 @@ int integrand_ddis_lo_qqbar_T(const int *ndim, const double x[], const int *ncom
     double x01sq=Sq(x01);
     double conj_x01sq=Sq(conj_x01);
 
-    double alphabar=Optr->Alphabar(x01sq);
-    double alphfac=alphabar*CF/Nc;
     // double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Sq(Q), x01sq); // TODO check x val
     // double Xrpdty_lo_bar = Optr->Xrpdty_LO(xpom, Sq(Q), conj_x01sq); // TODO check x val
     double Xrpdty_lo = Optr->Xrpdty_DDIS_dip(Sq(Q), xpom, beta);
@@ -3206,7 +3202,7 @@ int integrand_ddis_lo_qqbar_T(const int *ndim, const double x[], const int *ncom
     double SKernel_conj = 1.0 - Optr->Sr(conj_x01,Xrpdty_lo);
     double res;
 
-    res = SKernel*SKernel_conj*(I_ddis_lo_qqbar_T(Q,beta,z1,x01,conj_x01))*alphfac;
+    res = SKernel*SKernel_conj*I_ddis_lo_qqbar_T(Q,beta,z1,x01,conj_x01);
     if(gsl_finite(res)==1){
         *f=res;
     }else{
