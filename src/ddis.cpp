@@ -44,7 +44,7 @@ double I_ddis_lo_qqbar_L(double Q, double beta, double z, double x01, double con
     double k0inner = z1z_root * Q;
     double Phi_0 = x01 * gsl_sf_bessel_J0(j0inner*x01) * gsl_sf_bessel_K0(k0inner*x01);
     double conj_Phi_0 = conj_x01 * gsl_sf_bessel_J0(j0inner*conj_x01) * gsl_sf_bessel_K0(k0inner*conj_x01);
-    res = Phi_0 * conj_Phi_0;
+    res = fac * Phi_0 * conj_Phi_0;
     return res;
 }
 
@@ -58,7 +58,7 @@ double I_ddis_lo_qqbar_T(double Q, double beta, double z, double x01, double con
     double k1inner = z1z_root * Q;
     double Phi_1 = x01 * gsl_sf_bessel_J1(j1inner*x01) * gsl_sf_bessel_K1(k1inner*x01);
     double conj_Phi_1 = conj_x01 * gsl_sf_bessel_J1(j1inner*conj_x01) * gsl_sf_bessel_K1(k1inner*conj_x01);
-    res = Phi_1 * conj_Phi_1;
+    res = fac * Phi_1 * conj_Phi_1;
     return res;
 }
 
