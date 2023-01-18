@@ -31,5 +31,6 @@ fltool
 doc/
 out/
 out-mass/
+out-ddis/
 fits/
 errors/

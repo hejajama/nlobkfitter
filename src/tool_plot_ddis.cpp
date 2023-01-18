@@ -69,16 +69,17 @@ int main( int argc, char* argv[] )
     nlodis_config::CUBA_EPSREL = 1e-3;
     // nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
     // nlodis_config::CUBA_MAXEVAL = 4e8;
-    nlodis_config::CUBA_MAXEVAL= 5e7; // highacc def1
+    // nlodis_config::CUBA_MAXEVAL= 2e8; // highacc def1
+    nlodis_config::CUBA_MAXEVAL= 5e8; // highacc def1
     nlodis_config::MINR = 1e-6;
     // nlodis_config::MINR = 1e-7;
     nlodis_config::MAXR = 30;
     // nlodis_config::MAXR = 25;
     nlodis_config::PRINTDATA = true;
     bool useNLO = true;
-    string cubaMethod = "vegas";
+    // string cubaMethod = "vegas";
     // string cubaMethod = "suave";
-    // string cubaMethod = "divonne";
+    string cubaMethod = "divonne";
 
     config::NO_K2 = true;  // Do not include numerically demanding full NLO part
     config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
@@ -107,6 +108,7 @@ int main( int argc, char* argv[] )
     MnUserParameters parameters;
 
     bool useSUB, useResumBK, useKCBK, useImprovedZ2Bound, useBoundLoop;
+    bool calc_LO = true;
     bool useSigma3 = false;
     string helpstring = "Argument order: SCHEME BK RC useImprovedZ2Bound useBoundLoop Q C^2 X0 gamma Q0sq Y0 eta0\nsub/unsub/unsub+ resumbk/trbk/lobk parentrc/guillaumerc/fixedrc z2improved/z2simple z2boundloop/unboundloop";
     string string_sub, string_bk, string_rc;
@@ -119,6 +121,7 @@ int main( int argc, char* argv[] )
         useNLO = true;
     } else if (string(argv [1]) == "nlo"){
         useNLO = true;
+        calc_LO = false;
     } else if (string(argv [1]) == "approx"){
         useNLO = false;
     } else {cout << helpstring << endl; return -1;}
@@ -433,20 +436,20 @@ int main( int argc, char* argv[] )
 
     std::vector< std::tuple<int, int, int> > coordinates;
 
-    for (int k=0; k<1; k+=1) // one BETA bin
-    // for (int k=0; k<10; k+=1) // BETA over a range
+    // for (int k=0; k<1; k+=1) // one BETA bin
+    for (int k=0; k<10; k+=1) // BETA over a range
     {
         // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
         // for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
         // for (int i=0; i<=20; i+=10)  // Q^2 in [1,100]
-        for (int i=1; i<=17; i+=4)  // Q^2 in [1,100]
-        // for (int i=10; i<=20; i+=11)  // Q^2 = 10
+        // for (int i=1; i<=17; i+=4)  // Q^2 in [1,100]
+        for (int i=10; i<=20; i+=11)  // Q^2 = 10
         // for (int i=0; i<=1; i++)
         {
             // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
             //for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
-            for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
-            // for (int j=9; j<=10; j+=8)  // xbj = {~1e-4}
+            // for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
+            for (int j=4; j<=10; j+=8)  // xbj = {1e-3}
             // for (int j=1; j<=9; j+=8)      // xbj = {~1e-2, ~1e-4} // LHEC predictions for x0bk=0.01
             // for (int j=2; j<=8; j+=2)  // xbj = {1e-6} // LHEC predictions for x0bk=0.01
             // for (int j=0; j<=1; j++)
@@ -457,17 +460,18 @@ int main( int argc, char* argv[] )
         }
     }
 
-    #pragma omp parallel for
+    // #pragma omp parallel for
     for (size_t k=0; k< coordinates.size(); k++)
         {
         int i,j,l;
         std::tie(i,j,l) = coordinates[k];
 
         if (j==0 and cubaMethod=="suave"){continue;}
-        double Q = 1.0*pow(10,(double)i/20.0);
+        double Q = 1.0*pow(5,(double)i/20.0);
         double xpom = icx0/pow(10,(double)j/4.0);
-        // double beta = 1.0/pow(10,(double)j/4.0);
-        double beta = 0.5;
+        // double beta = 0.95/pow(10,(double)l/4.0);
+        double beta = 0.05 + (double)l * 0.1;
+        // double beta = 0.5;
         
         double FL_qq=0, FL_qqg=0;
         double FT_qq=0, FT_qqg=0, FT_qqg_wusthof=0, FT_qqg_muniershoshi=0;
@@ -488,7 +492,7 @@ int main( int argc, char* argv[] )
 
         if (useNLO) // UNSUB SCHEME Full NLO impact factors for reduced cross section
         {
-            if (!useMasses){ // the old way, no z2 lower bound in dipole loop term.
+            if (calc_LO){
                 FL_qq = SigmaComputer.diff_lo_xpom_FL(Q,xpom,beta);
                 // cout << FL_qq << endl;
                 FT_qq = SigmaComputer.diff_lo_xpom_FT(Q,xpom,beta);
@@ -502,6 +506,10 @@ int main( int argc, char* argv[] )
                 FT_qqg_wusthof = SigmaComputer.diff_nlo_xpom_FT_qqbarg_largeQsq(Q,xpom,beta);
                 // cout << FT_qqg_wusthof << endl;
                 ++calccount;}
+            else{
+                FL_qqg = SigmaComputer.diff_nlo_xpom_FL_qqbarg(Q,xpom,beta);
+                FT_qqg = SigmaComputer.diff_nlo_xpom_FT_qqbarg(Q,xpom,beta);
+            }
             if (useMasses){
                 ++calccount;}
         }
