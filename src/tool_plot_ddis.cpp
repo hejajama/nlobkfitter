@@ -69,17 +69,18 @@ int main( int argc, char* argv[] )
     nlodis_config::CUBA_EPSREL = 1e-3;
     // nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
     // nlodis_config::CUBA_MAXEVAL = 4e8;
-    // nlodis_config::CUBA_MAXEVAL= 2e8; // highacc def1
-    nlodis_config::CUBA_MAXEVAL= 5e8; // highacc def1
+    // nlodis_config::CUBA_MAXEVAL= 5e7;
+    // nlodis_config::CUBA_MAXEVAL= 1e8; // highacc def1
+    nlodis_config::CUBA_MAXEVAL= 1e10; // highacc big
     nlodis_config::MINR = 1e-6;
     // nlodis_config::MINR = 1e-7;
     nlodis_config::MAXR = 30;
     // nlodis_config::MAXR = 25;
     nlodis_config::PRINTDATA = true;
     bool useNLO = true;
-    // string cubaMethod = "vegas";
+    string cubaMethod = "vegas";
     // string cubaMethod = "suave";
-    string cubaMethod = "divonne";
+    // string cubaMethod = "divonne";
 
     config::NO_K2 = true;  // Do not include numerically demanding full NLO part
     config::KINEMATICAL_CONSTRAINT = config::KC_NONE;
@@ -164,6 +165,9 @@ int main( int argc, char* argv[] )
     } else {cout << helpstring << endl; return -1;}
 
     string_rc = string(argv [3]);
+    // nlodis_config::RC_SCALE_PRESC_DDIS = nlodis_config::DDIS_RC_SCALE_PRODUCT_COUPLING;
+    // nlodis_config::RC_SCALE_PRESC_DDIS = nlodis_config::DDIS_RC_SCALE_SMALLER_DIS;
+    nlodis_config::RC_SCALE_PRESC_DDIS = nlodis_config::DDIS_RC_SCALE_COMBINE_MEAN_DIS;
     if (string(argv [3]) == "parentrc" or string(argv [3]) == "pdrc"){
             config::RC_LO = config::PARENT_LO;
             config::RESUM_RC = config::RESUM_RC_PARENT;
@@ -420,12 +424,12 @@ int main( int argc, char* argv[] )
             cout    << setw(15) << "# xpom"        << " "
                     << setw(15) << "Q^2"          << " "
                     << setw(15) << "beta"         << " "
-                    << setw(15) << "FL_qq"        << " "
-                    << setw(15) << "FL_qqg"       << " "
-                    << setw(15) << "FT_qq"        << " "
-                    << setw(15) << "FT_qqg"       << " "
-                    << setw(15) << "FT_M^2>>"     << " "
-                    << setw(15) << "FT_Q^2>>"     << " "
+                    << setw(15) << "xpom*FL_qq"        << " "
+                    << setw(15) << "xpom*FL_qqg"       << " "
+                    << setw(15) << "xpom*FT_qq"        << " "
+                    << setw(15) << "xpom*FT_qqg"       << " "
+                    << setw(15) << "xpom*FT_M^2>>"     << " "
+                    << setw(15) << "xpom*FT_Q^2>>"     << " "
                     << endl;
                     }
 
@@ -443,7 +447,8 @@ int main( int argc, char* argv[] )
         // for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
         // for (int i=0; i<=20; i+=10)  // Q^2 in [1,100]
         // for (int i=1; i<=17; i+=4)  // Q^2 in [1,100]
-        for (int i=10; i<=20; i+=11)  // Q^2 = 10
+        // for (int i=10; i<=20; i+=11)  // Q^2 = 10 (5)
+        for (int i=20; i<=20; i+=11)  // Q^2 = 100
         // for (int i=0; i<=1; i++)
         {
             // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
@@ -460,13 +465,14 @@ int main( int argc, char* argv[] )
         }
     }
 
-    // #pragma omp parallel for
+    #pragma omp parallel for
     for (size_t k=0; k< coordinates.size(); k++)
         {
         int i,j,l;
         std::tie(i,j,l) = coordinates[k];
 
         if (j==0 and cubaMethod=="suave"){continue;}
+        // double Q = 1.0*pow(10,(double)i/20.0);
         double Q = 1.0*pow(5,(double)i/20.0);
         double xpom = icx0/pow(10,(double)j/4.0);
         // double beta = 0.95/pow(10,(double)l/4.0);

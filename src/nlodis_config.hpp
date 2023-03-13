@@ -70,6 +70,14 @@ namespace nlodis_config
     };
     extern RunningCouplingDIS RC_DIS;
 
+    enum RunningCouplingPrescDDIS
+    {
+        DDIS_RC_SCALE_SMALLER_DIS, // choose smallest of all DA and CCA dipoles as the scale
+        DDIS_RC_SCALE_COMBINE_MEAN_DIS, // combine DA and CCA DIS scales in a harmonic mean
+        DDIS_RC_SCALE_PRODUCT_COUPLING, // take DA and CCA to have separately running g and g', then a_s \sim g(scale) * g'(scale')
+    };
+    extern RunningCouplingPrescDDIS RC_SCALE_PRESC_DDIS;
+
     enum TargetRapidityBKRhoPresc
     {
         TRBK_RHO_DISABLED,

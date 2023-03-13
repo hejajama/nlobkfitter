@@ -703,7 +703,8 @@ string PrintVector(vector<double> v)
 ///===========================================================================================
 // CUBA WRAP
 namespace cuba_config{
-    int verbose=0;
+    int verbose=0; // tag cuba verbose
+    // int verbose=1;
     //maxeval=nlodis_config::CUBA_MAXEVAL;
     //double epsrel=nlodis_config::CUBA_EPSREL;
     double epsabs=0;
@@ -947,6 +948,7 @@ double ComputeSigmaR::alpha_bar_fixed( double rsq ) { // alphabar = Nc/M_PI * al
 // QG term specific running couplings
 struct Alphasdata{
     double x01sq,x02sq,x21sq;
+    double conj_x01sq,conj_x02sq,conj_x21sq;
 };
 
 double ComputeSigmaR::alpha_bar_QG_fixed( void *userdata ) { // alphabar = Nc/M_PI * alphas
@@ -1002,6 +1004,66 @@ double ComputeSigmaR::alpha_bar_QG_running_smallest( void *userdata ) { // alpha
     std::pow( std::pow(alphas_mu0, 2.0/alphas_freeze_c) + std::pow(scalefactor/(r_min_sqr*lambdaqcd*lambdaqcd), 1.0/alphas_freeze_c), alphas_freeze_c)
     ) );
   return Nc/M_PI*AlphaSres;
+}
+
+
+double ComputeSigmaR::Alphabar_DDIS(void *userdata){ // alphabar = Nc/M_PI * alphas
+    Alphasdata *dataptr = (Alphasdata*)userdata;
+    double x01sq=dataptr->x01sq;
+    double x02sq=dataptr->x02sq;
+    double x21sq=dataptr->x21sq;
+    double conj_x01sq=dataptr->conj_x01sq;
+    double conj_x02sq=dataptr->conj_x02sq;
+    double conj_x21sq=dataptr->conj_x21sq;
+    std::vector<double> v{x01sq, x02sq, x21sq};
+    std::vector<double> vcc{conj_x01sq, conj_x02sq, conj_x21sq};
+    double alphabar;
+
+    if (nlodis_config::RC_SCALE_PRESC_DDIS == nlodis_config::DDIS_RC_SCALE_PRODUCT_COUPLING){
+        Alphasdata alphasdata_da;
+        alphasdata_da.x01sq=x01sq;
+        alphasdata_da.x02sq=x02sq;
+        alphasdata_da.x21sq=x21sq;
+        Alphasdata alphasdata_cca;
+        alphasdata_cca.x01sq=conj_x01sq;
+        alphasdata_cca.x02sq=conj_x02sq;
+        alphasdata_cca.x21sq=conj_x21sq;
+        alphabar = std::sqrt(Alphabar_QG( &alphasdata_da ))*std::sqrt(Alphabar_QG( &alphasdata_cca ));
+    } else if (nlodis_config::RC_SCALE_PRESC_DDIS == nlodis_config::DDIS_RC_SCALE_COMBINE_MEAN_DIS){
+        double da_size, cca_size;
+        if (nlodis_config::RC_DIS == nlodis_config::DIS_RC_PARENT){
+            da_size = x01sq;
+            cca_size = conj_x01sq;
+        } else if (nlodis_config::RC_DIS == nlodis_config::DIS_RC_SMALLEST){
+            da_size = *std::min_element(v.begin(), v.end());
+            cca_size = *std::min_element(vcc.begin(), vcc.end());
+        }
+        double combined_scale = std::sqrt(Sq(da_size) + Sq(cca_size));
+        alphabar = Alphabar(combined_scale);
+    } else if (nlodis_config::RC_SCALE_PRESC_DDIS == nlodis_config::DDIS_RC_SCALE_SMALLER_DIS){
+        double smallest = std::min(*std::min_element(v.begin(), v.end()), *std::min_element(vcc.begin(), vcc.end()));
+        alphabar = Alphabar(smallest);
+    } else {
+        alphabar = 0;
+    }
+    return alphabar;
+}
+
+double ComputeSigmaR::Alphabar_DDIS_wusthoff(double r, double rbar){ // alphabar = Nc/M_PI * alphas
+    double alphabar;
+    double combined_scale;
+
+    if (nlodis_config::RC_SCALE_PRESC_DDIS == nlodis_config::DDIS_RC_SCALE_PRODUCT_COUPLING){
+        alphabar = std::sqrt(Alphabar(Sq(r)))*std::sqrt(Alphabar(Sq(rbar)));
+    } else if (nlodis_config::RC_SCALE_PRESC_DDIS == nlodis_config::DDIS_RC_SCALE_COMBINE_MEAN_DIS){
+        combined_scale = std::sqrt((Sq(r) + Sq(rbar))/2);
+        alphabar = Alphabar(combined_scale);
+    } else if (nlodis_config::RC_SCALE_PRESC_DDIS == nlodis_config::DDIS_RC_SCALE_SMALLER_DIS){
+        alphabar = Alphabar(Sq(std::min(r, rbar)));
+    } else {
+        alphabar = 0;
+    }
+    return alphabar;
 }
 
 
@@ -3151,8 +3213,6 @@ int integrand_ddis_lo_qqbar_L(const int *ndim, const double x[], const int *ncom
     double x01sq=Sq(x01);
     double conj_x01sq=Sq(conj_x01);
 
-    // double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Sq(Q), x01sq); // TODO check x val
-    // double Xrpdty_lo_bar = Optr->Xrpdty_LO(xpom, Sq(Q), conj_x01sq); // TODO check x val
     double Xrpdty_lo = Optr->Xrpdty_DDIS_dip(Sq(Q), xpom, beta);
     double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
     double SKernel_conj = 1.0 - Optr->Sr(conj_x01,Xrpdty_lo);
@@ -3195,8 +3255,6 @@ int integrand_ddis_lo_qqbar_T(const int *ndim, const double x[], const int *ncom
     double x01sq=Sq(x01);
     double conj_x01sq=Sq(conj_x01);
 
-    // double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Sq(Q), x01sq); // TODO check x val
-    // double Xrpdty_lo_bar = Optr->Xrpdty_LO(xpom, Sq(Q), conj_x01sq); // TODO check x val
     double Xrpdty_lo = Optr->Xrpdty_DDIS_dip(Sq(Q), xpom, beta);
     double SKernel = 1.0 - Optr->Sr(x01,Xrpdty_lo);
     double SKernel_conj = 1.0 - Optr->Sr(conj_x01,Xrpdty_lo);
@@ -3245,10 +3303,13 @@ int integrand_ddis_nlo_qqbarg_T_largeM(const int *ndim, const double x[], const 
     double x21 = std::sqrt(x21sq);
     double jacob_free_angles = 2*M_PI; // one free angle, and another goes into sigma_0
 
-    double alphabar=Optr->Alphabar(x01sq);
+    Alphasdata alphasdata;
+    alphasdata.x01sq=x01sq;
+    alphasdata.x02sq=x02sq;
+    alphasdata.x21sq=x21sq;
+    double alphabar=Optr->Alphabar_QG( &alphasdata );
     double alphfac=alphabar*CF/Nc;
     double Xrpdty_lo = Optr->Xrpdty_DDIS_dip(Sq(Q), xpom, beta);
-    // double Xrpdt = Optr->Xrpdty_DDIS(Sq(Q), xpom, beta, z2); // no z2 here?
     double N01 = 1.0 - Optr->Sr(x01,Xrpdty_lo);
     double N02 = 1.0 - Optr->Sr(x02,Xrpdty_lo);
     double N21 = 1.0 - Optr->Sr(x21,Xrpdty_lo);
@@ -3292,12 +3353,9 @@ int integrand_ddis_nlo_qqbarg_T_largeQsq(const int *ndim, const double x[], cons
     double rbar=nlodis_config::MAXR*x[2];
     double ksq=Qsq*x[3];
 
-    double alphabar=Optr->Alphabar(r);
+    double alphabar=Optr->Alphabar_DDIS_wusthoff(r, rbar);
     double alphfac=alphabar*CF/Nc;
-    // double Xrpdty_lo = Optr->Xrpdty_LO(xpom, Qsq, r); // TODO check x val
-    // double Xrpdty_lo_bar = Optr->Xrpdty_LO(xpom, Qsq, rbar); // TODO check x val
     double Xrpdty_lo = Optr->Xrpdty_DDIS_dip(Sq(Q), xpom, beta);
-    // double Xrpdt = Optr->Xrpdty_DDIS(Sq(Q), xpom, beta, z2); // no z2 here??
     double N_r = 1.0 - Optr->Sr(r,Xrpdty_lo);
     double N_rbar = 1.0 - Optr->Sr(rbar,Xrpdty_lo);
     double dipole_kernel = 4 * N_r * N_rbar;
@@ -3335,9 +3393,14 @@ int integrand_ddis_nlo_qqbarg_L(const int *ndim, const double x[], const int *nc
     double Q=dataptr->Q;
     double xpom=dataptr->xpom;
     double beta=dataptr->beta;
+    double X0=dataptr->icX0;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
+    // double xbj = xpom*beta;
+    // double Mx_sq = Q*Q * ((1-beta)/beta);
+    // double Wsq = Sq(Q)*(1/xbj - 1);
     double z1=x[0];
     double z2=x[1];
+    double jac=1.0;
     double z0=1-z1-z2;
     double x01=nlodis_config::MAXR*x[2];
     double x02=nlodis_config::MAXR*x[3];
@@ -3355,15 +3418,21 @@ int integrand_ddis_nlo_qqbarg_L(const int *ndim, const double x[], const int *nc
     double conj_x21sq=conj_x01sq+conj_x02sq-2.0*sqrt(conj_x01sq*conj_x02sq)*cos(conj_phix0102);
     double conj_x21 = std::sqrt(conj_x21sq);
 
-    double alphabar=Optr->Alphabar(x01sq);
+    Alphasdata alphasdata;
+    alphasdata.x01sq=x01sq;
+    alphasdata.x02sq=x02sq;
+    alphasdata.x21sq=x21sq;
+    alphasdata.conj_x01sq=conj_x01sq;
+    alphasdata.conj_x02sq=conj_x02sq;
+    alphasdata.conj_x21sq=conj_x21sq;
+    double alphabar=Optr->Alphabar_DDIS( &alphasdata );
     double alphfac=alphabar*CF/Nc;
-    double Xrpdt = Optr->Xrpdty_DDIS_NLO(Sq(Q), xpom, beta, z2);
-    // double conj_Xrpdt= Optr->Xrpdty_DDIS(qsq, xpom, beta, z2, x01sq, x02sq, x21sq); // DOES THE CONJUGATE HAVE ITS OWN rapidity scale??
+    double Xrpdt= Optr->Xrpdty_DDIS_dip(Sq(Q), xpom, beta); // (1.0/(Wsq + Sq(Q)))
     double dipole_kernel = (1 - Optr->SrTripole(x01,Xrpdt,x02,Xrpdt,x21,Xrpdt))*
                            (1 - Optr->SrTripole(conj_x01,Xrpdt,conj_x02,Xrpdt,conj_x21,Xrpdt));
 
     double res;
-    res = dipole_kernel*(I_ddis_nlo_qqbarg_L_D3(Q, beta, z0, z1, z2, x01, x02, phix0102, conj_x01, conj_x02, conj_phix0102, theta_x2b0b20))*x01*x02*conj_x01*conj_x02*alphfac;
+    res = jac*dipole_kernel*(I_ddis_nlo_qqbarg_L_D3(Q, beta, z0, z1, z2, x01, x02, phix0102, conj_x01, conj_x02, conj_phix0102, theta_x2b0b20))*x01*x02*conj_x01*conj_x02*alphfac;
     if(gsl_finite(res)==1){
         *f=res;
     }else{
@@ -3395,9 +3464,14 @@ int integrand_ddis_nlo_qqbarg_T(const int *ndim, const double x[], const int *nc
     double Q=dataptr->Q;
     double xpom=dataptr->xpom;
     double beta=dataptr->beta;
+    double X0=dataptr->icX0;
     ComputeSigmaR *Optr = dataptr->ComputerPtr;
+    // double xbj = xpom*beta;
+    // double Mx_sq = Q*Q * ((1-beta)/beta);
+    // double Wsq = Sq(Q)*(1/xbj - 1);
     double z1=x[0];
     double z2=x[1];
+    double jac=1.0;
     double z0=1-z1-z2;
     double x01=nlodis_config::MAXR*x[2];
     double x02=nlodis_config::MAXR*x[3];
@@ -3415,16 +3489,21 @@ int integrand_ddis_nlo_qqbarg_T(const int *ndim, const double x[], const int *nc
     double conj_x21sq=conj_x01sq+conj_x02sq-2.0*sqrt(conj_x01sq*conj_x02sq)*cos(conj_phix0102);
     double conj_x21 = std::sqrt(conj_x21sq);
 
-    double alphabar=Optr->Alphabar(x01sq);
+    Alphasdata alphasdata;
+    alphasdata.x01sq=x01sq;
+    alphasdata.x02sq=x02sq;
+    alphasdata.x21sq=x21sq;
+    alphasdata.conj_x01sq=conj_x01sq;
+    alphasdata.conj_x02sq=conj_x02sq;
+    alphasdata.conj_x21sq=conj_x21sq;
+    double alphabar=Optr->Alphabar_DDIS( &alphasdata );
     double alphfac=alphabar*CF/Nc;
-    double qsq = Sq(Q);
-    double Xrpdt = Optr->Xrpdty_DDIS_NLO(qsq, xpom, beta, z2);
-    // double conj_Xrpdt= Optr->Xrpdty_DDIS(qsq, xpom, beta, z2, x01sq, x02sq, x21sq); // DOES THE CONJUGATE HAVE ITS OWN rapidity scale??
+    double Xrpdt= Optr->Xrpdty_DDIS_dip(Sq(Q), xpom, beta); // (1.0/(Wsq + Sq(Q)))
     double dipole_kernel = (1 - Optr->SrTripole(x01,Xrpdt,x02,Xrpdt,x21,Xrpdt))*
                            (1 - Optr->SrTripole(conj_x01,Xrpdt,conj_x02,Xrpdt,conj_x21,Xrpdt));
 
     double res;
-    res = dipole_kernel*(I_ddis_nlo_qqbarg_T_D3(Q, beta, z0, z1, z2, x01, x02, phix0102, conj_x01, conj_x02, conj_phix0102, theta_x2b0b20))*x01*x02*conj_x01*conj_x02*alphfac;
+    res = jac*dipole_kernel*(I_ddis_nlo_qqbarg_T_D3(Q, beta, z0, z1, z2, x01, x02, phix0102, conj_x01, conj_x02, conj_phix0102, theta_x2b0b20))*x01*x02*conj_x01*conj_x02*alphfac;
     if(gsl_finite(res)==1){
         *f=res;
     }else{

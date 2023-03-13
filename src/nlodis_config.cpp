@@ -21,6 +21,7 @@ namespace nlodis_config
 
     ScatteringProcess SCATTERING_PROC = nlodis_config::DIS;
     RunningCouplingDIS RC_DIS;
+    RunningCouplingPrescDDIS RC_SCALE_PRESC_DDIS;
     SubtractionScheme SUB_SCHEME;
     QuarkMassScheme MASS_SCHEME;
     SubSchemeTermKernel SUB_TERM_KERNEL;

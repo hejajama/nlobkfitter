@@ -338,6 +338,9 @@ public:
     double alpha_bar_QG_running_guillaume( void *userdata );
     double alpha_bar_QG_running_smallest( void *userdata );
 
+    double Alphabar_DDIS(void *userdata);
+    double Alphabar_DDIS_wusthoff(double r, double rbar);
+
     // z2 lower bounds
     // pointer, only one since lower bound is set consistently in all terms
     double z2lower_bound( double x, double qsq ) { return (this->*z2limit_PTR)(x,qsq); } // pointer shell function
@@ -355,7 +358,7 @@ public:
     double Xrpdty_DDIS_dip(double qsq, double xpom, double beta){
         double xbj = xpom*beta;
         double Wsq = qsq*(1/xbj - 1);
-        double xrap = icQ0sqr/(Wsq);
+        double xrap = icQ0sqr/(Wsq+qsq);
         if (xrap == 0){
             #pragma omp critical
             cout << "Got bad xrap with: W^2= " << Wsq << " xpom " << xpom << " beta " << beta << endl;
