@@ -309,6 +309,7 @@ int main( int argc, char* argv[] )
     double qmass_b;
     double impact_b;
 
+    cout << argc << endl;
     if (argc == 6){
 	    qs0sqr       = 0.165; //par[ parameters.Index("qs0sqr")];
         alphas_scaling     = 6.35; //par[ parameters.Index("alphascalingC2")]; // MATCH THIS IN IMPACTFACTOR ALPHA_S WHEN NLO
@@ -318,7 +319,7 @@ int main( int argc, char* argv[] )
 	cout << "# NO INITIAL PARAMETERS PASSED, USING LO FIT DEFAULTS" << endl;
     }
 
-    if (argc >= 11){
+    if (argc == 11){
     	qs0sqr		    = stod(argv[6]);
         alphas_scaling	    = stod(argv[7]);
 	    anomalous_dimension = stod(argv[8]);
@@ -329,7 +330,7 @@ int main( int argc, char* argv[] )
     }
     double icqs0sq, iccsq, icx0_if, ic_ec=1.0, icgamma, icQ0sq, icY0, icEta0;
     double Cdown, Cup, CStep;
-    if (argc >= 15){
+    if (argc == 16){
         icqs0sq   = stod( argv [6] );
         iccsq     = stod( argv [7] );
         anomalous_dimension   = stod( argv [8] );
@@ -340,8 +341,6 @@ int main( int argc, char* argv[] )
         icY0      = stod( argv [13] );
         icEta0    = stod( argv [14] );
         sigma02 = stod( argv [15] );
-        qmass_c = stod( argv[16] );
-        qmass_b = stod( argv[17] );
 
         // Constructing Q and C^2 grids
         qs0sqr = icqs0sq/1000.; // input in milli-GeV² integer strings
@@ -350,6 +349,10 @@ int main( int argc, char* argv[] )
         Cup = 5.0;
         CStep = pow(Cup/Cdown , iccsq/240.);
         alphas_scaling = Cdown * CStep; // compute C² on a logarithmic grid
+    }
+    if (argc == 18){
+        qmass_c = stod( argv[16] );
+        qmass_b = stod( argv[17] );
     }
 
     string dataname;
@@ -615,26 +618,27 @@ int main( int argc, char* argv[] )
     std::vector< std::tuple<int, int, int> > coordinates;
 
     // for (int k=0; k<5; k+=1) // real masses
-    for (int k=0; k<1; k+=1) // one mass bin
-    // for (int k=0; k<10; k+=1) // masses over a range instead of real masses
+    // for (int k=0; k<1; k+=1) // one mass bin
+    for (int k=0; k<10; k+=1) // masses over a range instead of real masses
     {
-        for (int i=0; i<=14; i+=1)  // Q^2 in [1,90] with Q pow base = 5
+        // for (int i=0; i<=14; i+=1)  // Q^2 in [1,90] with Q pow base = 5
         // for (int i=15; i<=29; i+=2)  // Q^2 in [125,11300] with Q pow base = 5
         // for (int i=0; i<=20; i+=17)  // Q^2 = {1,50}
         // for (int i=0; i<=20; i+=1)  // Q^2 in [1,100]
         // for (int i=0; i<=20; i+=10)  // Q^2 in [1,100]
         // for (int i=1; i<=17; i+=4)  // Q^2 in [1,100]
-        // for (int i=10; i<=20; i+=11)  // Q^2 = 10
+        for (int i=10; i<=20; i+=11)  // Q^2 = 10
         // for (int i=0; i<=1; i++)
         {
             // for (int j=0; j<=8; j++)  // xbj in [1e-4, 1e-2]
             // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
             //for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
+            for (int j=4; j<=5; j+=8)  // xbj = {1e-3}
             // for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
             // for (int j=9; j<=10; j+=8)  // xbj = {~1e-4}
             // for (int j=1; j<=9; j+=8)      // xbj = {~1e-2, ~1e-4} // LHEC predictions for x0bk=0.01
             // for (int j=2; j<=8; j+=2)  // xbj = {1e-6} // LHEC predictions for x0bk=0.01
-            for (int j=0; j<1; j++)
+            // for (int j=0; j<1; j++)
             {
                 // if (!((i == 0 or i == 17) or (j == 1 or j == 4 or j == 9 or j == 12 or j == 17))) { continue; }
                 // if (!((i == 5) or (j == 4))) { continue; }
@@ -653,13 +657,13 @@ int main( int argc, char* argv[] )
         std::tie(i,j,l) = coordinates[k];
 
         if (j==0 and cubaMethod=="suave"){continue;}
-        double Q = 1.0*pow(5,(double)i*2/20.0);
-        // double Q = 1.0*pow(10,(double)i/20.0);
+        // double Q = 1.0*pow(5,(double)i*2/20.0);
+        double Q = 1.0*pow(10,(double)i/20.0);
         // double xbj = icx0/pow(10,(double)j/4.0);
-        double xbj = 2e-3;
+        double xbj = 1e-3;
         // double qmass = qMasses_tuple[l];
         // double qmass = 0.;
-        // double qmass = 0.001 + (qMass_b - 0.001)/9.*(double)l; // masses over a range up to bottom mass
+        double qmass_c = 0.0001 + (qMass_b - 0.0001)/9.*(double)l; // masses over a range up to bottom mass
         // double xbj = 0.1/pow(10,(double)j/4.0); // TODO NOTE: modify xbj upper limit for Heikki & Jani F2 testing 
         // #pragma omp critical
         // cout << "Q=" << Q << ", xbj=" << xbj << endl;
@@ -844,7 +848,6 @@ int main( int argc, char* argv[] )
         }
 
         // Output for plotting
-        bool print_ratios = false;
         if(!useMasses){
         #pragma omp critical
         cout    << setw(15) << xbj          << " "
@@ -861,7 +864,7 @@ int main( int argc, char* argv[] )
                 << setw(15) << sigma02*(FT_IC + FT_dip + FT_qg)    << " "
                 << endl;
                 }
-        if(useMasses && !print_ratios){
+        if(useMasses){
         #pragma omp critical
         cout    << setw(15) << xbj                  << " "
                 << setw(15) << Q*Q                  << " "
@@ -876,23 +879,6 @@ int main( int argc, char* argv[] )
                 << setw(15) << sigma02*FT_dipm       << " "
                 << setw(15) << sigma02*FT_qgm        << " "
                 << setw(15) << sigma02*(FT_ICm + FT_dipm + FT_qgm)    << " "
-                << endl;
-                }
-        if(print_ratios && useMasses){
-        #pragma omp critical
-        cout    << setw(15) << xbj                  << " "
-                << setw(15) << Q*Q                  << " "
-                << setw(15) << qmass_c                << " "
-                << setw(15) << ratL_IC        << " "
-                << setw(15) << ratL_LO        << " "
-                << setw(15) << ratL_dip       << " "
-                << setw(15) << ratL_qg        << " "
-                << setw(15) << (FL_ICm + FL_dipm + FL_qgm)/(FL_IC + FL_dip + FL_qg)    << " "
-                << setw(15) << ratT_IC        << " "
-                << setw(15) << ratT_LO        << " "
-                << setw(15) << ratT_dip       << " "
-                << setw(15) << ratT_qg        << " "
-                << setw(15) << (FT_ICm + FT_dipm + FT_qgm)/(FT_IC + FT_dip + FT_qg)    << " "
                 << endl;
                 }
     }
