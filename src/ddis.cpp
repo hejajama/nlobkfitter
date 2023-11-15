@@ -25,7 +25,11 @@ double I2_Delta(double t, double coordinates_todo){
 }
 
 double I3_Mx(double Mx, double z0, double z1, double z2, double Y012){
-    return 2*(z0*z1*z2)/Sq(4*M_PI)*Mx/Y012*gsl_sf_bessel_J1(Mx*Y012);
+    double Y_J1 = (Mx/Y012)*gsl_sf_bessel_J1(Mx*Y012);
+    if (std::abs(Y_J1) < 1e-7){
+        return 0;
+    }
+    return 2*(z0*z1*z2)/Sq(4*M_PI)*Y_J1;
 }
 
 double I3_Delta(double t, double coordinates_todo){

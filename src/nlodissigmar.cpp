@@ -3445,6 +3445,7 @@ double ComputeSigmaR::diff_nlo_xpom_FL_qqbarg(double Q, double xpom, double beta
     double integral, error, prob;
     const int ndim=9;
     double fac=4*Nc*CF*std::pow(Q,4.0)/(beta)*sumef;
+    double pies=1/Sq(2*M_PI) * 1/Sq(2*M_PI); // '2pi's from the transverse integrals \int_x. two 1/(2pi)s are spent on the t-integral that produces the impact-b delta.
     double polar_jacobian = nlodis_config::MAXR*nlodis_config::MAXR*nlodis_config::MAXR*nlodis_config::MAXR*(2.0*M_PI)*(2.0*M_PI)*(2.0*M_PI);
     Userdata userdata;
     userdata.Q=Q;
@@ -3453,7 +3454,7 @@ double ComputeSigmaR::diff_nlo_xpom_FL_qqbarg(double Q, double xpom, double beta
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ddis_nlo_qqbarg_L,&userdata,&integral,&error,&prob);
-    return fac*polar_jacobian*integral;
+    return fac*pies*polar_jacobian*integral;
 }
 
 
@@ -3516,6 +3517,7 @@ double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg(double Q, double xpom, double beta
     double integral, error, prob;
     const int ndim=9;
     double fac=2*Nc*CF*std::pow(Q,4.0)/(beta)*sumef;
+    double pies=1/Sq(2*M_PI) * 1/Sq(2*M_PI); // '2pi's from the transverse integrals \int_x. two 1/(2pi)s are spent on the t-integral that produces the impact-b delta.
     double polar_jacobian = nlodis_config::MAXR*nlodis_config::MAXR*nlodis_config::MAXR*nlodis_config::MAXR*(2.0*M_PI)*(2.0*M_PI)*(2.0*M_PI);
     Userdata userdata;
     userdata.Q=Q;
@@ -3524,5 +3526,5 @@ double ComputeSigmaR::diff_nlo_xpom_FT_qqbarg(double Q, double xpom, double beta
     userdata.icX0=icX0;
     userdata.ComputerPtr=this;
     Cuba(cubamethod,ndim,integrand_ddis_nlo_qqbarg_T,&userdata,&integral,&error,&prob);
-    return fac*polar_jacobian*integral;
+    return fac*pies*polar_jacobian*integral;
 }

@@ -70,12 +70,12 @@ int main( int argc, char* argv[] )
     // nlodis_config::CUBA_EPSREL = 5e-3; // highacc def1
     // nlodis_config::CUBA_MAXEVAL = 4e8;
     // nlodis_config::CUBA_MAXEVAL= 5e7;
-    // nlodis_config::CUBA_MAXEVAL= 1e8; // highacc def1
-    nlodis_config::CUBA_MAXEVAL= 1e10; // highacc big
+    nlodis_config::CUBA_MAXEVAL= 2e7; // highacc def1
+    // nlodis_config::CUBA_MAXEVAL= 1e10; // highacc big
     nlodis_config::MINR = 1e-6;
     // nlodis_config::MINR = 1e-7;
-    nlodis_config::MAXR = 30;
-    // nlodis_config::MAXR = 25;
+    // nlodis_config::MAXR = 12;
+    nlodis_config::MAXR = 25;
     nlodis_config::PRINTDATA = true;
     bool useNLO = true;
     string cubaMethod = "vegas";
@@ -454,12 +454,12 @@ int main( int argc, char* argv[] )
             // for (int j=0; j<=17; j++)  // xbj in [5.62341e-07, 1e-2]
             //for (int j=4; j<=12; j+=8)  // xbj = {1e-3, 1e-5}
             // for (int j=1; j<=17; j+=8)  // xbj = {~1e-2, ~1e-4, ~1e-6} // LHEC predictions for x0bk=0.01
-            for (int j=4; j<=10; j+=8)  // xbj = {1e-3}
+            for (int j=8; j<=10; j+=8)  // xbj = {1e-3}
             // for (int j=1; j<=9; j+=8)      // xbj = {~1e-2, ~1e-4} // LHEC predictions for x0bk=0.01
             // for (int j=2; j<=8; j+=2)  // xbj = {1e-6} // LHEC predictions for x0bk=0.01
             // for (int j=0; j<=1; j++)
             {
-                if (!((i == 0 or i == 17) or (j == 1 or j == 4 or j == 9 or j == 12 or j == 17))) { continue; }
+                if (!((i == 0 or i == 17) or (j == 1 or j == 4 or j == 8 or j == 12 or j == 17))) { continue; }
                 coordinates.emplace_back(i,j,k);
             }
         }
