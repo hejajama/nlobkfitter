@@ -3,7 +3,7 @@ AMPLITUDEPATH=$(NLOBKFITTER_LIB_PATH)/amplitudelib/build/lib
 CUBAPATH=$(NLOBKFITTER_LIB_PATH)/Cuba-4.2.2/lib/
 MINUITINC=$(NLOBKFITTER_LIB_PATH)/Minuit2/include/
 MINUITLIBDIR=$(NLOBKFITTER_LIB_PATH)/Minuit2/lib/
-CXXFLAGS = `gsl-config --cflags` -std=c++11 -O3 -fopenmp -pedantic -I$(AMPLITUDEINCLUDE) -I src/ -I$(MINUITINC)
+CXXFLAGS = `gsl-config --cflags` -std=c++17 -O3 -fopenmp -pedantic -I$(AMPLITUDEINCLUDE) -I src/ -I$(MINUITINC)
 LDFLAGS = `gsl-config --libs` -L$(MINUITLIBDIR) -lMinuit2 -L$(CUBAPATH) -lcuba -lm
 
 include filelist.m
@@ -25,6 +25,8 @@ fitex: $(OBJECTS) src/main_switches.o
 lightqfitex: $(OBJECTS) src/lightq-fit.o 
 	g++ $(OBJECTS) src/lightq-fit.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o lightqfitex $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
 
+invdip: $(OBJECTS) src/inversedipole.o
+	g++ $(OBJECTS) src/inversedipole.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o invdip $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
 
 swarmscan: $(OBJECTS) src/swarmscan.o src/nlodissigmar.hpp
 	g++ $(OBJECTS) src/swarmscan.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o swarmscan $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
@@ -54,5 +56,5 @@ subunsubtest: $(OBJECTS) src/sub_unsub_test.o
 	g++ $(OBJECTS) src/sub_unsub_test.o $(AMPLITUDEPATH)/libamplitude.a ${MINUITLIBDIR}/libMinuit2.a -o subunsub $(CXXFLAGS) $(PROFFLAGS) $(LDFLAGS)
 
 clean:
-	rm -f $(OBJECTS) $(AMPLITUDELIBO) src/main.o src/toolF2.o src/main_switches.o src/tool_plot.o src/tool_fl.o src/swarmscan.o src/massive_swarmscan.o src/lightq_scan.o src/lightq-fit.o src/sub_unsub_test.o src/lo-fit-plot.o
-	rm -f fit fitex tool plottool fltool swarmscan massivescan lightqscan subunsub lightqfitex lofit
+	rm -f $(OBJECTS) $(AMPLITUDELIBO) src/main.o src/toolF2.o src/ddis.o src/main_switches.o src/inversedipole.o src/tool_plot.o src/tool_fl.o src/swarmscan.o src/massive_swarmscan.o src/lightq_scan.o src/lightq-fit.o src/sub_unsub_test.o src/lo-fit-plot.o
+	rm -f fit fitex tool plottool fltool swarmscan massivescan lightqscan subunsub lightqfitex lofit invdip
