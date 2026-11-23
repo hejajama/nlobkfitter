@@ -142,6 +142,7 @@ double Dipole::InterpolateN(double r, double y)
    
    
     // DEBUG for fast testing: bilinear interpolation
+/*
 	   int rind2 = rind+1;
 	   int yind2 = yind+1;
 	   if (rind2 >= rvals.size()) return 1.0;
@@ -155,7 +156,7 @@ double Dipole::InterpolateN(double r, double y)
         double bilin =  (1.0/( (r2_ - r1_)*(y2_ - y1_) ))*( (amplitude[yind][rind])*(r2_ - r)*(y2_ - y) + (amplitude[yind][rind2])*(r - r1_)*(y2_ - y) + (amplitude[yind2][rind])*(r2_ - r)*(y - y1_) + (amplitude[yind2][rind2])*(r - r1_)*(y - y1_) );
     
     return bilin;
-   
+ */  
     
     // Now we know that yind and yind+1 are acceptable indeces, so we can interpolate in rapidity linearly
     // Construct interpolators in r at both rapidities
